@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    bootstrap="bootstrap.php"
+    colors="true"
+    cacheDirectory="../../.phpunit.cache"
+    failOnWarning="true"
+    failOnRisky="true">
+    <testsuites>
+        <testsuite name="wallet-connector-catalog">
+            <directory>.</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:lissi",
+  "connectors": [
+    {
+      "id": "lissi-eudi-wallet-connector",
+      "name": "Lissi EUDI Wallet Connector",
+      "description": "Containerized software component that gives organisations a single API to issue and verify attestations with EUDI Wallets via OpenID4VCI and OpenID4VP. Holds OpenID Foundation conformance certification for OpenID4VCI 1.0 and OpenID4VP 1.0, both with HAIP 1.0, and supports multi-tenant operation, trust management, HSM and key vault integration.",
+      "walletRef": {
+        "walletCatalogId": "lissi-id-wallet-connector"
+      },
+      "website": "https://www.lissi.id/eudi-wallet-connector",
+      "documentation": "https://docs.wallet.lissi.id/home/technical-specifications",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "on_premises",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1",
+        "EUDI Wallet ARF"
+      ],
+      "walletCompatibility": [
+        "lissi-wallet",
+        "authbound-wallet",
+        "procivis-one-wallet",
+        "eudi-reference-personal-wallet"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "software_only"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.DS_Store
+.phpunit.cache/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Plugin zips for staging install
+dist-zips/
+*.zip
+*.tsbuildinfo
+.vscode/
+.idea/

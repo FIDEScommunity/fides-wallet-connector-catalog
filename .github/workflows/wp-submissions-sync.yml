@@ -1,0 +1,85 @@
+name: WP Submissions Sync
+
+# Push primary: WordPress commits data/wp-export/wallet-connector.json via the GitHub
+# Contents API on publish/delete; that push triggers this workflow, which reads
+# the committed export locally (no ~65 KB repository_dispatch cap, no WAF).
+# repository_dispatch (inline JSON) and workflow_dispatch (HTTP pull) remain as
+# fallback/recovery. See fides-community-tools-tiles §14.1.
+
+on:
+  repository_dispatch:
+    types: [fides-catalog-export]
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'data/wp-export/wallet-connector.json'
+
+jobs:
+  sync-wp-submissions:
+    if: github.repository == 'FIDEScommunity/fides-wallet-connector-catalog'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Import published WordPress submissions
+        env:
+          FIDES_WP_EXPORT_URL: ${{ vars.WP_EXPORT_URL }}
+          FIDES_CATALOG_SECRET: ${{ secrets.WP_INVALIDATE_SECRET }}
+          FIDES_WP_EXPORT_JSON: ${{ github.event.client_payload.export_json }}
+        run: npm run import-wp-submissions:apply
+
+      - name: Validate catalog files
+        run: npm run validate
+
+      - name: Rebuild aggregated data
+        run: npm run crawl
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if [ -n "$(git status --porcelain community-catalogs/ data/aggregated.json data/wp-submission-state.json)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes to commit."
+          fi
+
+      - name: Commit WP submission updates
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add community-catalogs/ data/aggregated.json data/wp-submission-state.json
+          git commit -m "chore: sync WordPress connector submissions [skip ci]"
+          git push
+
+      - name: Notify production WordPress to flush catalog cache
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          WP_INVALIDATE_URL: ${{ vars.WP_INVALIDATE_URL }}
+          WP_INVALIDATE_SECRET: ${{ secrets.WP_INVALIDATE_SECRET }}
+          CATALOG_TYPE: connector
+        run: |
+          if [ -z "${WP_INVALIDATE_URL}" ] || [ -z "${WP_INVALIDATE_SECRET}" ]; then
+            echo "Skipping: WP_INVALIDATE_URL/SECRET not configured for this repo."
+            exit 0
+          fi
+          echo "Notifying ${WP_INVALIDATE_URL} (type=${CATALOG_TYPE})..."
+          curl -fsS -X POST "${WP_INVALIDATE_URL}" \
+            -H "User-Agent: FIDES-Catalog-Automation/1.0" \
+            -H "X-FIDES-Catalog-Secret: ${WP_INVALIDATE_SECRET}" \
+            --data-urlencode "type=${CATALOG_TYPE}" \
+            -w '\nHTTP %{http_code}\n' \
+            || echo "WP invalidate failed (non-fatal; production has cache TTL fallback)"

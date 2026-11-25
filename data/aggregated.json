@@ -1,0 +1,712 @@
+{
+  "schemaVersion": "1",
+  "catalogType": "wallet-connector-catalog",
+  "lastUpdated": "2026-11-25T19:41:22.162Z",
+  "connectors": [
+    {
+      "id": "credenco-business-wallet-connector",
+      "name": "Credenco Business Wallet (Issuer & Verifier API)",
+      "description": "Issuer and verifier modules of the Credenco Business Wallet, exposed through a REST API. Backends start OpenID4VCI issuance from credential templates and create OpenID4VP authorization requests from verifier templates, then poll or receive callbacks for the verified claims.",
+      "walletRef": {
+        "walletCatalogId": "credenco-business-wallet"
+      },
+      "website": "https://www.credenco.com",
+      "documentation": "https://docs.credenco.com/docs/api/api-intro/",
+      "playgroundUrls": [
+        "https://playground.credenco.com"
+      ],
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "walletCompatibility": [
+        "credenco-wallet",
+        "paradym-wallet",
+        "gataca-wallet",
+        "heidi-wallet",
+        "namirial-wallet"
+      ],
+      "backendIntegrations": [
+        "rest_api",
+        "webhooks"
+      ],
+      "frontendIntegrations": [
+        "hosted_ui_redirect"
+      ],
+      "serviceModels": [
+        "software_only"
+      ],
+      "walletReference": {
+        "id": "credenco-business-wallet",
+        "name": "Credenco Business Wallet",
+        "logo": "https://wallet.acc.credenco.com/logo_white_background.png",
+        "providerName": "Credenco"
+      },
+      "compatibleWallets": [
+        {
+          "id": "credenco-wallet",
+          "name": "Credenco Wallet",
+          "logo": "https://play-lh.googleusercontent.com/q7wotX3g-O6DgYEBq6EfR6vsDe0NHd138uMK_6pUJat9x2UzisC15FfMQOPmQ7EDp5354fV61Ic1xuKQPGY5=w480-h960-rw",
+          "providerName": "Credenco"
+        },
+        {
+          "id": "paradym-wallet",
+          "name": "Paradym Wallet",
+          "logo": "https://play-lh.googleusercontent.com/QHFxEvBMYuMoHg-ha_YEdzryqnogR80FIpDI5I_DBJCD-3FiK3MK9bJvEsthhf7IBsg=w240-h480-rw",
+          "providerName": "Animo Solutions"
+        },
+        {
+          "id": "gataca-wallet",
+          "name": "Gataca Wallet",
+          "logo": "https://media-gataca.s3.eu-west-1.amazonaws.com/logo_48x48_6195afe3cb.png",
+          "providerName": "Gataca Labs"
+        },
+        {
+          "id": "heidi-wallet",
+          "name": "Heidi Wallet App",
+          "logo": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/13/2d/44/132d44a4-424b-3dfc-174e-541248ef421b/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/400x400ia-75.webp",
+          "providerName": "Ubique Innovation"
+        },
+        {
+          "id": "namirial-wallet",
+          "name": "Namirial Wallet",
+          "logo": "https://wallet-demo.namirial.com/static/img/Logo-NamirialWallet.png",
+          "providerName": "Namirial"
+        }
+      ],
+      "firstSeenAt": "2026-11-24T15:51:11.245Z",
+      "orgId": "org:credenco",
+      "organization": {
+        "id": "org:credenco",
+        "name": "Credenco",
+        "country": "NL",
+        "website": "https://www.credenco.com",
+        "logoUri": "https://wallet.acc.credenco.com/logo_white_background.png",
+        "catalogTier": "Pro"
+      },
+      "logo": "https://wallet.acc.credenco.com/logo_white_background.png",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Pro",
+      "sourcePath": "community-catalogs/credenco/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-25T19:41:22.162Z",
+      "fetchedAt": "2026-11-25T19:41:22.162Z"
+    },
+    {
+      "id": "eudi-reference-verifier",
+      "name": "EUDI Reference Verifier",
+      "description": "Reference verifier endpoint for developing and testing OpenID4VP and ISO 18013-5 wallet presentation flows.",
+      "website": "https://verifier.eudiw.dev/home",
+      "repository": "https://github.com/eu-digital-identity-wallet/eudi-srv-verifier-endpoint",
+      "playgroundUrls": [
+        "https://verifier.eudiw.dev/home"
+      ],
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "on_premises",
+      "openSource": true,
+      "license": "Apache-2.0",
+      "status": "development",
+      "vcFormat": [
+        "mdoc",
+        "sd_jwt_vc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "ISO 18013-5"
+      ],
+      "interoperabilityProfiles": [
+        "EUDI Wallet ARF"
+      ],
+      "walletCompatibility": [
+        "eudi-reference-personal-wallet",
+        "eudi-age-verification-wallet",
+        "national-eudi-wallet-germany",
+        "procivis-one-wallet"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "frontendIntegrations": [
+        "hosted_ui_redirect"
+      ],
+      "serviceModels": [
+        "software_only"
+      ],
+      "compatibleWallets": [
+        {
+          "id": "eudi-reference-personal-wallet",
+          "name": "EUDI Wallet Reference Implementation",
+          "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
+          "providerName": "European Commission"
+        },
+        {
+          "id": "eudi-age-verification-wallet",
+          "name": "EUDI Age Verification App (Reference)",
+          "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
+          "providerName": "European Commission"
+        },
+        {
+          "id": "national-eudi-wallet-germany",
+          "name": "d-you",
+          "logo": "https://www.google.com/s2/favicons?domain=eudi-wallet.gov.de&sz=128",
+          "providerName": "German Government"
+        },
+        {
+          "id": "procivis-one-wallet",
+          "name": "Procivis One Wallet",
+          "logo": "https://www.google.com/s2/favicons?domain=procivis.ch&sz=128",
+          "providerName": "Procivis"
+        }
+      ],
+      "firstSeenAt": "2026-11-24T15:41:04.479Z",
+      "orgId": "org:eu",
+      "organization": {
+        "id": "org:eu",
+        "name": "European Commission",
+        "country": "EU",
+        "website": "https://commission.europa.eu/",
+        "logoUri": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
+      "isEudiWalletConnector": true,
+      "catalogTier": "Community",
+      "catalogListingDepth": "full",
+      "sourcePath": "community-catalogs/eu/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-25T19:41:22.162Z",
+      "fetchedAt": "2026-11-25T19:41:22.162Z"
+    },
+    {
+      "id": "eudi-reference-issuer",
+      "name": "EUDIW Reference Issuer",
+      "description": "Reference web issuing service for developing and testing OpenID4VCI flows with EUDI Wallet implementations.",
+      "website": "https://issuer.eudiw.dev/",
+      "repository": "https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py",
+      "playgroundUrls": [
+        "https://issuer.eudiw.dev/"
+      ],
+      "connectorFunctions": [
+        "issuer"
+      ],
+      "deploymentModel": "on_premises",
+      "openSource": true,
+      "license": "Apache-2.0",
+      "status": "development",
+      "vcFormat": [
+        "mdoc",
+        "sd_jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "interoperabilityProfiles": [
+        "EUDI Wallet ARF"
+      ],
+      "walletCompatibility": [
+        "eudi-reference-personal-wallet",
+        "national-eudi-wallet-netherlands",
+        "france-identite",
+        "heidi-wallet"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "frontendIntegrations": [
+        "hosted_ui_redirect"
+      ],
+      "serviceModels": [
+        "software_only"
+      ],
+      "compatibleWallets": [
+        {
+          "id": "eudi-reference-personal-wallet",
+          "name": "EUDI Wallet Reference Implementation",
+          "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
+          "providerName": "European Commission"
+        },
+        {
+          "id": "national-eudi-wallet-netherlands",
+          "name": "NL Wallet (Netherlands)",
+          "logo": "https://flagcdn.com/w80/nl.png",
+          "providerName": "Dutch Government"
+        },
+        {
+          "id": "france-identite",
+          "name": "France Identité",
+          "logo": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/f1/00/29/f10029ba-79b0-c102-b195-8611663faf6b/Placeholder.mill/400x400bb-75.webp",
+          "providerName": "French Government"
+        },
+        {
+          "id": "heidi-wallet",
+          "name": "Heidi Wallet App",
+          "logo": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/13/2d/44/132d44a4-424b-3dfc-174e-541248ef421b/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/400x400ia-75.webp",
+          "providerName": "Ubique Innovation"
+        }
+      ],
+      "firstSeenAt": "2026-11-24T15:41:04.479Z",
+      "orgId": "org:eu",
+      "organization": {
+        "id": "org:eu",
+        "name": "European Commission",
+        "country": "EU",
+        "website": "https://commission.europa.eu/",
+        "logoUri": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
+      "isEudiWalletConnector": true,
+      "catalogTier": "Community",
+      "catalogListingDepth": "full",
+      "sourcePath": "community-catalogs/eu/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-25T19:41:22.162Z",
+      "fetchedAt": "2026-11-25T19:41:22.162Z"
+    },
+    {
+      "id": "lissi-eudi-wallet-connector",
+      "name": "Lissi EUDI Wallet Connector",
+      "description": "Containerized software component that gives organisations a single API to issue and verify attestations with EUDI Wallets via OpenID4VCI and OpenID4VP. Holds OpenID Foundation conformance certification for OpenID4VCI 1.0 and OpenID4VP 1.0, both with HAIP 1.0, and supports multi-tenant operation, trust management, HSM and key vault integration.",
+      "walletRef": {
+        "walletCatalogId": "lissi-id-wallet-connector"
+      },
+      "website": "https://www.lissi.id/eudi-wallet-connector",
+      "documentation": "https://docs.wallet.lissi.id/home/technical-specifications",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "on_premises",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1",
+        "EUDI Wallet ARF"
+      ],
+      "walletCompatibility": [
+        "lissi-wallet",
+        "authbound-wallet",
+        "procivis-one-wallet",
+        "eudi-reference-personal-wallet"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "software_only"
+      ],
+      "walletReference": {
+        "id": "lissi-id-wallet-connector",
+        "name": "Lissi ID-Wallet Connector",
+        "logo": "https://www.google.com/s2/favicons?domain=lissi.id&sz=128",
+        "providerName": "Lissi GmbH"
+      },
+      "compatibleWallets": [
+        {
+          "id": "lissi-wallet",
+          "name": "Lissi ID-Wallet",
+          "logo": "https://www.google.com/s2/favicons?domain=lissi.id&sz=128",
+          "providerName": "Lissi GmbH"
+        },
+        {
+          "id": "authbound-wallet",
+          "name": "Authbound Wallet",
+          "logo": "https://www.google.com/s2/favicons?domain=authbound.io&sz=128",
+          "providerName": "Authbound"
+        },
+        {
+          "id": "procivis-one-wallet",
+          "name": "Procivis One Wallet",
+          "logo": "https://www.google.com/s2/favicons?domain=procivis.ch&sz=128",
+          "providerName": "Procivis"
+        },
+        {
+          "id": "eudi-reference-personal-wallet",
+          "name": "EUDI Wallet Reference Implementation",
+          "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
+          "providerName": "European Commission"
+        }
+      ],
+      "firstSeenAt": "2026-11-24T15:51:11.245Z",
+      "orgId": "org:lissi",
+      "organization": {
+        "id": "org:lissi",
+        "name": "Lissi GmbH",
+        "country": "DE",
+        "website": "https://lissi.id",
+        "logoUri": "https://www.google.com/s2/favicons?domain=lissi.id&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=lissi.id&sz=128",
+      "isEudiWalletConnector": true,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/lissi/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-25T19:41:22.162Z",
+      "fetchedAt": "2026-11-25T19:41:22.162Z"
+    },
+    {
+      "id": "igrant-organisation-wallet-suite-connector",
+      "name": "Organisation Wallet Suite (Issuer & Verifier)",
+      "description": "Issuer and verifier functions of the iGrant.io Organisation Wallet Suite, available on-premise or as multi-tenant PaaS. Issues credentials with OpenID4VCI 1.0 and verifies them with OpenID4VP 1.0 and DCQL, supporting SD-JWT VC, mdoc and W3C VC (JWT), with webhook notifications and OpenID Foundation HAIP 1.0 conformance testing.",
+      "walletRef": {
+        "walletCatalogId": "igrant-organization-wallet"
+      },
+      "website": "https://igrant.io",
+      "documentation": "https://docs.igrant.io/docs/organisation-wallet-overview/",
+      "repository": "https://github.com/L3-iGrant/platform-deployment",
+      "playgroundUrls": [
+        "https://igrant.io/demo.html"
+      ],
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1",
+        "EUDI Wallet ARF"
+      ],
+      "credentialStatusMethods": [
+        "IETF Token Status List"
+      ],
+      "walletCompatibility": [
+        "igrant-data-wallet",
+        "eudi-reference-personal-wallet",
+        "national-eudi-wallet-netherlands",
+        "national-eudi-wallet-germany",
+        "national-eudi-wallet-austria",
+        "national-eudi-wallet-belgium",
+        "national-eudi-wallet-estonia",
+        "national-eudi-wallet-finland",
+        "france-identite",
+        "procivis-one-wallet",
+        "namirial-wallet",
+        "heidi-wallet"
+      ],
+      "backendIntegrations": [
+        "rest_api",
+        "webhooks"
+      ],
+      "serviceModels": [
+        "software_only"
+      ],
+      "walletReference": {
+        "id": "igrant-organization-wallet",
+        "name": "Organisation Wallet Suite by iGrant.io",
+        "logo": "https://www.google.com/s2/favicons?domain=igrant.io&sz=128",
+        "providerName": "iGrant.io"
+      },
+      "compatibleWallets": [
+        {
+          "id": "igrant-data-wallet",
+          "name": "Data Wallet by iGrant.io",
+          "logo": "https://www.google.com/s2/favicons?domain=igrant.io&sz=128",
+          "providerName": "iGrant.io"
+        },
+        {
+          "id": "eudi-reference-personal-wallet",
+          "name": "EUDI Wallet Reference Implementation",
+          "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
+          "providerName": "European Commission"
+        },
+        {
+          "id": "national-eudi-wallet-netherlands",
+          "name": "NL Wallet (Netherlands)",
+          "logo": "https://flagcdn.com/w80/nl.png",
+          "providerName": "Dutch Government"
+        },
+        {
+          "id": "national-eudi-wallet-germany",
+          "name": "d-you",
+          "logo": "https://www.google.com/s2/favicons?domain=eudi-wallet.gov.de&sz=128",
+          "providerName": "German Government"
+        },
+        {
+          "id": "national-eudi-wallet-austria",
+          "name": "eAusweise",
+          "logo": "https://flagcdn.com/w80/at.png",
+          "providerName": "Austrian Government"
+        },
+        {
+          "id": "national-eudi-wallet-belgium",
+          "name": "National EUDI Wallet (MyGov.be)",
+          "logo": "https://flagcdn.com/w80/be.png",
+          "providerName": "Belgian Government"
+        },
+        {
+          "id": "national-eudi-wallet-estonia",
+          "name": "National EUDI Wallet (Estonia)",
+          "logo": "https://flagcdn.com/w80/ee.png",
+          "providerName": "Estonian Government"
+        },
+        {
+          "id": "national-eudi-wallet-finland",
+          "name": "National EUDI Wallet (Finland)",
+          "logo": "https://flagcdn.com/w80/fi.png",
+          "providerName": "Finnish Government"
+        },
+        {
+          "id": "france-identite",
+          "name": "France Identité",
+          "logo": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/f1/00/29/f10029ba-79b0-c102-b195-8611663faf6b/Placeholder.mill/400x400bb-75.webp",
+          "providerName": "French Government"
+        },
+        {
+          "id": "procivis-one-wallet",
+          "name": "Procivis One Wallet",
+          "logo": "https://www.google.com/s2/favicons?domain=procivis.ch&sz=128",
+          "providerName": "Procivis"
+        },
+        {
+          "id": "namirial-wallet",
+          "name": "Namirial Wallet",
+          "logo": "https://wallet-demo.namirial.com/static/img/Logo-NamirialWallet.png",
+          "providerName": "Namirial"
+        },
+        {
+          "id": "heidi-wallet",
+          "name": "Heidi Wallet App",
+          "logo": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/13/2d/44/132d44a4-424b-3dfc-174e-541248ef421b/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/400x400ia-75.webp",
+          "providerName": "Ubique Innovation"
+        }
+      ],
+      "firstSeenAt": "2026-11-24T15:51:11.245Z",
+      "orgId": "org:igrant",
+      "organization": {
+        "id": "org:igrant",
+        "name": "iGrant.io",
+        "country": "SE",
+        "website": "https://igrant.io",
+        "logoUri": "https://www.google.com/s2/favicons?domain=igrant.io&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=igrant.io&sz=128",
+      "isEudiWalletConnector": true,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/igrant/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-25T19:41:22.162Z",
+      "fetchedAt": "2026-11-25T19:41:22.162Z"
+    },
+    {
+      "id": "trusttech-id-connector",
+      "name": "TrustTech ID Connector",
+      "description": "ID verifier that lets organisations accept certified EUDI Wallets, business wallets, eIDs, bank logins and document reads through one OpenID Connect integration. Returns a normalised result with an assurance level, handles relying-party registration, access certificates, wallet unit attestation checks and revocation checks, and runs as a managed service, in a private cloud or on-premise.",
+      "website": "https://trusttech.nl/products/id-connector/",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "ISO 18013-5"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1",
+        "EUDI Wallet ARF"
+      ],
+      "walletCompatibility": [
+        "national-eudi-wallet-netherlands",
+        "namirial-wallet",
+        "heidi-wallet",
+        "procivis-one-wallet"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2",
+        "rest_api",
+        "server_sdk"
+      ],
+      "frontendIntegrations": [
+        "headless_api",
+        "web_component"
+      ],
+      "serviceModels": [
+        "software_only",
+        "managed_verification"
+      ],
+      "compatibleWallets": [
+        {
+          "id": "national-eudi-wallet-netherlands",
+          "name": "NL Wallet (Netherlands)",
+          "logo": "https://flagcdn.com/w80/nl.png",
+          "providerName": "Dutch Government"
+        },
+        {
+          "id": "namirial-wallet",
+          "name": "Namirial Wallet",
+          "logo": "https://wallet-demo.namirial.com/static/img/Logo-NamirialWallet.png",
+          "providerName": "Namirial"
+        },
+        {
+          "id": "heidi-wallet",
+          "name": "Heidi Wallet App",
+          "logo": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/13/2d/44/132d44a4-424b-3dfc-174e-541248ef421b/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/400x400ia-75.webp",
+          "providerName": "Ubique Innovation"
+        },
+        {
+          "id": "procivis-one-wallet",
+          "name": "Procivis One Wallet",
+          "logo": "https://www.google.com/s2/favicons?domain=procivis.ch&sz=128",
+          "providerName": "Procivis"
+        }
+      ],
+      "firstSeenAt": "2026-11-24T15:51:11.245Z",
+      "orgId": "org:trusttech",
+      "organization": {
+        "id": "org:trusttech",
+        "name": "TrustTech",
+        "country": "NL",
+        "logoUri": "https://trusttech.nl/wp-content/uploads/2026/07/trusttech-avatar-300x300.png",
+        "catalogTier": "Community"
+      },
+      "logo": "https://trusttech.nl/wp-content/uploads/2026/07/trusttech-avatar-300x300.png",
+      "isEudiWalletConnector": true,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/trusttech/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-25T19:41:22.162Z",
+      "fetchedAt": "2026-11-25T19:41:22.162Z"
+    },
+    {
+      "id": "ver-id-platform",
+      "name": "Ver.iD Platform",
+      "description": "Hosted platform to sign in with a digital identity wallet, request verified data (disclosure) and issue digital credentials. Flows are configured in Ver.iD Studio and run through the Ver.iD Gateway (hosted or embedded), with TypeScript SDKs and OAuth 2.0 / OpenID Connect integration. Supported wallets include Yivi, Datakeeper, Digidentity and NL Wallet (testing).",
+      "website": "https://ver.id/",
+      "documentation": "https://docs.ver.id/getting-started/introduction",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "idemix"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "walletCompatibility": [
+        "yivi",
+        "paradym-wallet",
+        "sphereon-wallet",
+        "hovi-wallet"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2",
+        "server_sdk"
+      ],
+      "frontendIntegrations": [
+        "hosted_ui_redirect",
+        "frontend_sdk"
+      ],
+      "serviceModels": [
+        "software_only"
+      ],
+      "compatibleWallets": [
+        {
+          "id": "yivi",
+          "name": "Yivi",
+          "logo": "https://www.google.com/s2/favicons?domain=yivi.app&sz=128",
+          "providerName": "Yivi"
+        },
+        {
+          "id": "paradym-wallet",
+          "name": "Paradym Wallet",
+          "logo": "https://play-lh.googleusercontent.com/QHFxEvBMYuMoHg-ha_YEdzryqnogR80FIpDI5I_DBJCD-3FiK3MK9bJvEsthhf7IBsg=w240-h480-rw",
+          "providerName": "Animo Solutions"
+        },
+        {
+          "id": "sphereon-wallet",
+          "name": "Sphereon Edge Wallet",
+          "logo": "https://www.google.com/s2/favicons?domain=sphereon.com&sz=128",
+          "providerName": "Sphereon"
+        },
+        {
+          "id": "hovi-wallet",
+          "name": "Hovi Wallet",
+          "logo": "https://cdn.prod.website-files.com/659dad70ef0ae858f66ae208/6966ba7d633e575933328227_hovi-app-icon.png",
+          "providerName": "Hovi"
+        }
+      ],
+      "firstSeenAt": "2026-11-24T15:51:11.245Z",
+      "orgId": "org:ver-id",
+      "organization": {
+        "id": "org:ver-id",
+        "name": "ver.ID",
+        "country": "NL",
+        "website": "https://ver.id/",
+        "logoUri": "https://www.google.com/s2/favicons?domain=ver.id&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=ver.id&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/ver-id/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-25T19:41:22.162Z",
+      "fetchedAt": "2026-11-25T19:41:22.162Z"
+    }
+  ],
+  "stats": {
+    "totalConnectors": 7,
+    "totalOrganizations": 6,
+    "eudiWalletConnectors": 5,
+    "byFunction": {
+      "issuer": 5,
+      "verifier": 6
+    },
+    "byDeploymentModel": {
+      "saas": 2,
+      "on_premises": 3,
+      "hybrid": 2
+    }
+  }
+}

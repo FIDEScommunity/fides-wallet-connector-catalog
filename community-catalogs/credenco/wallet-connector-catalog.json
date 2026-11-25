@@ -1,0 +1,53 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:credenco",
+  "connectors": [
+    {
+      "id": "credenco-business-wallet-connector",
+      "name": "Credenco Business Wallet (Issuer & Verifier API)",
+      "description": "Issuer and verifier modules of the Credenco Business Wallet, exposed through a REST API. Backends start OpenID4VCI issuance from credential templates and create OpenID4VP authorization requests from verifier templates, then poll or receive callbacks for the verified claims.",
+      "walletRef": {
+        "walletCatalogId": "credenco-business-wallet"
+      },
+      "website": "https://www.credenco.com",
+      "documentation": "https://docs.credenco.com/docs/api/api-intro/",
+      "playgroundUrls": [
+        "https://playground.credenco.com"
+      ],
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "walletCompatibility": [
+        "credenco-wallet",
+        "paradym-wallet",
+        "gataca-wallet",
+        "heidi-wallet",
+        "namirial-wallet"
+      ],
+      "backendIntegrations": [
+        "rest_api",
+        "webhooks"
+      ],
+      "frontendIntegrations": [
+        "hosted_ui_redirect"
+      ],
+      "serviceModels": [
+        "software_only"
+      ]
+    }
+  ]
+}

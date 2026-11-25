@@ -1,0 +1,49 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:ver-id",
+  "connectors": [
+    {
+      "id": "ver-id-platform",
+      "name": "Ver.iD Platform",
+      "description": "Hosted platform to sign in with a digital identity wallet, request verified data (disclosure) and issue digital credentials. Flows are configured in Ver.iD Studio and run through the Ver.iD Gateway (hosted or embedded), with TypeScript SDKs and OAuth 2.0 / OpenID Connect integration. Supported wallets include Yivi, Datakeeper, Digidentity and NL Wallet (testing).",
+      "website": "https://ver.id/",
+      "documentation": "https://docs.ver.id/getting-started/introduction",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "idemix"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "walletCompatibility": [
+        "yivi",
+        "paradym-wallet",
+        "sphereon-wallet",
+        "hovi-wallet"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2",
+        "server_sdk"
+      ],
+      "frontendIntegrations": [
+        "hosted_ui_redirect",
+        "frontend_sdk"
+      ],
+      "serviceModels": [
+        "software_only"
+      ]
+    }
+  ]
+}

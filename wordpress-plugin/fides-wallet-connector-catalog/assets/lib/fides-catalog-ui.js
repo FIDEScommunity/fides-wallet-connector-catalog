@@ -1,0 +1,5460 @@
+(function() {
+  'use strict';
+
+  if (window.FidesCatalogUI) return;
+
+  const CREDENTIAL_FORMAT_ORDER = [
+    'sd_jwt_vc',
+    'mdoc',
+    'jwt_vc',
+    'vcdm_1_1',
+    'vcdm_2_0',
+    'anoncreds',
+    'idemix',
+    'apple_wallet_pass',
+    'google_wallet_pass',
+    'acdc',
+  ];
+  const CREDENTIAL_FORMAT_DISPLAY = {
+    sd_jwt_vc: 'SD-JWT VC',
+    mdoc: 'ISO mDoc',
+    jwt_vc: 'JWT VC',
+    vcdm_1_1: 'VCDM1.1',
+    vcdm_2_0: 'VCDM2.0',
+    anoncreds: 'AnonCreds',
+    idemix: 'Idemix',
+    apple_wallet_pass: 'Apple Wallet Pass',
+    google_wallet_pass: 'Google Wallet Pass',
+    acdc: 'ACDC',
+  };
+  function credentialFormatDisplayLabel(code) {
+    return CREDENTIAL_FORMAT_DISPLAY[code] || code;
+  }
+
+  /** Map filter option raw values to vocabulary.json keys (keep in sync with wallet-catalog.js). */
+  const WALLET_OPTION_TO_VOCAB = {
+    issuanceProtocol: {
+      'DIDComm Issue Credential v2': 'DIDComm v2',
+      'DIDComm Issue Credential v1': 'DIDComm v1'
+    },
+    presentationProtocol: {
+      'DIDComm Present Proof v2': 'DIDComm v2'
+    },
+    identifiers: {
+      'did:web': 'didWeb',
+      'did:key': 'didKey',
+      'did:jwk': 'didJwk',
+      'did:peer': 'didPeer',
+      'did:ebsi': 'didEbsi',
+      'did:webvh': 'didWebvh'
+    },
+    keyStorage: {
+      'Secure Enclave (iOS)': 'secureEnclaveIos',
+      'StrongBox (Android)': 'strongboxAndroid',
+      'Software': 'softwareKeyStorage',
+      'HSM': 'hsm',
+      'TEE': 'tee'
+    },
+    signingAlgorithm: {
+      'ECDSA ES256': 'ecdsaEs256',
+      'ES256': 'ecdsaEs256'
+    },
+    credentialStatus: {
+      'JWT Validity': 'jwtValidity',
+      'IETF Token Status List': 'ietfTokenStatusList',
+      'PKI Cert Validity': 'pkiCertValidity'
+    },
+    eidasTrustService: {
+      'Q_CERT_ESIG': 'QESig',
+      'Q_CERT_ESEAL': 'QESeal',
+      'Q_TIMESTAMP': 'QTimestamp',
+      'Q_ERDS': 'QERDS',
+      'Q_WAC': 'QWAC',
+      'Q_EARCH': 'QEArch',
+      'Q_VC': 'QVal',
+      'Q_PRES': 'QPres',
+      'Q_PRES_ESEAL': 'QPresSeal',
+      'Q_PRES_ESIG': 'QPresSig',
+      'Q_VAL_ESEAL': 'QValSeal',
+      'Q_VAL_ESIG': 'QValSig',
+      'Q_REM_MANAGE_Q_SEAL_CD': 'QRemSeal',
+      'Q_REM_MANAGE_Q_SIG_CD': 'QRemSig',
+      'QEAA': 'QEAA'
+    }
+  };
+
+  function resolveWalletVocabKey(groupKey, rawValue) {
+    const raw = String(rawValue);
+    const maps = WALLET_OPTION_TO_VOCAB[groupKey];
+    if (maps && maps[raw] !== undefined) return maps[raw];
+    return raw;
+  }
+
+  function walletVocabEntry(vocabulary, groupKey, rawValue) {
+    if (!vocabulary) return null;
+    const key = resolveWalletVocabKey(groupKey, rawValue);
+    const entry = vocabulary[key];
+    if (!entry || !entry.description) return null;
+    return { key: key, entry: entry };
+  }
+
+  const icons = {
+    wallet: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>',
+    github: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>',
+    externalLink: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" x2="21" y1="14" y2="3"></line></svg>',
+    externalLinkSmall: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" x2="21" y1="14" y2="3"></line></svg>',
+    award: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>',
+    smartphone: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg>',
+    globe: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>',
+    x: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>',
+    xLarge: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>',
+    share: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>',
+    linkedin: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.36 4.26 5.43v6.31zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 1 1 0 4.12zM7.11 20.45H3.56V9h3.55v11.45zM22.23 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.73V1.73C24 .77 23.21 0 22.23 0z"/></svg>',
+    link: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+    pencil: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>',
+    shield: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>',
+    key: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>',
+    fileCheck: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg>',
+    book: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
+    calendar: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>',
+    building: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>',
+    server: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>',
+    check: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    download: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>',
+    penLine: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    play: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg>',
+    chevronLeft: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
+    chevronRight: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+    chevronDown: '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+    chevronUp: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"></path></svg>',
+    chevronDoubleDown: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 8 6 6 6-6"></path><path d="m6 14 6 6 6-6"></path></svg>',
+    maximize: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>',
+    laptop: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>',
+    tag: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>',
+    official: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
+    community: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    mail: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
+    apple: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>',
+    playStore: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 9.99l-2.302 2.302-8.634-8.634z"/></svg>',
+    globeApp: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>',
+    useCases: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>',
+    alert: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+    newspaper: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>'
+  };
+
+  let currentModalMediaSlides = [];
+
+  const OFFICIAL_LISTING_TITLE = 'Official listing — managed by the provider';
+  const COMMUNITY_LISTING_TITLE = 'Community listing — contributed by the community';
+
+  let selectedContext = null;
+  let modalCloseTimer = null;
+  let modalEscHandler = null;
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+  }
+
+  function sortCredentialFormats(formats) {
+    if (!formats || !Array.isArray(formats)) return [];
+    return formats.slice().sort((a, b) => {
+      const indexA = CREDENTIAL_FORMAT_ORDER.indexOf(a);
+      const indexB = CREDENTIAL_FORMAT_ORDER.indexOf(b);
+      const orderA = indexA === -1 ? 999 : indexA;
+      const orderB = indexB === -1 ? 999 : indexB;
+      return orderA - orderB;
+    });
+  }
+
+  function getAppStoreLink(wallet, platform) {
+    if (!wallet.appStoreLinks) return null;
+    const platformKey = platform.toLowerCase();
+    if (platformKey === 'ios') return wallet.appStoreLinks.iOS || wallet.appStoreLinks.ios;
+    if (platformKey === 'android') return wallet.appStoreLinks.android;
+    if (platformKey === 'web') return wallet.appStoreLinks.web || wallet.website;
+    return null;
+  }
+
+  function platformSalesLinkType(platform) {
+    var p = String(platform || '').toLowerCase();
+    if (p === 'ios') return 'app_store';
+    if (p === 'android') return 'google_play';
+    if (p === 'web') return 'product';
+    return '';
+  }
+
+  function renderPlatformTag(wallet, platform, labelsOnly) {
+    const link = labelsOnly ? null : getAppStoreLink(wallet, platform);
+    const icon = platform === 'iOS' || platform === 'Android' ? icons.smartphone : icons.globe;
+    if (link) {
+      const salesAttrs = walletSalesTrackAttrString(wallet, platformSalesLinkType(platform));
+      return '<a href="' + escapeHtml(link) + '" target="_blank" rel="noopener" class="fides-tag platform clickable' +
+        (salesAttrs ? ' matomo_ignore piwik_ignore' : '') + '"' + salesAttrs + '>' +
+        icon + ' ' + escapeHtml(platform) + '</a>';
+    }
+    return '<span class="fides-tag platform">' + icon + ' ' + escapeHtml(platform) + '</span>';
+  }
+
+  const CATALOG_TIER_COMMUNITY = 'Community';
+  const CATALOG_TIER_PRO = 'Pro';
+
+  /** Community vs Pro from export field; legacy gratis and missing catalogTier stay Pro. */
+  function resolveCatalogTier(item) {
+    if (!item || !item.catalogTier) return CATALOG_TIER_PRO;
+    const tier = String(item.catalogTier).toLowerCase();
+    if (tier === 'gratis' || tier === 'community') return CATALOG_TIER_COMMUNITY;
+    return CATALOG_TIER_PRO;
+  }
+
+  function itemIsCommunity(item) {
+    return resolveCatalogTier(item) === CATALOG_TIER_COMMUNITY;
+  }
+
+  /** Explicit Pro in export JSON only — missing catalogTier is not treated as official. */
+  function catalogTierIsProExplicit(item) {
+    if (!item || !item.catalogTier) return false;
+    return resolveCatalogTier(item) === CATALOG_TIER_PRO;
+  }
+
+  function catalogListingDepthIsFull(item) {
+    return String((item && item.catalogListingDepth) || '').toLowerCase() === 'full';
+  }
+
+  function catalogListingOrgHasFullFields(item, options) {
+    const access = options && options.editAccess && typeof options.editAccess === 'object'
+      ? options.editAccess
+      : {};
+    const fullOrgIds = Array.isArray(access.fullOrgIds) ? access.fullOrgIds : [];
+    const orgId = resolveCatalogItemOrgId(item);
+    return orgId !== '' && fullOrgIds.indexOf(orgId) >= 0;
+  }
+
+  function catalogListingIsOfficial(item) {
+    return catalogTierIsProExplicit(item);
+  }
+
+  function catalogListingFieldsAreOpen(options) {
+    const access = options && options.editAccess && typeof options.editAccess === 'object'
+      ? options.editAccess
+      : {};
+    return access.openListingFields === true;
+  }
+
+  function catalogListingHasFullFields(item, options) {
+    if (!optionsTierUiEnabled(options)) return true;
+    if (catalogListingFieldsAreOpen(options)) return true;
+    if (!item) return false;
+    return catalogListingIsOfficial(item) ||
+      catalogListingDepthIsFull(item) ||
+      catalogListingOrgHasFullFields(item, options);
+  }
+
+  function buildCatalogListingHeaderBadgeHtml(item, options) {
+    if (!optionsTierUiEnabled(options)) return '';
+    if (catalogListingIsOfficial(item)) {
+      return '<span class="fides-modal-header-official-badge fides-modal-header-listing-badge fides-modal-header-listing-badge--official" role="img" aria-label="Official Listing" title="' +
+        escapeHtml(OFFICIAL_LISTING_TITLE) + '">' + icons.official +
+        '<span class="fides-modal-header-official-label fides-modal-header-listing-label">Official Listing</span></span>';
+    }
+    return '<span class="fides-modal-header-official-badge fides-modal-header-listing-badge fides-modal-header-listing-badge--community" role="img" aria-label="Community Listing" title="' +
+      escapeHtml(COMMUNITY_LISTING_TITLE) + '">' + icons.community +
+      '<span class="fides-modal-header-official-label fides-modal-header-listing-label">Community Listing</span></span>';
+  }
+
+  function normalizeIsoCountryCode(code) {
+    const raw = String(code || '').trim().toUpperCase();
+    if (raw.length !== 2 || !/^[A-Z]{2}$/.test(raw)) return '';
+    return raw;
+  }
+
+  function resolveWalletCountryCode(wallet) {
+    if (!wallet || typeof wallet !== 'object') return '';
+    const provider = wallet.provider && typeof wallet.provider === 'object' ? wallet.provider : {};
+    const fromProvider = normalizeIsoCountryCode(provider.country);
+    if (fromProvider) return fromProvider;
+    const tracker = wallet.eudiTracker && typeof wallet.eudiTracker === 'object' ? wallet.eudiTracker : {};
+    return normalizeIsoCountryCode(tracker.isoAlpha2);
+  }
+
+  function resolveWalletCountryLabel(wallet, countryCode, options) {
+    const code = countryCode || resolveWalletCountryCode(wallet);
+    if (!code) return '';
+    const names = options && options.countryNames && typeof options.countryNames === 'object' ? options.countryNames : {};
+    if (names[code]) return String(names[code]);
+    const tracker = wallet && wallet.eudiTracker && typeof wallet.eudiTracker === 'object' ? wallet.eudiTracker : {};
+    if (tracker.countryName) return String(tracker.countryName);
+    return code;
+  }
+
+  function buildWalletCountryFlagImgHtml(countryCode, flagClass) {
+    const code = normalizeIsoCountryCode(countryCode);
+    if (!code) return '';
+    const cls = flagClass || 'fides-modal-country-flag';
+    return '<img src="https://flagcdn.com/w40/' + encodeURIComponent(code.toLowerCase()) + '.png" alt="" class="' +
+      escapeHtml(cls) + '" width="18" height="13" loading="lazy" decoding="async" />';
+  }
+
+  /** Globe + country name row (aligned with use-case catalog modal subtitle). */
+  function buildCatalogCountryGlobeMetaHtml(label, extraClass) {
+    if (!label) return '';
+    const extra = extraClass ? ' ' + extraClass : '';
+    return '<span class="fides-catalog-country-meta' + extra + '" title="' + escapeHtml(label) + '" aria-label="' + escapeHtml(label) + '">' +
+      icons.globe + '<span>' + escapeHtml(label) + '</span></span>';
+  }
+
+  /** Modal header country appended after provider name (wallet / RP). */
+  function buildModalProviderCountryGlobeHtml(label) {
+    if (!label) return '';
+    return ' ' + buildCatalogCountryGlobeMetaHtml(label, 'fides-modal-provider-country');
+  }
+
+  function buildWalletCountryModalFlagHtml(wallet, options) {
+    const code = resolveWalletCountryCode(wallet);
+    if (!code) return '';
+    const label = resolveWalletCountryLabel(wallet, code, options);
+    return buildModalProviderCountryGlobeHtml(label);
+  }
+
+  function buildModalAwardRecognitionBadgeHtml(recognition) {
+    if (!recognition || typeof recognition !== 'object') return '';
+    const winner = Number(recognition.place) === 1;
+    const result = winner ? 'Winner' : 'Finalist';
+    const year = Number(recognition.year) || null;
+    const label = year ? result + ' ' + year : result;
+    const category = recognition.categoryLabel ? String(recognition.categoryLabel) : '';
+    const program = recognition.programLabel ? String(recognition.programLabel) : '';
+    const title = [label, category, program].filter(Boolean).join(' · ');
+    const content = icons.award + '<span>' + escapeHtml(label) + '</span>';
+    const className = 'fides-modal-award-inline award-' + (winner ? 'winner' : 'finalist');
+    const url = recognition.programUrl ? String(recognition.programUrl).trim() : '';
+    if (url) {
+      return ' <a class="' + className + '" href="' + escapeHtml(url) +
+        '" target="_blank" rel="noopener noreferrer" title="' + escapeHtml(title) +
+        '" onclick="event.stopPropagation();">' + content + '</a>';
+    }
+    return ' <span class="' + className + '" title="' + escapeHtml(title) + '">' + content + '</span>';
+  }
+
+  function resolveOrganizationCountryCode(org) {
+    if (!org || typeof org !== 'object') return '';
+    return normalizeIsoCountryCode(org.country);
+  }
+
+  function resolveOrganizationCountryLabel(org, countryCode, options) {
+    const code = countryCode || resolveOrganizationCountryCode(org);
+    if (!code) return '';
+    const names = options && options.countryNames && typeof options.countryNames === 'object' ? options.countryNames : {};
+    if (names[code]) return String(names[code]);
+    return code;
+  }
+
+  function buildOrganizationCountryFlagHtml(org, options) {
+    const code = resolveOrganizationCountryCode(org);
+    if (!code) return '';
+    const label = resolveOrganizationCountryLabel(org, code, options);
+    return buildCatalogCountryGlobeMetaHtml(label);
+  }
+
+  function buildOrganizationCountryModalFlagHtml(org, options) {
+    const code = resolveOrganizationCountryCode(org);
+    if (!code) return '';
+    const label = resolveOrganizationCountryLabel(org, code, options);
+    return buildModalProviderCountryGlobeHtml(label);
+  }
+
+  function buildWalletCountryFlagHtml(wallet, options) {
+    const code = resolveWalletCountryCode(wallet);
+    if (!code) return '';
+    const label = resolveWalletCountryLabel(wallet, code, options);
+    return '<span class="fides-wallet-country" title="' + escapeHtml(label) + '" aria-label="' + escapeHtml(label) + '">' +
+      buildWalletCountryFlagImgHtml(code, 'fides-wallet-country-flag') +
+      '</span>';
+  }
+
+  /** Whether Community vs Pro tier UI is active (master switch + options.tierUiEnabled). */
+  function optionsTierUiEnabled(options) {
+    return !!(options && options.tierUiEnabled);
+  }
+
+  /**
+   * Whether a catalog listing is Pro for edit-access checks (explicit catalogTier or linked proOrgIds fallback).
+   *
+   * @param {object|null|undefined} item Catalog item from aggregated.json
+   * @param {string} orgId org:… anchor for organization or wallet provider
+   * @param {object|null|undefined} editAccess { ownedOrgIds, proOrgIds }
+   * @return {boolean}
+   */
+  function catalogListingIsPro(item, orgId, editAccess) {
+    if (catalogListingIsOfficial(item)) return true;
+    if (item && item.catalogTier) return false;
+    const org = String(orgId || '').trim();
+    if (!org) return false;
+    const proOrgIds = Array.isArray(editAccess && editAccess.proOrgIds) ? editAccess.proOrgIds : [];
+    return proOrgIds.indexOf(org) >= 0;
+  }
+
+  /**
+   * Whether the signed-in user may open the update form for a catalog item.
+   * Pro listings: linked owner or site administrator only. Community listings: any signed-in user.
+   *
+   * @param {object|null|undefined} editAccess { isLoggedIn, isAdmin, ownedOrgIds, proOrgIds }
+   * @param {string} orgId org:… anchor for organization or wallet provider
+   * @param {object|null|undefined} item Optional catalog item (for catalogTier on Pro listings)
+   * @return {boolean}
+   */
+  function userCanEditCatalogItem(editAccess, orgId, item) {
+    if (!editAccess || !editAccess.isLoggedIn) return false;
+    if (editAccess.isAdmin) return true;
+    const org = String(orgId || '').trim();
+    if (!org) return true;
+    const ownedOrgIds = Array.isArray(editAccess.ownedOrgIds) ? editAccess.ownedOrgIds : [];
+    if (!catalogListingIsPro(item, org, editAccess)) return true;
+    return ownedOrgIds.indexOf(org) >= 0;
+  }
+
+  function resolveWalletOrgId(wallet) {
+    if (!wallet || typeof wallet !== 'object') return '';
+    const top = wallet.orgId != null ? String(wallet.orgId).trim() : '';
+    if (top.indexOf('org:') === 0) return top;
+    const fromProvider = wallet.provider && wallet.provider.orgId != null
+      ? String(wallet.provider.orgId).trim()
+      : '';
+    return fromProvider.indexOf('org:') === 0 ? fromProvider : '';
+  }
+
+  /** org:… from catalog item id (organization) or wallet provider orgId. */
+  function resolveCatalogItemOrgId(item) {
+    if (!item || typeof item !== 'object') return '';
+    const directId = item.id != null ? String(item.id).trim() : '';
+    if (directId.indexOf('org:') === 0) return directId;
+    return resolveWalletOrgId(item);
+  }
+
+  function normalizeEditAccess(options) {
+    const raw = options && options.editAccess;
+    const editAccess = raw && typeof raw === 'object'
+      ? Object.assign({}, raw)
+      : { ownedOrgIds: [], proOrgIds: [], fullOrgIds: [] };
+    editAccess.isLoggedIn = !!(editAccess.isLoggedIn || boolFromMixed(options && options.isLoggedIn) || boolFromMixed(options && options.ratingsIsLoggedIn));
+    if (!Array.isArray(editAccess.ownedOrgIds)) editAccess.ownedOrgIds = [];
+    if (!Array.isArray(editAccess.proOrgIds)) editAccess.proOrgIds = [];
+    if (!Array.isArray(editAccess.fullOrgIds)) editAccess.fullOrgIds = [];
+    return editAccess;
+  }
+
+  function canEditOrganization(org, options) {
+    return userCanEditCatalogItem(
+      normalizeEditAccess(options),
+      org && org.id ? String(org.id).trim() : '',
+      org
+    );
+  }
+
+  function canEditWallet(wallet, options) {
+    return userCanEditCatalogItem(normalizeEditAccess(options), resolveWalletOrgId(wallet), wallet);
+  }
+
+  function canEditRp(rp, options) {
+    return userCanEditCatalogItem(normalizeEditAccess(options), resolveCatalogItemOrgId(rp), rp);
+  }
+
+  /** Full public fields when tier switch is on (open listing fields, Official, or curated depth). */
+  function walletListingTierIsPro(item, options) {
+    return catalogListingHasFullFields(item, options);
+  }
+
+  function parseYoutubeVideoId(videoUrl) {
+    const match = String(videoUrl || '').match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&?/]+)/);
+    return match && match[1] ? match[1] : '';
+  }
+
+  function parseVimeoVideoId(videoUrl) {
+    const match = String(videoUrl || '').match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/);
+    return match && match[1] ? match[1] : '';
+  }
+
+  function getVideoEmbedUrl(videoUrl) {
+    if (!videoUrl) return null;
+    const ytId = parseYoutubeVideoId(videoUrl);
+    if (ytId) return 'https://www.youtube-nocookie.com/embed/' + ytId + '?rel=0&modestbranding=1';
+    const vimeoId = parseVimeoVideoId(videoUrl);
+    if (vimeoId) return 'https://player.vimeo.com/video/' + vimeoId;
+    return null;
+  }
+
+  function getVideoEmbedHtml(videoUrl) {
+    const embedUrl = getVideoEmbedUrl(videoUrl);
+    if (embedUrl) {
+      return '<div class="fides-video-container"><iframe src="' + escapeHtml(embedUrl) + '" width="100%" height="100%" frameborder="0" class="fides-video-iframe" title="Video player"></iframe></div>';
+    }
+    return '<div class="fides-video-fallback"><a href="' + escapeHtml(videoUrl) + '" target="_blank" rel="noopener" class="fides-modal-link primary" data-matomo-name="Video">' + icons.play + ' Watch Video (External)</a></div>';
+  }
+
+  const WALLET_DEPLOYMENT_MODEL_LABELS = {
+    saas: 'SaaS (cloud)',
+    on_premises: 'On-premises',
+    hybrid: 'Hybrid',
+  };
+
+  const WALLET_LICENSE_LABELS = {
+    MIT: 'MIT',
+    'Apache-2.0': 'Apache-2.0',
+    'GPL-3.0-or-later': 'GPL-3.0 or later',
+    'AGPL-3.0-or-later': 'AGPL-3.0 or later',
+    'LGPL-3.0-or-later': 'LGPL-3.0 or later',
+    'EUPL-1.2': 'EUPL-1.2',
+    'MPL-2.0': 'MPL-2.0',
+    'BSD-3-Clause': 'BSD-3-Clause',
+    ISC: 'ISC',
+    proprietary: 'Proprietary (closed source)',
+    other: 'Other',
+  };
+
+  function walletMediaVideos(wallet) {
+    if (!wallet) return [];
+    const urls = [];
+    if (wallet.media && Array.isArray(wallet.media.videos)) {
+      wallet.media.videos.forEach(function(url) {
+        const clean = String(url || '').trim();
+        if (clean && urls.indexOf(clean) === -1) urls.push(clean);
+      });
+    }
+    const legacy = wallet.video ? String(wallet.video).trim() : '';
+    if (legacy && urls.indexOf(legacy) === -1) urls.unshift(legacy);
+    return urls;
+  }
+
+  function walletMediaImages(wallet) {
+    if (!wallet || !wallet.media || !Array.isArray(wallet.media.images)) return [];
+    const urls = [];
+    wallet.media.images.forEach(function(url) {
+      const clean = String(url || '').trim();
+      if (clean && urls.indexOf(clean) === -1) urls.push(clean);
+    });
+    return urls;
+  }
+
+  function walletRecognitionItems(wallet, key) {
+    const rec = wallet && wallet.recognitions && typeof wallet.recognitions === 'object' ? wallet.recognitions : null;
+    if (rec && Array.isArray(rec[key])) {
+      return rec[key].filter(function(item) {
+        return item && String(item.title || '').trim();
+      });
+    }
+    if (key === 'certifications' && wallet && Array.isArray(wallet.certifications)) {
+      return wallet.certifications.map(function(title) {
+        return { title: String(title || '').trim(), url: '' };
+      }).filter(function(item) {
+        return item.title;
+      });
+    }
+    return [];
+  }
+
+  function walletAdditionalDocumentationItems(wallet) {
+    if (!wallet || !Array.isArray(wallet.additionalDocumentation)) return [];
+    return wallet.additionalDocumentation.filter(function(item) {
+      return item && String(item.title || '').trim();
+    });
+  }
+
+  function buildWalletAdditionalProductLinkRow(label, href, matomoName, linkText, salesAttrs) {
+    const url = String(href || '').trim();
+    if (!url) return '';
+    const display = linkText != null && String(linkText).trim() ? String(linkText).trim() : url;
+    const trackingClass = salesAttrs ? ' matomo_ignore piwik_ignore' : '';
+    const legacyMatomoAttr = salesAttrs ? '' : ' data-matomo-name="' + escapeHtml(matomoName) + '"';
+    return '<div class="fides-additional-product-link-row">' +
+      '<span class="fides-additional-product-link-label">' + escapeHtml(label) + '</span>' +
+      '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer" class="fides-modal-link-inline fides-additional-product-link' + trackingClass + '"' + legacyMatomoAttr +
+      (salesAttrs || '') + '>' +
+      escapeHtml(display) + ' ' + icons.externalLinkSmall + '</a></div>';
+  }
+
+  function buildWalletAdditionalProductInfoBodyHtml(wallet, options) {
+    if (!walletListingTierIsPro(wallet, options)) return '';
+    const linkRows = [];
+    const websiteRow = buildWalletAdditionalProductLinkRow(
+      'Product link',
+      wallet.website,
+      'Product link',
+      null,
+      walletSalesTrackAttrString(wallet, 'product')
+    );
+    if (websiteRow) linkRows.push(websiteRow);
+    const documentationRow = buildWalletAdditionalProductLinkRow(
+      'Documentation',
+      wallet.documentation,
+      'Documentation',
+      null,
+      walletSalesTrackAttrString(wallet, 'documentation')
+    );
+    if (documentationRow) linkRows.push(documentationRow);
+    const repositoryRow = buildWalletAdditionalProductLinkRow(
+      'Code Repository',
+      wallet.repository,
+      'Code Repository',
+      null,
+      walletSalesTrackAttrString(wallet, 'code_repository')
+    );
+    if (repositoryRow) linkRows.push(repositoryRow);
+    walletAdditionalDocumentationItems(wallet).forEach(function(item) {
+      const row = buildWalletAdditionalProductLinkRow(
+        String(item.title || '').trim(),
+        item.url,
+        'Additional documentation',
+        null,
+        walletSalesTrackAttrString(wallet, 'documentation')
+      );
+      if (row) linkRows.push(row);
+    });
+    if (!linkRows.length) return '';
+    return '<div class="fides-wallet-additional-product-info">' +
+      '<div class="fides-additional-product-links">' + linkRows.join('') + '</div></div>';
+  }
+
+  function walletAdditionalProductInfoCount(wallet, options) {
+    if (!walletListingTierIsPro(wallet, options)) return 0;
+    let count = 0;
+    if (wallet && String(wallet.website || '').trim()) count += 1;
+    if (wallet && String(wallet.documentation || '').trim()) count += 1;
+    if (wallet && String(wallet.repository || '').trim()) count += 1;
+    return count + walletAdditionalDocumentationItems(wallet).length;
+  }
+
+  function walletStandardsList(wallet) {
+    if (!wallet || !wallet.standards) return [];
+    if (Array.isArray(wallet.standards)) {
+      return wallet.standards.map(function(s) { return String(s || '').trim(); }).filter(Boolean);
+    }
+    return String(wallet.standards).split(/[,\n]/).map(function(s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function walletLicenseDisplay(wallet) {
+    if (!wallet || !wallet.license) return '';
+    if (wallet.license === 'other') {
+      const other = wallet.licenseOther ? String(wallet.licenseOther).trim() : '';
+      return other || WALLET_LICENSE_LABELS.other;
+    }
+    return WALLET_LICENSE_LABELS[wallet.license] || String(wallet.license);
+  }
+
+  function walletStatusDisplay(wallet) {
+    if (!wallet || !wallet.status) return '';
+    const statusLabels = {
+      development: 'In Development',
+      beta: 'Beta',
+      production: 'Production',
+      deprecated: 'Deprecated',
+    };
+    return statusLabels[wallet.status] || String(wallet.status);
+  }
+
+  function walletLicenseKvDisplay(wallet) {
+    const licenseLabel = walletLicenseDisplay(wallet);
+    if (wallet.openSource) {
+      return 'Open Source' + (licenseLabel ? ' (' + licenseLabel + ')' : '');
+    }
+    return licenseLabel || 'Proprietary';
+  }
+
+  function walletDeploymentModelLabel(code) {
+    if (!code) return '';
+    return WALLET_DEPLOYMENT_MODEL_LABELS[code] || String(code);
+  }
+
+  const WALLET_CAPABILITY_LABELS = { holder: 'Holder', issuer: 'Issuer', verifier: 'Verifier' };
+  const WALLET_CAPABILITY_ORDER = ['holder', 'issuer', 'verifier'];
+
+  function walletCapabilityLabel(code) {
+    const key = String(code || '').toLowerCase();
+    if (WALLET_CAPABILITY_LABELS[key]) return WALLET_CAPABILITY_LABELS[key];
+    return key ? key.charAt(0).toUpperCase() + key.slice(1) : '';
+  }
+
+  function sortedWalletCapabilities(wallet) {
+    if (!wallet || !Array.isArray(wallet.capabilities)) return [];
+    const caps = wallet.capabilities.map(function(c) { return String(c || '').toLowerCase(); }).filter(Boolean);
+    return WALLET_CAPABILITY_ORDER.filter(function(c) { return caps.indexOf(c) >= 0; })
+      .concat(caps.filter(function(c) { return WALLET_CAPABILITY_ORDER.indexOf(c) < 0; }));
+  }
+
+  function walletCapabilitySet(wallet) {
+    if (!wallet || !Array.isArray(wallet.capabilities)) return new Set();
+    return new Set(wallet.capabilities.map(function(c) { return String(c || '').toLowerCase(); }).filter(Boolean));
+  }
+
+  function renderWalletCheckOption(label, active) {
+    return '<span class="fides-wallet-check-option' + (active ? ' is-active' : ' is-inactive') + '">' +
+      '<span class="fides-wallet-check-box" aria-hidden="true">' + (active ? icons.check : '') + '</span>' +
+      '<span class="fides-wallet-check-label">' + escapeHtml(label) + '</span></span>';
+  }
+
+  function renderWalletCheckGroup(options) {
+    return '<span class="fides-wallet-check-group">' + options.join('') + '</span>';
+  }
+
+  function buildWalletKeyCapabilitiesKvSection(wallet) {
+    if (walletIsPersonal(wallet)) return '';
+    const capSet = walletCapabilitySet(wallet);
+    const items = WALLET_CAPABILITY_ORDER.map(function(key) {
+      return renderWalletCheckOption(walletCapabilityLabel(key), capSet.has(key));
+    }).join('');
+    return '<div class="fides-kv-section" data-section="capabilities">' +
+      '<div class="fides-kv-section-title">Key capabilities</div>' +
+      '<div class="fides-wallet-key-capabilities fides-wallet-check-group-wrap">' + items + '</div></div>';
+  }
+
+  const EIDAS_TRUST_SERVICE_ORDER = [
+    'Q_CERT_ESIG',
+    'Q_CERT_ESEAL',
+    'Q_TIMESTAMP',
+    'Q_ERDS',
+    'Q_WAC',
+    'Q_EARCH',
+    'Q_VC',
+    'Q_PRES',
+    'Q_PRES_ESEAL',
+    'Q_PRES_ESIG',
+    'Q_VAL_ESEAL',
+    'Q_VAL_ESIG',
+    'Q_REM_MANAGE_Q_SEAL_CD',
+    'Q_REM_MANAGE_Q_SIG_CD',
+    'QEAA',
+  ];
+
+  const EIDAS_TRUST_SERVICES_PERSONAL = [
+    'Q_CERT_ESIG',
+    'Q_TIMESTAMP',
+    'Q_ERDS',
+    'Q_EARCH',
+    'Q_VC',
+    'Q_PRES',
+    'Q_PRES_ESIG',
+    'Q_VAL_ESIG',
+    'Q_REM_MANAGE_Q_SIG_CD',
+    'QEAA',
+  ];
+
+  const EIDAS_TRUST_SERVICE_ABBREVIATIONS = {
+    Q_CERT_ESIG: 'QESig',
+    Q_CERT_ESEAL: 'QESeal',
+    Q_TIMESTAMP: 'QTimestamp',
+    Q_ERDS: 'QERDS',
+    Q_WAC: 'QWAC',
+    Q_EARCH: 'QEArch',
+    Q_VC: 'QVal',
+    Q_PRES: 'QPres',
+    Q_PRES_ESEAL: 'QPresSeal',
+    Q_PRES_ESIG: 'QPresSig',
+    Q_VAL_ESEAL: 'QValSeal',
+    Q_VAL_ESIG: 'QValSig',
+    Q_REM_MANAGE_Q_SEAL_CD: 'QRemSeal',
+    Q_REM_MANAGE_Q_SIG_CD: 'QRemSig',
+    QEAA: 'QEAA',
+  };
+
+  const EIDAS_TRUST_SERVICE_FULL_LABELS = {
+    Q_CERT_ESIG: 'Qualified electronic signature certificate',
+    Q_CERT_ESEAL: 'Qualified electronic seal certificate',
+    Q_TIMESTAMP: 'Qualified timestamp',
+    Q_ERDS: 'Qualified electronic registered delivery service',
+    Q_WAC: 'Qualified website authentication certificate',
+    Q_EARCH: 'Qualified electronic archiving',
+    Q_VC: 'Qualified validation service',
+    Q_PRES: 'Qualified preservation service',
+    Q_PRES_ESEAL: 'Qualified preservation service for electronic seals',
+    Q_PRES_ESIG: 'Qualified preservation service for electronic signatures',
+    Q_VAL_ESEAL: 'Qualified validation service for electronic seals',
+    Q_VAL_ESIG: 'Qualified validation service for electronic signatures',
+    Q_REM_MANAGE_Q_SEAL_CD: 'Qualified management of remote seal creation devices',
+    Q_REM_MANAGE_Q_SIG_CD: 'Qualified management of remote signature creation devices',
+    QEAA: 'Qualified electronic attestation of attributes',
+  };
+
+  function walletEidasTrustServiceSet(wallet) {
+    if (!wallet || !Array.isArray(wallet.eidasTrustServices)) return new Set();
+    return new Set(wallet.eidasTrustServices.map(function(code) {
+      return String(code || '').trim();
+    }).filter(Boolean));
+  }
+
+  function eidasTrustServiceCodesForWallet(wallet) {
+    const allowed = walletIsPersonal(wallet) ? EIDAS_TRUST_SERVICES_PERSONAL : EIDAS_TRUST_SERVICE_ORDER;
+    const selected = walletEidasTrustServiceSet(wallet);
+    const codes = allowed.slice();
+    selected.forEach(function(code) {
+      if (codes.indexOf(code) === -1) codes.push(code);
+    });
+    return codes.sort(function(a, b) {
+      return EIDAS_TRUST_SERVICE_ORDER.indexOf(a) - EIDAS_TRUST_SERVICE_ORDER.indexOf(b);
+    });
+  }
+
+  function renderWalletEidasCheckOption(code, active, vocabulary) {
+    const abbrev = EIDAS_TRUST_SERVICE_ABBREVIATIONS[code] || code;
+    const full = EIDAS_TRUST_SERVICE_FULL_LABELS[code] || code;
+    const match = vocabulary ? walletVocabEntry(vocabulary, 'eidasTrustService', code) : null;
+    let labelHtml;
+    if (match) {
+      labelHtml = '<button type="button" class="fides-kv-glossary-link fides-wallet-check-vocab-link" data-vocab-key="' +
+        escapeHtml(match.key) + '" title="' + escapeHtml(full) + '" aria-label="Definition: ' + escapeHtml(full) + '">' +
+        escapeHtml(abbrev) + '</button>';
+    } else {
+      labelHtml = '<span class="fides-wallet-check-label" title="' + escapeHtml(full) + '">' + escapeHtml(abbrev) + '</span>';
+    }
+    return '<span class="fides-wallet-check-option' + (active ? ' is-active' : ' is-inactive') + '">' +
+      '<span class="fides-wallet-check-box" aria-hidden="true">' + (active ? icons.check : '') + '</span>' +
+      labelHtml + '</span>';
+  }
+
+  function buildWalletEidasTrustServicesKvSection(wallet, vocabulary) {
+    const selected = walletEidasTrustServiceSet(wallet);
+    const codes = eidasTrustServiceCodesForWallet(wallet);
+    const options = codes.map(function(code) {
+      return renderWalletEidasCheckOption(code, selected.has(code), vocabulary);
+    });
+    return '<div class="fides-kv-section" data-section="eidasTrustServices">' +
+      '<div class="fides-kv-section-title">eIDAS Trust Services</div>' +
+      '<div class="fides-wallet-check-group-wrap">' + renderWalletCheckGroup(options) + '</div></div>';
+  }
+
+  function renderWalletDeploymentChecksHtml(wallet) {
+    const model = String(wallet && wallet.deploymentModel || '').toLowerCase();
+    if (!model) return '';
+    const saas = model === 'saas' || model === 'hybrid';
+    const onPremises = model === 'on_premises' || model === 'hybrid';
+    return renderWalletCheckGroup([
+      renderWalletCheckOption('SaaS', saas),
+      renderWalletCheckOption('On-premises', onPremises),
+    ]);
+  }
+
+  function walletIsPersonal(wallet) {
+    return String(wallet && wallet.type || '').toLowerCase() === 'personal';
+  }
+
+  function walletHasWebPlatform(wallet) {
+    const platforms = wallet && wallet.platforms;
+    if (!Array.isArray(platforms)) return false;
+    return platforms.some(function(platform) {
+      return String(platform).toLowerCase() === 'web';
+    });
+  }
+
+  function resolveWalletWebUrl(wallet) {
+    const appLinks = wallet && wallet.appStoreLinks && typeof wallet.appStoreLinks === 'object' ? wallet.appStoreLinks : {};
+    return String(appLinks.web || wallet.website || '').trim();
+  }
+
+  function walletHasPlatform(wallet, platformName) {
+    const platforms = wallet && wallet.platforms;
+    if (!Array.isArray(platforms)) return false;
+    const needle = String(platformName).toLowerCase();
+    return platforms.some(function(platform) {
+      return String(platform).toLowerCase() === needle;
+    });
+  }
+
+  function renderWalletAppStoreButton(kind, iconHtml, smallText, strongText, url, isClickable, matomoName, ariaLabel, extraClass, salesAttrs) {
+    const extra = extraClass ? ' ' + String(extraClass).trim() : '';
+    const trackingClass = salesAttrs ? ' matomo_ignore piwik_ignore' : '';
+    const className = 'fides-app-store-btn ' + kind + extra + trackingClass + (isClickable ? '' : ' is-disabled');
+    const labelHtml = '<span><small>' + escapeHtml(smallText) + '</small><strong>' + escapeHtml(strongText) + '</strong></span>';
+    const content = iconHtml + labelHtml;
+    if (isClickable && url) {
+      const legacyMatomoAttr = salesAttrs ? '' : ' data-matomo-name="' + escapeHtml(matomoName) + '"';
+      return '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer" class="' + className + '"' + legacyMatomoAttr +
+        (salesAttrs || '') +
+        ' aria-label="' + escapeHtml(ariaLabel) + '">' + content + '</a>';
+    }
+    return '<span class="' + className + '" role="img" aria-label="' + escapeHtml(ariaLabel) + ' (preview only)">' + content + '</span>';
+  }
+
+  function buildWalletAppStoreButtonsHtml(wallet, options) {
+    const isPro = walletListingTierIsPro(wallet, options);
+    const appLinks = wallet && wallet.appStoreLinks && typeof wallet.appStoreLinks === 'object' ? wallet.appStoreLinks : {};
+    const iosUrl = String(appLinks.iOS || appLinks.ios || '').trim();
+    const androidUrl = String(appLinks.android || '').trim();
+    const webUrl = resolveWalletWebUrl(wallet);
+    const buttons = [];
+    if (iosUrl || walletHasPlatform(wallet, 'iOS')) {
+      buttons.push(renderWalletAppStoreButton(
+        'ios',
+        icons.apple,
+        'Download on the',
+        'App Store',
+        iosUrl,
+        isPro && !!iosUrl,
+        'App Store',
+        'Download on the App Store',
+        '',
+        isPro && iosUrl ? walletSalesTrackAttrString(wallet, 'app_store') : ''
+      ));
+    }
+    if (androidUrl || walletHasPlatform(wallet, 'Android')) {
+      buttons.push(renderWalletAppStoreButton(
+        'android',
+        icons.playStore,
+        'Get it on',
+        'Google Play',
+        androidUrl,
+        isPro && !!androidUrl,
+        'Google Play',
+        'Get it on Google Play',
+        '',
+        isPro && androidUrl ? walletSalesTrackAttrString(wallet, 'google_play') : ''
+      ));
+    }
+    if (walletHasWebPlatform(wallet)) {
+      buttons.push(renderWalletAppStoreButton(
+        'web',
+        icons.globeApp,
+        'Use on the',
+        'Web',
+        webUrl,
+        isPro && !!webUrl,
+        'Web app',
+        'Open web app',
+        '',
+        isPro && webUrl ? walletSalesTrackAttrString(wallet, 'product') : ''
+      ));
+    }
+    if (!buttons.length) return '';
+    return '<div class="fides-wallet-capabilities fides-wallet-app-stores">' +
+      '<span class="fides-wallet-capabilities-label">Get the app</span>' +
+      '<div class="fides-wallet-capabilities-list fides-modal-app-stores">' + buttons.join('') + '</div></div>';
+  }
+
+  function buildWalletCapabilitiesOrAppStoresHtml(wallet, options) {
+    if (!walletIsPersonal(wallet)) return '';
+    return buildWalletAppStoreButtonsHtml(wallet, options);
+  }
+
+  function buildWalletModalMediaSlides(wallet) {
+    const title = wallet && wallet.name ? String(wallet.name) : 'Wallet preview';
+    const slides = [];
+
+    walletMediaVideos(wallet).forEach(function(url, index) {
+      const embedSrc = getVideoEmbedUrl(url);
+      if (!embedSrc) return;
+      const ytId = parseYoutubeVideoId(url);
+      const thumbUrl = ytId ? 'https://i.ytimg.com/vi/' + encodeURIComponent(ytId) + '/hqdefault.jpg' : '';
+      slides.push({
+        type: 'video',
+        label: index === 0 ? 'Demo video' : 'Demo video ' + (index + 1),
+        embedSrc: embedSrc,
+        videoTitle: index === 0 ? 'Demo video' : 'Demo video ' + (index + 1),
+        thumbUrl: thumbUrl
+      });
+    });
+
+    walletMediaImages(wallet).forEach(function(url, index) {
+      const imageUrl = String(url || '').trim();
+      if (!imageUrl) return;
+      slides.push({
+        type: 'image',
+        label: index === 0 ? 'Image' : 'Image ' + (index + 1),
+        imageUrl: imageUrl,
+        alt: index === 0 ? title : title + ' image ' + (index + 1)
+      });
+    });
+
+    return slides;
+  }
+
+  function modalMediaSlideThumbUrl(slide) {
+    if (slide.type === 'image') return slide.imageUrl;
+    return slide.thumbUrl || '';
+  }
+
+  function renderModalMediaSlideHtml(slide) {
+    if (slide.type === 'video') {
+      return '<div class="fides-use-case-modal-media fides-use-case-modal-media-video">' +
+        '<div class="fides-use-case-modal-media-frame" data-video-embed-src="' + escapeHtml(slide.embedSrc) + '" data-video-title="' + escapeHtml(slide.videoTitle) + '"></div>' +
+        '</div>';
+    }
+    return '<div class="fides-use-case-modal-media fides-use-case-modal-media-image">' +
+      '<img src="' + escapeHtml(slide.imageUrl) + '" alt="' + escapeHtml(slide.alt) + '" loading="lazy">' +
+      '</div>';
+  }
+
+  function renderModalMediaThumbsHtml(slides, context) {
+    if (slides.length < 2) return '';
+    return '<div class="fides-media-thumbs" data-media-thumbs="' + escapeHtml(context) + '">' +
+      slides.map(function(slide, index) {
+        const thumb = modalMediaSlideThumbUrl(slide);
+        const inner = thumb
+          ? '<img src="' + escapeHtml(thumb) + '" alt="" loading="lazy">'
+          : '<span class="fides-media-thumb-fallback">' + icons.play + '</span>';
+        const videoBadge = slide.type === 'video' ? '<span class="fides-media-thumb-play">' + icons.play + '</span>' : '';
+        return '<button type="button" class="fides-media-thumb' + (index === 0 ? ' is-active' : '') + '" data-thumb-index="' + index + '" aria-label="' + escapeHtml(slide.label) + '">' +
+          inner + videoBadge +
+          '</button>';
+      }).join('') +
+      '</div>';
+  }
+
+  function renderModalMediaCarouselHtml(slides, ariaLabel) {
+    if (!slides.length) return '';
+    currentModalMediaSlides = slides;
+    const multi = slides.length > 1;
+    const expandLabel = 'View larger';
+    return '<div class="fides-use-case-modal-media-wrap' + (multi ? ' is-multi' : '') + '">' +
+      '<div class="fides-use-case-modal-carousel" tabindex="0" aria-roledescription="carousel" aria-label="' + escapeHtml(ariaLabel || 'Media') + '">' +
+      '<div class="fides-use-case-modal-carousel-viewport">' +
+      '<div class="fides-use-case-modal-carousel-track" data-carousel-track style="transform: translateX(0);">' +
+      slides.map(function(slide, index) {
+        return '<div class="fides-use-case-modal-carousel-slide' + (index === 0 ? ' is-active' : '') + '" data-carousel-slide="' + index + '" aria-hidden="' + (index === 0 ? 'false' : 'true') + '">' +
+          '<button type="button" class="fides-media-expand-btn" data-media-expand="' + index + '" aria-label="' + escapeHtml(expandLabel) + '" title="' + escapeHtml(expandLabel) + '">' + icons.maximize + '</button>' +
+          renderModalMediaSlideHtml(slide) +
+          '</div>';
+      }).join('') +
+      '</div>' +
+      (multi
+        ? '<button type="button" class="fides-carousel-nav fides-carousel-nav-edge fides-carousel-prev" data-carousel-prev aria-label="Previous slide">' + icons.chevronLeft + '</button>' +
+          '<button type="button" class="fides-carousel-nav fides-carousel-nav-edge fides-carousel-next" data-carousel-next aria-label="Next slide">' + icons.chevronRight + '</button>' +
+          '<span class="fides-carousel-counter-overlay" data-carousel-counter>1 / ' + slides.length + '</span>'
+        : '') +
+      '</div>' +
+      renderModalMediaThumbsHtml(slides, 'modal') +
+      '</div>' +
+      '</div>';
+  }
+
+  function activateCarouselSlideMedia(slide) {
+    if (!slide) return;
+    slide.querySelectorAll('[data-video-embed-src]').forEach(function(frame) {
+      const src = frame.getAttribute('data-video-embed-src');
+      if (!src || frame.querySelector('iframe')) return;
+      const iframe = document.createElement('iframe');
+      iframe.src = src;
+      iframe.title = frame.getAttribute('data-video-title') || 'Demo video';
+      iframe.setAttribute('width', '100%');
+      iframe.setAttribute('height', '100%');
+      iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.setAttribute('loading', 'lazy');
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.maxWidth = '100%';
+      iframe.style.border = '0';
+      frame.appendChild(iframe);
+    });
+  }
+
+  function deactivateCarouselSlideMedia(slide) {
+    if (!slide) return;
+    slide.querySelectorAll('[data-video-embed-src]').forEach(function(frame) {
+      const iframe = frame.querySelector('iframe');
+      if (iframe) iframe.remove();
+    });
+  }
+
+  function bindModalMediaCarousel(carousel, options) {
+    const opts = options || {};
+    const slideEls = Array.from(carousel.querySelectorAll('[data-carousel-slide]'));
+    if (!slideEls.length) return null;
+
+    const track = carousel.querySelector('[data-carousel-track]');
+    const counter = carousel.querySelector('[data-carousel-counter]');
+    const thumbButtons = Array.from(carousel.querySelectorAll('[data-thumb-index]'));
+    const prevBtn = carousel.querySelector('[data-carousel-prev]');
+    const nextBtn = carousel.querySelector('[data-carousel-next]');
+    let index = Math.min(Math.max(opts.startIndex || 0, 0), slideEls.length - 1);
+
+    function applyIndex(skipActivate) {
+      slideEls.forEach(function(slide, slideIndex) {
+        const isActive = slideIndex === index;
+        slide.classList.toggle('is-active', isActive);
+        slide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      });
+      thumbButtons.forEach(function(btn) {
+        btn.classList.toggle('is-active', Number(btn.getAttribute('data-thumb-index')) === index);
+      });
+      if (track) track.style.transform = 'translateX(-' + (index * 100) + '%)';
+      if (counter) counter.textContent = (index + 1) + ' / ' + slideEls.length;
+      if (!skipActivate) {
+        slideEls.forEach(function(slide, slideIndex) {
+          if (slideIndex !== index) deactivateCarouselSlideMedia(slide);
+        });
+        activateCarouselSlideMedia(slideEls[index]);
+      }
+    }
+
+    function goTo(nextIndex) {
+      index = (nextIndex + slideEls.length) % slideEls.length;
+      applyIndex(false);
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', function() { goTo(index - 1); });
+    if (nextBtn) nextBtn.addEventListener('click', function() { goTo(index + 1); });
+    thumbButtons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        const thumbIndex = Number(btn.getAttribute('data-thumb-index'));
+        if (Number.isFinite(thumbIndex)) goTo(thumbIndex);
+      });
+    });
+    carousel.addEventListener('keydown', function(event) {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        goTo(index - 1);
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        goTo(index + 1);
+      }
+    });
+
+    applyIndex(false);
+    return { goTo: goTo, current: function() { return index; } };
+  }
+
+  function onMediaLightboxKeydown(event) {
+    if (event.key === 'Escape') {
+      event.stopPropagation();
+      closeMediaLightbox();
+    }
+  }
+
+  function closeMediaLightbox() {
+    const existing = document.getElementById('fides-media-lightbox');
+    if (!existing) return;
+    existing.querySelectorAll('[data-carousel-slide]').forEach(function(slide) {
+      deactivateCarouselSlideMedia(slide);
+    });
+    existing.remove();
+    document.removeEventListener('keydown', onMediaLightboxKeydown);
+  }
+
+  function openMediaLightbox(startIndex) {
+    const slides = currentModalMediaSlides;
+    if (!slides || !slides.length) return;
+    closeMediaLightbox();
+
+    const multi = slides.length > 1;
+    const html = '<div class="fides-media-lightbox" id="fides-media-lightbox" role="dialog" aria-modal="true" aria-label="Media viewer">' +
+      '<button type="button" class="fides-media-lightbox-close" data-lightbox-close aria-label="Close viewer">' + icons.xLarge + '</button>' +
+      '<div class="fides-media-lightbox-stage">' +
+      '<div class="fides-use-case-modal-carousel fides-media-lightbox-carousel" tabindex="0">' +
+      '<div class="fides-use-case-modal-carousel-viewport">' +
+      '<div class="fides-use-case-modal-carousel-track" data-carousel-track style="transform: translateX(0);">' +
+      slides.map(function(slide, index) {
+        return '<div class="fides-use-case-modal-carousel-slide' + (index === 0 ? ' is-active' : '') + '" data-carousel-slide="' + index + '" aria-hidden="' + (index === 0 ? 'false' : 'true') + '">' +
+          renderModalMediaSlideHtml(slide) +
+          '</div>';
+      }).join('') +
+      '</div>' +
+      (multi
+        ? '<button type="button" class="fides-carousel-nav fides-carousel-nav-edge fides-carousel-prev" data-carousel-prev aria-label="Previous slide">' + icons.chevronLeft + '</button>' +
+          '<button type="button" class="fides-carousel-nav fides-carousel-nav-edge fides-carousel-next" data-carousel-next aria-label="Next slide">' + icons.chevronRight + '</button>' +
+          '<span class="fides-carousel-counter-overlay" data-carousel-counter>1 / ' + slides.length + '</span>'
+        : '') +
+      '</div>' +
+      renderModalMediaThumbsHtml(slides, 'lightbox') +
+      '</div>' +
+      '</div>' +
+      '</div>';
+
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    const lightbox = document.getElementById('fides-media-lightbox');
+    if (!lightbox) return;
+    const carousel = lightbox.querySelector('.fides-media-lightbox-carousel');
+    if (carousel) bindModalMediaCarousel(carousel, { startIndex: startIndex || 0 });
+
+    lightbox.addEventListener('click', function(event) {
+      if (event.target === lightbox) closeMediaLightbox();
+    });
+    const closeBtn = lightbox.querySelector('[data-lightbox-close]');
+    if (closeBtn) closeBtn.addEventListener('click', closeMediaLightbox);
+    document.addEventListener('keydown', onMediaLightboxKeydown);
+
+    const focusTarget = carousel || closeBtn;
+    if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
+  }
+
+  function initModalMediaCarousels() {
+    const overlay = document.getElementById('fides-modal-overlay');
+    if (!overlay) return;
+    overlay.querySelectorAll('.fides-use-case-modal-carousel').forEach(function(carousel) {
+      bindModalMediaCarousel(carousel, { startIndex: 0 });
+    });
+    overlay.querySelectorAll('[data-media-expand]').forEach(function(btn) {
+      btn.addEventListener('click', function(event) {
+        event.stopPropagation();
+        const idx = Number(btn.getAttribute('data-media-expand'));
+        openMediaLightbox(Number.isFinite(idx) ? idx : 0);
+      });
+    });
+  }
+
+  function buildWalletHeroSectionHtml(wallet, options) {
+    const description = wallet && wallet.description ? String(wallet.description).trim() : '';
+    let mediaHtml = '';
+    if (walletListingTierIsPro(wallet, options)) {
+      const slides = buildWalletModalMediaSlides(wallet);
+      if (slides.length) mediaHtml = renderModalMediaCarouselHtml(slides, 'Wallet media');
+    }
+    if (!description && !mediaHtml) return '';
+    const layoutClass = mediaHtml ? 'fides-use-case-modal-hero has-media' : 'fides-use-case-modal-hero';
+    return '<section class="' + layoutClass + '">' +
+      (description ? '<div class="fides-use-case-modal-copy"><p class="fides-modal-description">' + escapeHtml(description) + '</p></div>' : '') +
+      mediaHtml +
+      '</section>';
+  }
+
+  function buildOrganizationHeroSectionHtml(org, options) {
+    const description = org && org.description ? String(org.description).trim() : '';
+    let mediaHtml = '';
+    if (walletListingTierIsPro(org, options)) {
+      const slides = buildWalletModalMediaSlides(org);
+      if (slides.length) mediaHtml = renderModalMediaCarouselHtml(slides, 'Organization media');
+    }
+    if (!description && !mediaHtml) return '';
+    const layoutClass = mediaHtml ? 'fides-use-case-modal-hero has-media' : 'fides-use-case-modal-hero';
+    return '<section class="' + layoutClass + '">' +
+      (description ? '<div class="fides-use-case-modal-copy"><p class="fides-modal-description">' + escapeHtml(description) + '</p></div>' : '') +
+      mediaHtml +
+      '</section>';
+  }
+
+  function buildRpHeroSectionHtml(rp) {
+    const description = rp && rp.description ? String(rp.description).trim() : '';
+    const slides = buildWalletModalMediaSlides(rp);
+    const mediaHtml = slides.length ? renderModalMediaCarouselHtml(slides, 'Relying party media') : '';
+    if (!description && !mediaHtml) return '';
+    const layoutClass = mediaHtml ? 'fides-use-case-modal-hero has-media' : 'fides-use-case-modal-hero';
+    return '<section class="' + layoutClass + '">' +
+      (description ? '<div class="fides-use-case-modal-copy"><p class="fides-modal-description">' + escapeHtml(description) + '</p></div>' : '') +
+      mediaHtml +
+      '</section>';
+  }
+
+  function resolveRpCountryCode(rp) {
+    if (!rp || typeof rp !== 'object') return '';
+    return normalizeIsoCountryCode(rp.country);
+  }
+
+  function resolveRpCountryLabel(rp, countryCode, options) {
+    const code = countryCode || resolveRpCountryCode(rp);
+    if (!code) return '';
+    if (code === 'EU') return 'European Union';
+    const names = options && options.countryNames && typeof options.countryNames === 'object' ? options.countryNames : {};
+    if (names[code]) return String(names[code]);
+    return code;
+  }
+
+  function buildRpCountryModalFlagHtml(rp, options) {
+    const code = resolveRpCountryCode(rp);
+    if (!code) return '';
+    const label = resolveRpCountryLabel(rp, code, options);
+    return buildModalProviderCountryGlobeHtml(label);
+  }
+
+  const RP_READINESS_LABELS = {
+    'technical-demo': 'Technical Demo',
+    'use-case-demo': 'Use Case Demo',
+    'production-pilot': 'Production Pilot',
+    production: 'Production'
+  };
+
+  const RP_STATUS_LABELS = {
+    development: 'In Development',
+    beta: 'Beta',
+    live: 'Live',
+    deprecated: 'Deprecated'
+  };
+
+  function buildRpActionBarHtml(rp) {
+    if (!rp) return '';
+    const websiteUrl = rp.website ? String(rp.website).trim() : '';
+    const testCredentialsUrl = rp.testCredentials ? String(rp.testCredentials).trim() : '';
+    const documentationUrl = rp.documentation ? String(rp.documentation).trim() : '';
+    const apiEndpointUrl = rp.apiEndpoint ? String(rp.apiEndpoint).trim() : '';
+    const buttons = [];
+    if (websiteUrl) {
+      buttons.push(renderWalletAppStoreButton(
+        'web',
+        icons.globeApp,
+        'Visit the',
+        'Website',
+        websiteUrl,
+        true,
+        'Website',
+        'Visit website'
+      ));
+    }
+    if (testCredentialsUrl) {
+      buttons.push(renderWalletAppStoreButton(
+        'issuer',
+        icons.fileCheck,
+        'Get',
+        'Test credentials',
+        testCredentialsUrl,
+        true,
+        'Test credentials',
+        'Get test credentials'
+      ));
+    }
+    if (documentationUrl) {
+      buttons.push(renderWalletAppStoreButton(
+        'web',
+        icons.book,
+        'Read the',
+        'Documentation',
+        documentationUrl,
+        true,
+        'Documentation',
+        'Read documentation',
+        'fides-rp-link-secondary'
+      ));
+    }
+    if (apiEndpointUrl) {
+      buttons.push(renderWalletAppStoreButton(
+        'web',
+        icons.externalLink,
+        'Open',
+        'API endpoint',
+        apiEndpointUrl,
+        true,
+        'API endpoint',
+        'Open API endpoint',
+        'fides-rp-link-secondary'
+      ));
+    }
+    if (!buttons.length) return '';
+    return '<div class="fides-wallet-capabilities fides-wallet-app-stores fides-rp-action-bar">' +
+      '<span class="fides-wallet-capabilities-label">Links</span>' +
+      '<div class="fides-wallet-capabilities-list fides-modal-app-stores">' + buttons.join('') + '</div></div>';
+  }
+
+  function buildRpSectorLabelsText(rp) {
+    const raw = Array.isArray(rp.sectors) ? rp.sectors : [];
+    const sectorCodes = raw.filter(function(s) { return typeof s === 'string' && s.length > 0; }).slice().sort(function(a, b) {
+      return rpSectorDisplayLabel(a).localeCompare(rpSectorDisplayLabel(b), 'en', { sensitivity: 'base' });
+    });
+    if (!sectorCodes.length) return '';
+    return sectorCodes.map(function(s) { return rpSectorDisplayLabel(s); }).join(', ');
+  }
+
+  function buildRpSectorTagsHtml(rp) {
+    const raw = Array.isArray(rp.sectors) ? rp.sectors : [];
+    const sectorCodes = raw.filter(function(s) { return typeof s === 'string' && s.length > 0; }).slice().sort(function(a, b) {
+      return rpSectorDisplayLabel(a).localeCompare(rpSectorDisplayLabel(b), 'en', { sensitivity: 'base' });
+    });
+    if (!sectorCodes.length) return '';
+    return sectorCodes.map(function(s) {
+      return '<span class="fides-tag sector">' + escapeHtml(rpSectorDisplayLabel(s)) + '</span>';
+    }).join('');
+  }
+
+  function buildRpSpecificationsBodyHtml(rp, options) {
+    if (!rp) return '';
+    const vocabulary = options && options.vocabulary;
+    const rows = [
+      renderTechnicalKvRowText('VC formats', sortCredentialFormats(rp.vcFormat || []), credentialFormatDisplayLabel, vocabulary, 'vcFormat'),
+      renderTechnicalKvRowText('Presentation protocols', rp.presentationProtocols || [], null, vocabulary, 'presentationProtocol'),
+      renderTechnicalKvRowText('Interop profiles', rp.interoperabilityProfiles || [], null, vocabulary, 'interopProfile'),
+    ].filter(Boolean);
+    if (!rows.length) return '';
+    return '<div class="fides-details-kv fides-details-kv--technical-grid">' + rows.join('') + '</div>';
+  }
+
+  function buildRpWebsiteDetailsBodyHtml(rp) {
+    if (!rp) return '';
+    const interactionMode = getRpInteractionMode(rp);
+    const interactionModeLabel = INTERACTION_MODE_LABELS[interactionMode] || interactionMode;
+    const sectorLabels = buildRpSectorLabelsText(rp);
+    const rows = [
+      renderTechnicalKvRow('Interaction mode', escapeHtml(interactionModeLabel)),
+      rp.readiness
+        ? renderTechnicalKvRow('Readiness', escapeHtml(RP_READINESS_LABELS[rp.readiness] || rp.readiness))
+        : renderTechnicalKvRow('Readiness', '—'),
+      rp.status
+        ? renderTechnicalKvRow('Status', escapeHtml(RP_STATUS_LABELS[rp.status] || rp.status))
+        : renderTechnicalKvRow('Status', '—'),
+      sectorLabels ? renderTechnicalKvRow('Sectors', escapeHtml(sectorLabels)) : '',
+    ].filter(Boolean);
+    return '<div class="fides-details-kv">' + rows.join('') + '</div>';
+  }
+
+  function buildRpAcceptedCredentialsAccordionBody(rp, credentialCatalogUrl, options) {
+    const aliasIndex = options && options.credentialAliasIndex;
+    const credById = (options && options.credentialById)
+      || (aliasIndex && aliasIndex.byId)
+      || {};
+    const rows = getAcceptedCredentialRows(rp, options).map(function(row) {
+      const meta = lookupCredentialByIdOrAlias(row.credentialId, credById);
+      const name = meta && meta.displayName ? meta.displayName : row.label;
+      const organization = meta && meta.authorityName ? meta.authorityName : '';
+      const href = row.credentialId
+        ? getCredentialCatalogDeepLink(row.credentialId, credentialCatalogUrl, aliasIndex)
+        : '';
+      return {
+        id: row.credentialId || row.label,
+        name: name,
+        organization: organization,
+        href: href || '',
+        ratingType: row.credentialId ? 'credential' : ''
+      };
+    });
+    return buildModalEntityTableHtml({
+      rows: rows,
+      nameColumnLabel: 'Credential type',
+      ariaLabel: 'Accepted credential types',
+      options: options,
+      emptyHtml: '<p class="fides-modal-empty">No credential types linked for this relying party.</p>'
+    });
+  }
+
+  function rpAcceptedCredentialsCount(rp, options) {
+    return getAcceptedCredentialRows(rp, options).length;
+  }
+
+  function buildRpSupportedWalletsAccordionBody(rp, walletCatalogUrl, options) {
+    const wallets = Array.isArray(rp.supportedWallets) ? rp.supportedWallets : [];
+    if (!wallets.length) return '';
+    const walletById = (options && options.walletById) || {};
+    const rows = wallets.map(function(w) {
+      const name = typeof w === 'string' ? w : (w.name || '');
+      const walletId = typeof w === 'object' ? (w.walletCatalogId || w.refId) : null;
+      const meta = walletId && walletById[walletId] ? walletById[walletId] : null;
+      const href = walletId && walletCatalogUrl
+        ? walletCatalogUrl.replace(/\/$/, '') + '/?wallet=' + encodeURIComponent(walletId)
+        : '';
+      return {
+        id: walletId || name,
+        name: (meta && meta.displayName) ? meta.displayName : name,
+        organization: meta && meta.providerName ? meta.providerName : '',
+        href: href,
+        ratingType: walletId ? 'wallet' : ''
+      };
+    }).filter(function(r) { return r.name; });
+    return buildModalEntityTableHtml({
+      rows: rows,
+      nameColumnLabel: 'Supported wallet',
+      organizationColumnLabel: 'Provider',
+      alwaysShowOrganizationColumn: true,
+      ariaLabel: 'Supported wallets',
+      options: options,
+      emptyHtml: '<p class="fides-modal-empty">No supported wallets listed.</p>'
+    });
+  }
+
+  function rpSupportedWalletsCount(rp) {
+    return Array.isArray(rp.supportedWallets) ? rp.supportedWallets.length : 0;
+  }
+
+  function rpSupportedWalletCatalogIds(rp) {
+    const wallets = Array.isArray(rp.supportedWallets) ? rp.supportedWallets : [];
+    const ids = [];
+    wallets.forEach(function(w) {
+      const id = typeof w === 'object' && w ? (w.walletCatalogId || w.refId) : null;
+      if (id && ids.indexOf(String(id)) < 0) ids.push(String(id));
+    });
+    return ids;
+  }
+
+  function buildRpIssuersAccordionBody(issuers, issuerCatalogUrl, options) {
+    const list = Array.isArray(issuers) ? issuers : [];
+    const rows = list.map(function(issuer) {
+      const id = issuer.id || '';
+      const href = id && issuerCatalogUrl
+        ? issuerCatalogUrl.replace(/\/$/, '') + '/?issuer=' + encodeURIComponent(id)
+        : '';
+      return {
+        id: id,
+        name: issuer.displayName || issuer.name || id,
+        organization: issuer.organizationName || '',
+        href: href,
+        ratingType: id ? 'issuer' : ''
+      };
+    }).filter(function(r) { return r.id || r.name; });
+    return buildModalEntityTableHtml({
+      rows: rows,
+      nameColumnLabel: 'Issuer',
+      ariaLabel: 'Issuers',
+      options: options,
+      emptyHtml: '<p class="fides-modal-empty">No issuers found in the issuer catalog data for this relying party.</p>'
+    });
+  }
+
+  function buildRpEcosystemEntityCardHtml(name, authority, logoUrl, iconFallback) {
+    const icon = logoUrl
+      ? '<img src="' + escapeHtml(logoUrl) + '" alt="" style="width:20px;height:20px;object-fit:contain;border-radius:4px;">'
+      : (iconFallback || icons.globeApp);
+    return '<div class="fides-eco-col fides-eco-col-center"><div class="fides-eco-center-card">' +
+      '<div class="fides-eco-center-icon">' + icon + '</div>' +
+      '<p class="fides-eco-center-name">' + escapeHtml(name || '—') + '</p>' +
+      (authority ? '<p class="fides-eco-center-authority">' + escapeHtml(authority) + '</p>' : '') +
+      '</div></div>';
+  }
+
+  function buildRpEcosystemModelHtml(rp, options) {
+    if (!rp) return '';
+    const credentialCount = rpAcceptedCredentialsCount(rp, options);
+    const walletIds = rpSupportedWalletCatalogIds(rp);
+    const walletCount = walletIds.length;
+    const issuers = (options && Array.isArray(options.ecosystemIssuers)) ? options.ecosystemIssuers : [];
+    const issuerCount = issuers.length;
+    const modalLogoUrl = rp.logo || (rp.country ? 'https://flagcdn.com/w80/' + String(rp.country).toLowerCase() + '.png' : '');
+    const providerName = rp.provider && rp.provider.name ? String(rp.provider.name) : '';
+    const personalWalletClass = 'fides-eco-wallet-box' + (walletCount > 0 ? ' fides-eco-wallet-box--link' : '');
+    const personalWalletTarget = walletCount > 0 ? ' data-fides-eco-target="fides-accordion-rp-supported-wallets"' : '';
+    const personalWalletHtml = '<div class="' + personalWalletClass + '"' + personalWalletTarget + '>' +
+      '<span class="fides-eco-wallet-count">' + (walletCount > 0 ? walletCount : '—') + '</span>' +
+      '<span class="fides-eco-wallet-label">' + (walletCount === 1 ? 'Personal Wallet' : 'Personal Wallets') + '</span></div>';
+    const issuerStatClass = 'fides-eco-wallet-box fides-eco-stat-box fides-eco-stat-box--green' + (issuerCount > 0 ? '' : ' fides-eco-stat-box--static');
+    const issuerTarget = issuerCount > 0 ? ' data-fides-eco-target="fides-accordion-rp-issuers"' : '';
+    const issuerHint = issuerCount > 0 ? '<span class="fides-eco-stat-hint" aria-hidden="true">' + icons.chevronDoubleDown + '</span>' : '';
+    const credentialStatClass = 'fides-eco-wallet-box fides-eco-stat-box fides-eco-stat-box--green' + (credentialCount > 0 ? '' : ' fides-eco-stat-box--static');
+    const credentialTarget = credentialCount > 0 ? ' data-fides-eco-target="fides-accordion-rp-accepted-credentials"' : '';
+    const credentialHint = credentialCount > 0 ? '<span class="fides-eco-stat-hint" aria-hidden="true">' + icons.chevronDoubleDown + '</span>' : '';
+
+    const explainUrl = (options && options.ecosystemExplorerUrl)
+      ? String(options.ecosystemExplorerUrl).trim()
+      : 'https://fides.community/topics/ecosystem-explorer/';
+    const explainLinkHtml = explainUrl
+      ? '<a href="' + escapeHtml(explainUrl) + '" class="fides-eco-explain-link" target="_blank" rel="noopener" onclick="event.stopPropagation();" aria-label="Explain the FIDES Ecosystem Model">Explain</a>'
+      : '';
+
+    return '<div class="fides-accordion fides-modal-section">' +
+      '<div class="fides-accordion-header fides-modal-section-header fides-modal-section-header--with-link">' +
+      '<span class="fides-accordion-title">' + icons.wallet + ' FIDES Ecosystem Model</span>' +
+      explainLinkHtml +
+      '</div>' +
+      '<div class="fides-accordion-body fides-modal-ecosystem-body">' +
+      '<div class="fides-modal-ecosystem">' +
+      '<div class="fides-eco-wallet-row">' + personalWalletHtml + '</div>' +
+      '<div class="fides-eco-wallet-connector">' + icons.chevronUp + '</div>' +
+      '<div class="fides-eco-main-row">' +
+      '<div class="fides-eco-col fides-eco-stat-wrap"><div class="' + issuerStatClass + '"' + issuerTarget + '>' +
+      '<div class="fides-eco-stat-box-main"><span class="fides-eco-wallet-count">' + issuerCount + '</span>' +
+      '<span class="fides-eco-wallet-label">' + (issuerCount === 1 ? 'Issuer' : 'Issuers') + '</span></div>' +
+      issuerHint + '</div></div>' +
+      '<div class="fides-eco-arrow">' + icons.chevronDown + '</div>' +
+      '<div class="fides-eco-col fides-eco-stat-wrap"><div class="' + credentialStatClass + '"' + credentialTarget + '>' +
+      '<div class="fides-eco-stat-box-main"><span class="fides-eco-wallet-count">' + credentialCount + '</span>' +
+      '<span class="fides-eco-wallet-label">' + (credentialCount === 1 ? 'Credential type' : 'Credential types') + '</span></div>' +
+      credentialHint + '</div></div>' +
+      '<div class="fides-eco-arrow fides-eco-arrow-right">' + icons.chevronDown + '</div>' +
+      buildRpEcosystemEntityCardHtml(rp.name || '', providerName, modalLogoUrl, icons.globeApp) +
+      '</div>' +
+      '<div class="fides-eco-wallet-connector">' + icons.chevronDown + '</div>' +
+      '<div class="fides-eco-wallet-row"><div class="fides-eco-wallet-box"><span class="fides-eco-wallet-count">—</span><span class="fides-eco-wallet-label">Business Wallets</span></div></div>' +
+      '</div></div></div>';
+  }
+
+  function getDerivedUseCases(options) {
+    const list = options && Array.isArray(options.derivedUseCases) ? options.derivedUseCases : [];
+    return list.filter(function(u) { return u && (u.id || u.title || u.name); });
+  }
+
+  /**
+   * Horizontal use-case cards for catalog modals (wallet/RP/org/issuer/credential).
+   * Scroll + side arrows when there are more than two items (avoids a wrapped second row on narrow screens).
+   *
+   * @param {Array<{id?: string, title?: string, name?: string}>} useCases
+   * @param {string} useCaseCatalogUrl
+   * @param {{renderUseCaseLikeHtml?: function(string): string}|null} options
+   * @returns {string}
+   */
+  function buildUseCasesCardsHtml(useCases, useCaseCatalogUrl, options) {
+    const list = (Array.isArray(useCases) ? useCases : []).filter(function(u) {
+      return u && (u.id || u.title || u.name);
+    });
+    if (!list.length) return '';
+    const opts = options || {};
+    const base = String(useCaseCatalogUrl || '').replace(/\/$/, '');
+    const scroll = list.length > 2;
+    const wrapClass = scroll ? ' fides-modal-use-cases-wrap--scroll' : '';
+    const scrollClass = scroll ? ' fides-modal-use-cases--scroll' : '';
+    const likeRenderer = typeof opts.renderUseCaseLikeHtml === 'function'
+      ? opts.renderUseCaseLikeHtml
+      : function(id) {
+          const inner = renderModalEntityLikeHtml(opts, 'usecase', id);
+          return inner
+            ? '<span class="fides-modal-use-case-card__like">' + inner + '</span>'
+            : '';
+        };
+    const cardsHtml = list.map(function(uc) {
+      const id = uc.id ? String(uc.id) : '';
+      const title = escapeHtml(uc.title || uc.name || id || 'Use case');
+      const href = base && id ? base + '/?usecase=' + encodeURIComponent(id) : '';
+      const likeSlot = id ? likeRenderer(id) : '';
+      const sourceId = String(opts.matomoSourceId || '').trim();
+      const matomoName = id ? (sourceId ? sourceId + '|' + id : id) : '';
+      const matomoAttrs = matomoName
+        ? ' data-matomo-name="' + escapeHtml(matomoName) + '" data-matomo-action="Use Case Click"'
+        : '';
+      const body =
+        '<span class="fides-modal-use-case-card__top">' +
+        '<span class="fides-modal-use-case-card__eyebrow">Use case</span>' +
+        likeSlot +
+        '</span>' +
+        '<strong class="fides-modal-use-case-card__title">' + title + '</strong>' +
+        '<span class="fides-modal-use-case-card__link">View use case <span aria-hidden="true">→</span></span>';
+      if (href) {
+        return '<a class="fides-modal-use-case-card" href="' + escapeHtml(href) + '"' + matomoAttrs +
+          ' onclick="event.stopPropagation();">' + body + '</a>';
+      }
+      return '<div class="fides-modal-use-case-card fides-modal-use-case-card--static">' + body + '</div>';
+    }).join('');
+    const navPrev = scroll
+      ? '<button type="button" class="fides-modal-use-cases-nav-btn fides-modal-use-cases-nav-btn--prev" data-modal-uc-scroll="prev" aria-label="Previous use cases" disabled>' +
+        icons.chevronLeft + '</button>'
+      : '';
+    const navNext = scroll
+      ? '<button type="button" class="fides-modal-use-cases-nav-btn fides-modal-use-cases-nav-btn--next" data-modal-uc-scroll="next" aria-label="Next use cases">' +
+        icons.chevronRight + '</button>'
+      : '';
+    return '<div class="fides-modal-use-cases-wrap' + wrapClass + '">' +
+      navPrev +
+      '<div class="fides-modal-use-cases' + scrollClass + '" aria-label="Use cases">' + cardsHtml + '</div>' +
+      navNext +
+      '</div>';
+  }
+
+  function updateModalUseCasesNav(wrap) {
+    if (!wrap) return;
+    const scroller = wrap.querySelector('.fides-modal-use-cases--scroll');
+    if (!scroller) return;
+    const prevBtn = wrap.querySelector('[data-modal-uc-scroll="prev"]');
+    const nextBtn = wrap.querySelector('[data-modal-uc-scroll="next"]');
+    const maxScroll = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+    const left = scroller.scrollLeft;
+    const atStart = left <= 4;
+    const atEnd = left >= maxScroll - 4;
+    if (prevBtn) prevBtn.disabled = atStart;
+    if (nextBtn) nextBtn.disabled = atEnd;
+    wrap.classList.toggle('is-at-start', atStart);
+    wrap.classList.toggle('is-at-end', atEnd);
+  }
+
+  function bindModalUseCasesScroll(root) {
+    const scope = root && root.querySelectorAll ? root : document;
+    scope.querySelectorAll('.fides-modal-use-cases-wrap--scroll').forEach(function(wrap) {
+      if (wrap.getAttribute('data-fides-uc-scroll-bound') === '1') {
+        updateModalUseCasesNav(wrap);
+        return;
+      }
+      const scroller = wrap.querySelector('.fides-modal-use-cases--scroll');
+      if (!scroller) return;
+      wrap.setAttribute('data-fides-uc-scroll-bound', '1');
+      const prevBtn = wrap.querySelector('[data-modal-uc-scroll="prev"]');
+      const nextBtn = wrap.querySelector('[data-modal-uc-scroll="next"]');
+
+      function updateNavState() {
+        updateModalUseCasesNav(wrap);
+      }
+
+      function scrollByPage(direction) {
+        const amount = Math.max(scroller.clientWidth * 0.72, 180);
+        scroller.scrollBy({ left: direction * amount, behavior: 'smooth' });
+      }
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', function(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          scrollByPage(-1);
+        });
+      }
+      if (nextBtn) {
+        nextBtn.addEventListener('click', function(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          scrollByPage(1);
+        });
+      }
+      scroller.addEventListener('scroll', updateNavState, { passive: true });
+      updateNavState();
+    });
+  }
+
+  function buildUseCasesAccordionBody(useCaseCatalogUrl, options, emptyMessage, tableConfig) {
+    const useCases = getDerivedUseCases(options);
+    if (!useCases.length) return '';
+    // tableConfig retained for call-site compatibility; cards omit organization columns.
+    void tableConfig;
+    void emptyMessage;
+    return buildUseCasesCardsHtml(useCases, useCaseCatalogUrl, options);
+  }
+
+  function buildRpUseCasesAccordionBody(useCaseCatalogUrl, options) {
+    return buildUseCasesAccordionBody(
+      useCaseCatalogUrl,
+      options,
+      'No use cases linked from the use case catalog for this relying party.',
+      { showOrganizationColumn: false, showHeader: false }
+    );
+  }
+
+  function rpUseCasesCount(options) {
+    return getDerivedUseCases(options).length;
+  }
+
+  function buildRpFeaturesAccordionBody(rp) {
+    if (!rp || !Array.isArray(rp.features) || !rp.features.length) return '';
+    return '<ul class="fides-features-list">' + rp.features.map(function(f) {
+      return '<li>' + icons.check + ' ' + escapeHtml(f) + '</li>';
+    }).join('') + '</ul>';
+  }
+
+  function rpFeaturesCount(rp) {
+    return rp && Array.isArray(rp.features) ? rp.features.length : 0;
+  }
+
+  function buildRpAccordionsHtml(rp, options) {
+    if (!rp) return '';
+    const credentialCatalogUrl = (options && options.credentialCatalogUrl) || 'https://fides.community/ecosystem-explorer/credential-catalog/';
+    const issuerCatalogUrl = (options && options.issuerCatalogUrl) || 'https://fides.community/ecosystem-explorer/issuer-catalog/';
+    const walletCatalogUrl = (options && options.walletCatalogUrl) || '';
+    const useCaseCatalogUrl = (options && options.useCaseCatalogUrl) || 'https://fides.community/ecosystem-explorer/use-cases/';
+    const useCaseOptions = Object.assign({}, options || {}, {
+      matomoSourceId: rp && rp.id ? rp.id : (options && options.matomoSourceId) || ''
+    });
+    const issuers = (options && Array.isArray(options.ecosystemIssuers)) ? options.ecosystemIssuers : [];
+    const specificationsBody = buildRpSpecificationsBodyHtml(rp, options);
+    const websiteDetailsBody = buildRpWebsiteDetailsBodyHtml(rp);
+    const issuersBody = buildRpIssuersAccordionBody(issuers, issuerCatalogUrl, options);
+    const acceptedBody = buildRpAcceptedCredentialsAccordionBody(rp, credentialCatalogUrl, options);
+    const walletsBody = buildRpSupportedWalletsAccordionBody(rp, walletCatalogUrl, options);
+    const useCasesBody = buildRpUseCasesAccordionBody(useCaseCatalogUrl, useCaseOptions);
+    const featuresBody = buildRpFeaturesAccordionBody(rp);
+
+    const issuerExploreHref = buildCatalogFilteredHref(
+      issuerCatalogUrl,
+      'issuer',
+      'issuers',
+      issuers.map(function(i) { return i.id; })
+    );
+    const credentialIds = getAcceptedCredentialRows(rp, options)
+      .map(function(row) { return row.credentialId; })
+      .filter(Boolean);
+    const credentialExploreHref = buildCatalogFilteredHref(
+      credentialCatalogUrl,
+      'credential',
+      'credentials',
+      credentialIds
+    );
+    const walletExploreHref = buildCatalogFilteredHref(
+      walletCatalogUrl,
+      'wallet',
+      'wallets',
+      rpSupportedWalletCatalogIds(rp)
+    );
+
+    const ecosystemHtml = buildRpEcosystemModelHtml(rp, options);
+    const accordions = [
+      renderModalAccordion(
+        'fides-accordion-rp-use-cases',
+        'Use cases',
+        icons.useCases,
+        useCasesBody,
+        false,
+        rpUseCasesCount(useCaseOptions)
+      ),
+      renderModalAccordion(
+        'fides-accordion-rp-specifications',
+        'Specifications',
+        icons.fileCheck,
+        specificationsBody,
+        false
+      ),
+      ecosystemHtml,
+      issuers.length ? renderModalAccordion(
+        'fides-accordion-rp-issuers',
+        'Issuers',
+        icons.server,
+        issuersBody,
+        false,
+        issuers.length,
+        issuerExploreHref
+      ) : '',
+      renderModalAccordion(
+        'fides-accordion-rp-accepted-credentials',
+        'Accepted credential types',
+        icons.fileCheck,
+        acceptedBody,
+        false,
+        rpAcceptedCredentialsCount(rp, options),
+        credentialExploreHref
+      ),
+      renderModalAccordion(
+        'fides-accordion-rp-supported-wallets',
+        'Supported wallets',
+        icons.wallet,
+        walletsBody,
+        false,
+        rpSupportedWalletsCount(rp),
+        walletExploreHref
+      ),
+      renderModalAccordion(
+        'fides-accordion-rp-features',
+        'Features',
+        icons.check,
+        featuresBody,
+        false,
+        rpFeaturesCount(rp)
+      ),
+      renderModalAccordion(
+        'fides-accordion-rp-website-details',
+        'Relying party website details',
+        icons.shield,
+        websiteDetailsBody,
+        true
+      ),
+    ].filter(Boolean).join('');
+
+    if (!accordions) return '';
+    return '<div class="fides-use-case-modal-accordions">' + accordions + '</div>';
+  }
+
+  function buildRpModalLinksHtml(rp) {
+    // RP external links live in buildRpActionBarHtml (Links row); keep stub for API stability.
+    return '';
+  }
+
+  function buildRpModalFooterHtml(rp, options) {
+    if (!walletListingTierIsPro(rp, options)) return '';
+    const provider = rp && rp.provider && typeof rp.provider === 'object' ? rp.provider : {};
+    const contact = provider.contact && typeof provider.contact === 'object' ? provider.contact : {};
+    return buildOrganizationContactFooterHtml(contact, { tierUiEnabled: optionsTierUiEnabled(options) });
+  }
+
+  function buildWalletPricingBodyHtml(wallet, options) {
+    if (!walletListingTierIsPro(wallet, options)) return '';
+    if (walletIsPersonal(wallet)) return '';
+    const text = wallet.pricing ? String(wallet.pricing).trim() : '';
+    if (!text) {
+      return '<p class="fides-accordion-body-text fides-accordion-body-text--muted">No pricing information provided.</p>';
+    }
+    return '<p class="fides-accordion-body-text">' + escapeHtml(text) + '</p>';
+  }
+
+  function renderWalletRecognitionListItemHtml(item, wallet) {
+    const title = escapeHtml(String(item.title || '').trim());
+    const url = item.url ? String(item.url).trim() : '';
+    if (!title) return '';
+    if (url) {
+      const salesAttrs = walletSalesTrackAttrString(wallet, 'documentation');
+      return '<li class="fides-recognition-item">' +
+        '<span class="fides-recognition-item-title">' + title + '</span>' +
+        '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener" class="fides-modal-link-inline fides-recognition-item-link' +
+        (salesAttrs ? ' matomo_ignore piwik_ignore' : '') + '"' + salesAttrs + '>' +
+        'Learn more ' + icons.externalLinkSmall + '</a></li>';
+    }
+    return '<li class="fides-recognition-item"><span class="fides-recognition-item-title">' + title + '</span></li>';
+  }
+
+  function buildWalletRecognitionsBodyHtml(wallet, options) {
+    if (!walletListingTierIsPro(wallet, options)) return '';
+    const sections = [
+      { key: 'customerStories', title: 'Customer stories' },
+      { key: 'awardsAndRecognitions', title: 'Awards & recognitions' },
+    ];
+    let html = '';
+    sections.forEach(function(section) {
+      const items = walletRecognitionItems(wallet, section.key);
+      if (!items.length) return;
+      html += '<div class="fides-recognitions-section" data-section="' + escapeHtml(section.key) + '">' +
+        '<div class="fides-recognitions-section-title">' + escapeHtml(section.title) + '</div>' +
+        '<ul class="fides-recognitions-list">' +
+        items.map(function(item) { return renderWalletRecognitionListItemHtml(item, wallet); }).filter(Boolean).join('') +
+        '</ul></div>';
+    });
+    return html;
+  }
+
+  function buildWalletCertificationsBodyHtml(wallet, options) {
+    if (!walletListingTierIsPro(wallet, options)) return '';
+    const items = walletRecognitionItems(wallet, 'certifications');
+    if (!items.length) return '';
+    return '<ul class="fides-recognitions-list">' +
+      items.map(function(item) { return renderWalletRecognitionListItemHtml(item, wallet); }).filter(Boolean).join('') +
+      '</ul>';
+  }
+
+  function buildWalletFeaturesBodyHtml(wallet, options) {
+    if (!walletListingTierIsPro(wallet, options)) return '';
+    if (!wallet.features || !wallet.features.length) return '';
+    return '<ul class="fides-features-list">' + wallet.features.map(function(f) {
+      return '<li>' + icons.check + ' ' + escapeHtml(f) + '</li>';
+    }).join('') + '</ul>';
+  }
+
+  function walletFeaturesCount(wallet, options) {
+    if (!walletListingTierIsPro(wallet, options)) return 0;
+    return wallet.features && wallet.features.length ? wallet.features.length : 0;
+  }
+
+  function walletRecognitionsCount(wallet, options) {
+    if (!walletListingTierIsPro(wallet, options)) return 0;
+    return ['customerStories', 'awardsAndRecognitions'].reduce(function(sum, key) {
+      return sum + walletRecognitionItems(wallet, key).length;
+    }, 0);
+  }
+
+  function walletCertificationsCount(wallet, options) {
+    if (!walletListingTierIsPro(wallet, options)) return 0;
+    return walletRecognitionItems(wallet, 'certifications').length;
+  }
+
+  function renderTechnicalKvRow(label, valueHtml) {
+    if (!valueHtml) return '';
+    return '<div class="fides-kv-row">' +
+      '<span class="fides-kv-key">' + escapeHtml(label) + '</span>' +
+      '<span class="fides-kv-val">' + valueHtml + '</span>' +
+      '</div>';
+  }
+
+  function renderTechnicalKvRowText(label, values, labelFn, vocabulary, vocabGroupKey) {
+    if (!values || !values.length) return '';
+    const items = values.map(function(v) {
+      const display = String(labelFn ? labelFn(v) : v);
+      const match = vocabulary && vocabGroupKey ? walletVocabEntry(vocabulary, vocabGroupKey, v) : null;
+      if (match) {
+        return '<button type="button" class="fides-kv-glossary-link" data-vocab-key="' +
+          escapeHtml(match.key) + '" aria-label="Definition: ' + escapeHtml(display) + '">' +
+          escapeHtml(display) + '</button>';
+      }
+      return escapeHtml(display);
+    });
+    const valueHtml = items.map(function(item, index) {
+      const comma = index < items.length - 1 ? ',' : '';
+      return '<span class="fides-kv-val-item">' + item + comma + '</span>';
+    }).join('');
+    return renderTechnicalKvRow(label, valueHtml);
+  }
+
+  function renderPlatformKvValue(wallet, platformLabelsOnly) {
+    if (!wallet.platforms || !wallet.platforms.length) return '';
+    return wallet.platforms.map(function(p) {
+      const link = platformLabelsOnly ? null : getAppStoreLink(wallet, p);
+      if (link) {
+        const salesAttrs = walletSalesTrackAttrString(wallet, platformSalesLinkType(p));
+        return '<a href="' + escapeHtml(link) + '" target="_blank" rel="noopener" class="fides-modal-link-inline' +
+          (salesAttrs ? ' matomo_ignore piwik_ignore' : '') + '"' + salesAttrs + '>' +
+          escapeHtml(p) + ' ' + icons.externalLinkSmall + '</a>';
+      }
+      return escapeHtml(p);
+    }).join(', ');
+  }
+
+  function buildTechnicalKvSection(title, sectionKey, rows) {
+    const body = rows.filter(Boolean).join('');
+    if (!body) return '';
+    const keyAttr = sectionKey ? ' data-section="' + escapeHtml(sectionKey) + '"' : '';
+    return '<div class="fides-kv-section"' + keyAttr + '>' +
+      '<div class="fides-kv-section-title">' + escapeHtml(title) + '</div>' +
+      '<div class="fides-details-kv fides-details-kv--technical-grid">' + body + '</div>' +
+      '</div>';
+  }
+
+  function buildWalletTechnicalKvHtml(wallet, platformLabelsOnly, standardsList, vocabulary) {
+    const issuanceProtocols = wallet.issuanceProtocols || (wallet.protocols && wallet.protocols.issuance) || [];
+    const presentationProtocols = wallet.presentationProtocols || (wallet.protocols && wallet.protocols.presentation) || [];
+    const identifiers = (wallet.supportedIdentifiers || wallet.didMethods) || [];
+
+    const credentialsAndProtocols = buildTechnicalKvSection('Formats & protocols', 'compatibility', [
+      renderTechnicalKvRowText('VC formats', sortCredentialFormats(wallet.vcFormat || []), credentialFormatDisplayLabel, vocabulary, 'vcFormat'),
+      renderTechnicalKvRowText('Issuance protocols', issuanceProtocols, null, vocabulary, 'issuanceProtocol'),
+      renderTechnicalKvRowText('Presentation protocols', presentationProtocols, null, vocabulary, 'presentationProtocol'),
+      renderTechnicalKvRowText('Interop profiles', wallet.interoperabilityProfiles || [], null, vocabulary, 'interopProfile'),
+    ]);
+
+    const cryptography = buildTechnicalKvSection('Keys & identifiers', 'cryptography', [
+      renderTechnicalKvRowText('Identifiers', identifiers, null, vocabulary, 'identifiers'),
+      renderTechnicalKvRowText('Key storage', wallet.keyStorage || [], null, vocabulary, 'keyStorage'),
+      renderTechnicalKvRowText('Signing algorithms', wallet.signingAlgorithms || [], null, vocabulary, 'signingAlgorithm'),
+      renderTechnicalKvRowText('Credential status', wallet.credentialStatusMethods || [], null, vocabulary, 'credentialStatus'),
+    ]);
+
+    const deploymentChecks = renderWalletDeploymentChecksHtml(wallet);
+    const operations = buildTechnicalKvSection('Product & deployment', 'operations', [
+      deploymentChecks ? renderTechnicalKvRow('Deployment', deploymentChecks) : '',
+      renderTechnicalKvRow('Status', escapeHtml(walletStatusDisplay(wallet))),
+      renderTechnicalKvRow('License', escapeHtml(walletLicenseKvDisplay(wallet))),
+      renderTechnicalKvRowText('Standards', standardsList, null),
+      wallet.slaAvailable ? renderTechnicalKvRow('SLA', 'Available') : '',
+    ]);
+
+    const keyCapabilities = buildWalletKeyCapabilitiesKvSection(wallet);
+    const eidasTrustServices = buildWalletEidasTrustServicesKvSection(wallet, vocabulary);
+    return [keyCapabilities, operations, credentialsAndProtocols, cryptography, eidasTrustServices].filter(Boolean).join('');
+  }
+
+  function buildCatalogFilteredHref(base, singularParam, pluralParam, ids) {
+    const list = (Array.isArray(ids) ? ids : []).map(String).filter(Boolean);
+    const root = (base || '').trim().replace(/\/$/, '');
+    if (!root || !list.length) return '';
+    if (list.length === 1) {
+      return root + '/?' + singularParam + '=' + encodeURIComponent(list[0]);
+    }
+    return root + '/?' + pluralParam + '=' + list.map(encodeURIComponent).join(',');
+  }
+
+  function getEntityRatingSummary(options, type, itemId) {
+    const maps = options && options.entityRatingSummaries;
+    if (!maps || !type || !itemId) return null;
+    const map = maps[type];
+    return map && map[itemId] ? map[itemId] : null;
+  }
+
+  function renderModalEntityLikeHtml(options, type, itemId) {
+    const summary = getEntityRatingSummary(options, type, itemId);
+    const count = summary ? (Number(summary.count) || 0) : 0;
+    if (count < 1) return '';
+    const likedClass = summary && summary.myRating === 1 ? ' is-liked' : '';
+    return '<span class="fides-modal-entity-like' + likedClass + '">' +
+      '<span class="fides-modal-entity-like-star">★</span>' +
+      '<span class="fides-modal-entity-like-count">' + escapeHtml(String(count)) + '</span></span>';
+  }
+
+  function buildModalEntityTableHtml(config) {
+    const cfg = config || {};
+    const rows = Array.isArray(cfg.rows) ? cfg.rows : [];
+    if (!rows.length) return cfg.emptyHtml || '<p class="fides-modal-empty">No items found.</p>';
+    const showOrgCol = cfg.alwaysShowOrganizationColumn === true ||
+      (cfg.showOrganizationColumn !== false && rows.some(function(r) { return r.organization; }));
+    const showHeader = cfg.showHeader !== false;
+    const nameLabel = cfg.nameColumnLabel || 'Name';
+    const orgLabel = cfg.organizationColumnLabel || 'Organization';
+    const ariaLabel = cfg.ariaLabel || nameLabel;
+    const options = cfg.options || {};
+    const thead = !showHeader
+      ? ''
+      : (showOrgCol
+        ? '<thead><tr><th>' + escapeHtml(nameLabel) + '</th>' +
+          '<th class="fides-modal-entity-col-likes" title="Likes"><span aria-label="Likes">★</span></th>' +
+          '<th>' + escapeHtml(orgLabel) + '</th></tr></thead>'
+        : '<thead><tr><th>' + escapeHtml(nameLabel) + '</th>' +
+          '<th class="fides-modal-entity-col-likes" title="Likes"><span aria-label="Likes">★</span></th></tr></thead>');
+    const tbody = rows.map(function(row) {
+      const label = escapeHtml(row.name || row.id || '');
+      const likeInner = row.ratingType && row.id
+        ? renderModalEntityLikeHtml(options, row.ratingType, row.id)
+        : '';
+      const likeCell = row.ratingType && row.id
+        ? '<td class="fides-modal-entity-col-likes" data-entity-like-type="' + escapeHtml(row.ratingType) + '" data-entity-like-id="' + escapeHtml(row.id) + '">' + likeInner + '</td>'
+        : '<td class="fides-modal-entity-col-likes"></td>';
+      const orgCell = showOrgCol
+        ? '<td>' + (row.organization ? escapeHtml(row.organization) : '—') + '</td>'
+        : '';
+      const nameCell = row.href
+        ? (cfg.sameWindowLinks
+          ? '<a href="' + escapeHtml(row.href) + '" class="fides-modal-link-inline" onclick="event.stopPropagation();">' + label + '</a>'
+          : '<a href="' + escapeHtml(row.href) + '" class="fides-modal-link-inline" target="_blank" rel="noopener" onclick="event.stopPropagation();">' + label + '</a>')
+        : '<span>' + label + '</span>';
+      return '<tr><td>' + nameCell + '</td>' + likeCell + orgCell + '</tr>';
+    }).join('');
+    const tableClass = 'fides-attributes-table fides-modal-rp-table fides-modal-entity-table' +
+      (showOrgCol ? '' : ' fides-modal-entity-table--name-likes');
+    return '<div class="fides-attributes-table-wrap"><table class="' + tableClass + '" aria-label="' +
+      escapeHtml(ariaLabel) + '">' + thead + '<tbody>' + tbody + '</tbody></table></div>';
+  }
+
+  function renderModalAccordion(id, title, iconSvg, bodyHtml, isOpen, count, exploreLinkHref) {
+    if (!bodyHtml) return '';
+    const expanded = isOpen ? 'true' : 'false';
+    const openClass = isOpen ? ' is-open' : '';
+    const toggleLabel = 'Toggle ' + title + ' section';
+    const countNum = typeof count === 'number' && count > 0 ? count : 0;
+    const countHtml = countNum > 0 ? ' <span class="fides-accordion-count">' + countNum + '</span>' : '';
+    const exploreHtml = exploreLinkHref
+      ? '<a href="' + escapeHtml(exploreLinkHref) + '" class="fides-accordion-explore-link" target="_blank" rel="noopener" onclick="event.stopPropagation();" aria-label="' + escapeHtml(title) + ' catalog (filtered view)">Open in catalog</a>'
+      : '';
+    return '<div class="fides-accordion' + openClass + '" id="' + escapeHtml(id) + '">' +
+      '<div class="fides-accordion-header-bar">' +
+      '<button class="fides-accordion-header fides-accordion-toggle" type="button" aria-expanded="' + expanded + '">' +
+      '<span class="fides-accordion-title">' + iconSvg + ' ' + escapeHtml(title) + countHtml + '</span>' +
+      '</button>' +
+      exploreHtml +
+      '<button type="button" class="fides-accordion-chevron-btn fides-accordion-toggle" aria-expanded="' + expanded + '" aria-label="' + escapeHtml(toggleLabel) + '">' +
+      '<span class="fides-accordion-chevron">' + icons.chevronDown + '</span>' +
+      '</button>' +
+      '</div>' +
+      '<div class="fides-accordion-body">' + bodyHtml + '</div>' +
+      '</div>';
+  }
+
+  function eudiTrackerStatusBadgeClass(status) {
+    const map = {
+      'Production (EU Notified)': 'fides-eudi-landscape-badge--prod-notified',
+      'Production (EU Notification Pending)': 'fides-eudi-landscape-badge--prod-pending',
+      'Public Pilot': 'fides-eudi-landscape-badge--public-pilot',
+      'Closed Pilot / LSP': 'fides-eudi-landscape-badge--closed-pilot',
+      'Planned for Production': 'fides-eudi-landscape-badge--planned',
+      'No plans': 'fides-eudi-landscape-badge--no-plans',
+    };
+    return map[status] || 'fides-eudi-landscape-badge--unknown';
+  }
+
+  function isHttpUrl(value) {
+    return typeof value === 'string' && /^https?:\/\//i.test(value.trim());
+  }
+
+  function listingNewsAllowed(item) {
+    return !(item && item.listingNewsEnabled === false);
+  }
+
+  function listingNewsWalletIds(entry) {
+    if (!entry || !Array.isArray(entry.walletIds)) return [];
+    return entry.walletIds.map(function(id) {
+      return String(id || '').trim();
+    }).filter(Boolean);
+  }
+
+  function newsItemAppliesToWallet(entry, walletId) {
+    const id = String(walletId || '').trim();
+    if (!id) return false;
+    return listingNewsWalletIds(entry).indexOf(id) !== -1;
+  }
+
+  function listingNewsItems(item, options) {
+    if (!listingNewsAllowed(item)) return [];
+    const news = item && item.news && typeof item.news === 'object' ? item.news : null;
+    const raw = news && Array.isArray(news.items) ? news.items : [];
+    const walletScope = options && options.entityType === 'wallet';
+    const walletId = walletScope
+      ? String((options && options.walletId) || (item && item.id) || '').trim()
+      : '';
+    return raw.filter(function(entry) {
+      if (!(entry && String(entry.title || '').trim() && isHttpUrl(entry.url))) return false;
+      if (walletScope) return newsItemAppliesToWallet(entry, walletId);
+      return true;
+    }).slice(0, 5);
+  }
+
+  function formatListingNewsDate(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return String(value).trim();
+    }
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function listingNewsSourceKindLabel(kind) {
+    if (kind === 'github_release') return 'GitHub release';
+    if (kind === 'press') return 'Press';
+    return '';
+  }
+
+  function attachListingNews(items, payload, getOrgId, options) {
+    const byOrg = payload && payload.organizations && typeof payload.organizations === 'object'
+      ? payload.organizations
+      : {};
+    const fetchedAt = payload && payload.generatedAt ? String(payload.generatedAt) : '';
+    const walletScope = options && options.scope === 'wallet';
+    (Array.isArray(items) ? items : []).forEach(function(item) {
+      if (!item || typeof item !== 'object') return;
+      if (!listingNewsAllowed(item)) return;
+      const orgId = typeof getOrgId === 'function'
+        ? getOrgId(item)
+        : (item.orgId || item.id);
+      const entry = orgId && byOrg[orgId] ? byOrg[orgId] : null;
+      const newsItems = entry && Array.isArray(entry.items) ? entry.items.filter(function(row) {
+        if (!(row && String(row.title || '').trim() && isHttpUrl(row.url))) return false;
+        if (walletScope) return newsItemAppliesToWallet(row, item.id);
+        return true;
+      }).slice(0, 5) : [];
+      if (!newsItems.length) return;
+      item.news = {
+        fetchedAt: fetchedAt || entry.fetchedAt || '',
+        items: newsItems
+      };
+    });
+  }
+
+  function buildListingNewsCardsHtml(newsItems, options) {
+    const list = (Array.isArray(newsItems) ? newsItems : []).filter(function(entry) {
+      return entry && String(entry.title || '').trim() && isHttpUrl(entry.url);
+    });
+    if (!list.length) return '';
+    const opts = options || {};
+    const entityType = opts.entityType === 'wallet' ? 'wallet' : 'organization';
+    const salesItem = opts.salesItem;
+    const salesAttrs = entityType === 'wallet'
+      ? walletSalesTrackAttrString(salesItem, 'website', opts)
+      : organizationSalesTrackAttrString(salesItem, 'website', opts);
+    const salesClass = salesAttrs ? ' matomo_ignore piwik_ignore' : '';
+    const scroll = list.length > 2;
+    const wrapClass = scroll ? ' fides-modal-use-cases-wrap--scroll' : '';
+    const scrollClass = scroll ? ' fides-modal-use-cases--scroll' : '';
+    const cardsHtml = list.map(function(entry) {
+      const title = String(entry.title || '').trim();
+      const url = String(entry.url || '').trim();
+      const dateLabel = formatListingNewsDate(entry.publishedAt);
+      const sourceLabel = String(entry.sourceLabel || '').trim();
+      const kindLabel = listingNewsSourceKindLabel(entry.sourceKind);
+      const eyebrow = [dateLabel, sourceLabel || kindLabel].filter(Boolean).join(' · ') || 'News';
+      const body =
+        '<span class="fides-modal-use-case-card__top">' +
+        '<span class="fides-modal-use-case-card__eyebrow">' + escapeHtml(eyebrow) + '</span>' +
+        '</span>' +
+        '<strong class="fides-modal-use-case-card__title">' + escapeHtml(title) + '</strong>' +
+        '<span class="fides-modal-use-case-card__link">Read article <span aria-hidden="true">→</span></span>';
+      return '<a class="fides-modal-use-case-card' + salesClass + '" href="' + escapeHtml(url) +
+        '" target="_blank" rel="noopener noreferrer"' + salesAttrs +
+        ' onclick="event.stopPropagation();">' + body + '</a>';
+    }).join('');
+    const navPrev = scroll
+      ? '<button type="button" class="fides-modal-use-cases-nav-btn fides-modal-use-cases-nav-btn--prev" data-modal-uc-scroll="prev" aria-label="Previous news" disabled>' +
+        icons.chevronLeft + '</button>'
+      : '';
+    const navNext = scroll
+      ? '<button type="button" class="fides-modal-use-cases-nav-btn fides-modal-use-cases-nav-btn--next" data-modal-uc-scroll="next" aria-label="Next news">' +
+        icons.chevronRight + '</button>'
+      : '';
+    return '<div class="fides-modal-use-cases-wrap' + wrapClass + '">' +
+      navPrev +
+      '<div class="fides-modal-use-cases' + scrollClass + '" aria-label="Latest news">' + cardsHtml + '</div>' +
+      navNext +
+      '</div>';
+  }
+
+  function buildListingNewsAccordionHtml(item, options) {
+    const newsItems = listingNewsItems(item, options);
+    if (!newsItems.length) return '';
+    const entityType = options && options.entityType === 'wallet' ? 'wallet' : 'organization';
+    const accordionId = (options && options.accordionId) || (
+      entityType === 'wallet' ? 'fides-accordion-wallet-news' : 'fides-accordion-org-news'
+    );
+    const body = buildListingNewsCardsHtml(newsItems, Object.assign({}, options || {}, {
+      entityType: entityType,
+      salesItem: (options && options.salesItem) || item
+    }));
+    if (!body) return '';
+    return renderModalAccordion(
+      accordionId,
+      'Latest news',
+      icons.newspaper,
+      body,
+      true,
+      newsItems.length
+    );
+  }
+
+  function buildWalletEudiLandscapeBadgeHtml(wallet) {
+    const tracker = wallet && wallet.eudiTracker;
+    if (!tracker || !tracker.status) return '';
+    return '<span class="fides-modal-badge fides-eudi-landscape-badge ' +
+      escapeHtml(eudiTrackerStatusBadgeClass(tracker.status)) + '" role="status">' +
+      escapeHtml(tracker.status) + '</span>';
+  }
+
+  function formatEudiAssuranceLevelDisplay(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  }
+
+  function buildWalletEudiLandscapeBodyHtml(wallet) {
+    const tracker = wallet && wallet.eudiTracker;
+    if (!tracker) return '';
+
+    const rows = [];
+    if (tracker.status) {
+      rows.push(renderTechnicalKvRow('Landscape status', buildWalletEudiLandscapeBadgeHtml(wallet)));
+    }
+    if (tracker.assuranceLevel) {
+      rows.push(renderTechnicalKvRow('Assurance level', escapeHtml(formatEudiAssuranceLevelDisplay(tracker.assuranceLevel))));
+    }
+    if (tracker.qtspPartner) {
+      rows.push(renderTechnicalKvRow('QTSP partner', escapeHtml(String(tracker.qtspPartner))));
+    }
+
+    let body = '<div class="fides-wallet-eudi-landscape">' +
+      '<div class="fides-details-kv fides-details-kv--technical-grid">' + rows.filter(Boolean).join('') + '</div>';
+
+    if (tracker.notes) {
+      body += '<div class="fides-wallet-eudi-landscape-section">' +
+        '<div class="fides-wallet-eudi-landscape-label">Landscape notes</div>' +
+        '<p class="fides-accordion-body-text fides-wallet-eudi-landscape-notes">' + escapeHtml(String(tracker.notes)) + '</p>' +
+        '</div>';
+    }
+
+    const updatedLabel = tracker.sourceLastUpdated ? ('Last updated ' + tracker.sourceLastUpdated + '. ') : '';
+    const trackerLink = tracker.trackerPageUrl || 'https://eudi-wallet-tracker.igrant.io/';
+    body += '<p class="fides-accordion-body-text fides-accordion-body-text--muted fides-wallet-eudi-landscape-attribution">' +
+      updatedLabel +
+      'Data from the <a href="' + escapeHtml(trackerLink) + '" target="_blank" rel="noopener noreferrer" class="fides-modal-link-inline">iGrant EUDI Wallet Tracker</a>.' +
+      '</p></div>';
+
+    return body;
+  }
+
+  function buildWalletAccordionsHtml(wallet, options, platformLabelsOnly, standardsList) {
+    const vocabulary = options && options.vocabulary;
+    const technicalKv = buildWalletTechnicalKvHtml(wallet, platformLabelsOnly, standardsList, vocabulary);
+    const recognitionsBody = buildWalletRecognitionsBodyHtml(wallet, options);
+    const additionalProductBody = buildWalletAdditionalProductInfoBodyHtml(wallet, options);
+    const certificationsBody = buildWalletCertificationsBodyHtml(wallet, options);
+    const pricingBody = buildWalletPricingBodyHtml(wallet, options);
+    const eudiLandscapeBody = buildWalletEudiLandscapeBodyHtml(wallet);
+    const useCaseCatalogUrl = (options && options.useCaseCatalogUrl) || 'https://fides.community/ecosystem-explorer/use-cases/';
+    const useCaseOptions = Object.assign({}, options || {}, {
+      matomoSourceId: wallet && wallet.id ? wallet.id : (options && options.matomoSourceId) || ''
+    });
+    const useCasesBody = buildUseCasesAccordionBody(
+      useCaseCatalogUrl,
+      useCaseOptions,
+      'No use cases linked from the use case catalog for this wallet.',
+      { showOrganizationColumn: false, showHeader: false }
+    );
+    const newsAccordionHtml = buildListingNewsAccordionHtml(wallet, {
+      entityType: 'wallet',
+      salesItem: wallet,
+      accordionId: 'fides-accordion-wallet-news'
+    });
+    const accordions = [
+      renderModalAccordion(
+        'fides-accordion-wallet-eudi-landscape',
+        'EUDI landscape status',
+        icons.globe,
+        eudiLandscapeBody,
+        false
+      ),
+      renderModalAccordion(
+        'fides-accordion-wallet-use-cases',
+        'Use cases',
+        icons.useCases,
+        useCasesBody,
+        true,
+        rpUseCasesCount(useCaseOptions)
+      ),
+      newsAccordionHtml,
+      renderModalAccordion(
+        'fides-accordion-wallet-technical',
+        'Specifications',
+        icons.fileCheck,
+        technicalKv ? '<div class="fides-wallet-technical-specs">' + technicalKv + '</div>' : '',
+        false
+      ),
+      renderModalAccordion(
+        'fides-accordion-wallet-features',
+        'Features',
+        icons.check,
+        buildWalletFeaturesBodyHtml(wallet, options),
+        false,
+        walletFeaturesCount(wallet, options)
+      ),
+      renderModalAccordion(
+        'fides-accordion-wallet-certifications',
+        'Certifications & Conformity',
+        icons.shield,
+        certificationsBody ? '<div class="fides-modal-recognitions fides-modal-recognitions--accordion">' + certificationsBody + '</div>' : '',
+        false,
+        walletCertificationsCount(wallet, options)
+      ),
+      renderModalAccordion(
+        'fides-accordion-wallet-recognitions',
+        'Recognitions',
+        icons.shield,
+        recognitionsBody ? '<div class="fides-modal-recognitions fides-modal-recognitions--accordion">' + recognitionsBody + '</div>' : '',
+        false,
+        walletRecognitionsCount(wallet, options)
+      ),
+      renderModalAccordion(
+        'fides-accordion-wallet-additional-product',
+        'Additional Product Information',
+        icons.book,
+        additionalProductBody,
+        false,
+        walletAdditionalProductInfoCount(wallet, options)
+      ),
+      renderModalAccordion(
+        'fides-accordion-wallet-pricing',
+        'Pricing',
+        icons.tag,
+        pricingBody,
+        false
+      ),
+    ].filter(Boolean).join('');
+    if (!accordions) return '';
+    return '<div class="fides-use-case-modal-accordions">' + accordions + '</div>';
+  }
+
+  function initModalAccordions() {
+    const overlay = document.getElementById('fides-modal-overlay');
+    if (!overlay || typeof overlay.querySelectorAll !== 'function') return;
+    overlay.querySelectorAll('.fides-accordion-toggle[type="button"]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        const accordion = btn.closest('.fides-accordion');
+        if (!accordion) return;
+        const isOpen = accordion.classList.toggle('is-open');
+        accordion.querySelectorAll('.fides-accordion-toggle[type="button"]').forEach(function(toggle) {
+          toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+        if (isOpen) {
+          requestAnimationFrame(function() {
+            bindModalUseCasesScroll(overlay);
+          });
+        }
+      });
+    });
+    bindModalUseCasesScroll(overlay);
+  }
+
+  function initModalEcosystemTargets() {
+    function openEcoTargetAccordion(accordionId) {
+      const acc = document.getElementById(accordionId);
+      if (!acc) return;
+      acc.classList.add('is-open');
+      acc.querySelectorAll('.fides-accordion-toggle[type="button"]').forEach(function(btn) {
+        btn.setAttribute('aria-expanded', 'true');
+      });
+      requestAnimationFrame(function() {
+        acc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    document.querySelectorAll('#fides-modal-overlay [data-fides-eco-target]').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        if (e.target.closest('a')) return;
+        const id = el.getAttribute('data-fides-eco-target');
+        if (id) openEcoTargetAccordion(id);
+      });
+    });
+  }
+
+  /**
+   * Matomo: track event (if _paq loaded, respects DoNotTrack and consent).
+   * Do not create window._paq here — a missing tracker means analytics is off.
+   */
+  function trackMatomoEvent(category, action, name, value) {
+    var isSalesCatalog = category === 'Wallet Catalog' || category === 'Organization Catalog' || category === 'Wallet Connector Catalog';
+    var legacySalesActions = ['Modal Open', 'Link Click', 'Click', 'Organisation Click'];
+    if (isSalesCatalog && legacySalesActions.indexOf(String(action || '')) !== -1) return;
+    if (isSalesCatalog && /\|legacy$/i.test(String(name || ''))) return;
+    if (typeof window._paq === 'undefined') return;
+    if (navigator.doNotTrack === '1' || navigator.doNotTrack === 'yes') return;
+    try {
+      if (typeof value === 'undefined') {
+        window._paq.push(['trackEvent', category, action, name]);
+      } else {
+        window._paq.push(['trackEvent', category, action, name, value]);
+      }
+    } catch (e) {
+      console.debug('Matomo tracking failed:', e);
+    }
+  }
+
+  /**
+   * Track one terminal catalog-load outcome and keep aria-busy in sync.
+   */
+  function createCatalogLoadTracker(options) {
+    options = options || {};
+    const getRoot = typeof options.root === 'function'
+      ? options.root
+      : function() { return options.root || null; };
+    const now = typeof options.now === 'function'
+      ? options.now
+      : function() { return performance.now(); };
+    const startedAt = options.startedAt == null ? 0 : Number(options.startedAt);
+    const category = options.category || 'Catalog';
+    const breakpoint = options.breakpoint || MOBILE_FILTER_BREAKPOINT;
+    let complete = false;
+
+    function setBusy(busy) {
+      const root = getRoot();
+      if (root && root.setAttribute) root.setAttribute('aria-busy', busy ? 'true' : 'false');
+    }
+
+    function finish(action) {
+      setBusy(false);
+      if (complete) return false;
+      complete = true;
+      const device = window.innerWidth < breakpoint ? 'mobile' : 'desktop';
+      const elapsed = Math.max(0, Math.round(now() - startedAt));
+      trackMatomoEvent(category, action, device, elapsed);
+      return true;
+    }
+
+    setBusy(true);
+    return {
+      ready: function() { return finish('Catalog Ready'); },
+      failed: function() { return finish('Catalog Load Failed'); },
+      setBusy: setBusy,
+      isComplete: function() { return complete; }
+    };
+  }
+
+  function salesTrackSafePart(value) {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\|/g, '-')
+      .replace(/\s+/g, '-');
+  }
+
+  var PROVIDER_OUTBOUND_LINK_TYPES = [
+    'website',
+    'product',
+    'documentation',
+    'contact',
+    'app_store',
+    'google_play',
+    'demo',
+    'code_repository'
+  ];
+
+  function normalizeProviderOutboundLinkType(linkType) {
+    var normalized = salesTrackSafePart(linkType);
+    if (normalized === 'web_app') normalized = 'product';
+    return PROVIDER_OUTBOUND_LINK_TYPES.indexOf(normalized) !== -1 ? normalized : '';
+  }
+
+  function salesTrackAttributionId(value) {
+    var raw = String(value || '').trim();
+    if (!raw || !/^[A-Za-z0-9][A-Za-z0-9._~-]*$/.test(raw)) return '';
+    return raw;
+  }
+
+  function salesTrackDestinationFromHref(href) {
+    var value = String(href || '').trim();
+    if (!value) return '';
+    if (/^mailto:/i.test(value)) return 'email';
+    if (value.charAt(0) === '#' || (value.charAt(0) === '/' && value.charAt(1) !== '/')) return '';
+    try {
+      var base = (window.location && window.location.href) ? window.location.href : 'https://fides.community/';
+      var url = new URL(value, base);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+      var pageUrl = new URL(base);
+      var destinationHost = url.hostname.toLowerCase();
+      var pageHost = pageUrl.hostname.toLowerCase();
+      var destinationSiteHost = destinationHost.replace(/^www\./, '');
+      var pageSiteHost = pageHost.replace(/^www\./, '');
+      if (url.origin === pageUrl.origin || destinationSiteHost === pageSiteHost) return '';
+      return destinationHost;
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function walletSalesProviderId(wallet) {
+    var raw = '';
+    if (wallet && wallet.orgId) raw = String(wallet.orgId);
+    else if (wallet && wallet.provider && wallet.provider.orgId) raw = String(wallet.provider.orgId);
+    return salesTrackSafePart(raw.replace(/^org:/i, ''));
+  }
+
+  function walletSalesWalletId(wallet) {
+    return salesTrackSafePart(wallet && wallet.id);
+  }
+
+  function walletAnalyticsAttrString(wallet) {
+    var providerId = walletSalesProviderId(wallet);
+    var entityId = walletSalesWalletId(wallet);
+    if (!providerId || !entityId) return '';
+    var providerName = wallet && wallet.provider && wallet.provider.name
+      ? String(wallet.provider.name).trim()
+      : String((wallet && wallet.providerName) || '').trim();
+    var entityName = String((wallet && wallet.name) || '').trim();
+    return ' data-provider-id="' + escapeHtml(providerId) + '"' +
+      ' data-provider-name="' + escapeHtml(providerName) + '"' +
+      ' data-entity-type="wallet"' +
+      ' data-entity-id="' + escapeHtml(entityId) + '"' +
+      ' data-entity-name="' + escapeHtml(entityName) + '"' +
+      ' data-wallet-id="' + escapeHtml(entityId) + '"' +
+      ' data-wallet-name="' + escapeHtml(entityName) + '"';
+  }
+
+  function walletSalesTrackAttrString(wallet, linkType, options) {
+    if (!wallet || !linkType) return '';
+    var analyticsAttrs = walletAnalyticsAttrString(wallet);
+    var normalizedLinkType = normalizeProviderOutboundLinkType(linkType);
+    if (!analyticsAttrs || !normalizedLinkType) return '';
+    return ' data-sales-track="wallet-link"' + analyticsAttrs +
+      ' data-link-type="' + escapeHtml(normalizedLinkType) + '"' +
+      ' data-matomo-ignore="1"';
+  }
+
+  function organizationSalesProviderId(org) {
+    var raw = '';
+    if (org && org.id) raw = String(org.id);
+    else if (org && org.orgId) raw = String(org.orgId);
+    return salesTrackSafePart(raw.replace(/^org:/i, ''));
+  }
+
+  function organizationAnalyticsAttrString(org) {
+    var providerId = organizationSalesProviderId(org);
+    if (!providerId) return '';
+    var providerName = String((org && (org.name || org.displayName)) || '').trim();
+    return ' data-provider-id="' + escapeHtml(providerId) + '"' +
+      ' data-provider-name="' + escapeHtml(providerName) + '"' +
+      ' data-entity-type="organization"' +
+      ' data-entity-id="' + escapeHtml(providerId) + '"' +
+      ' data-entity-name="' + escapeHtml(providerName) + '"';
+  }
+
+  function organizationSalesTrackAttrString(org, linkType, options) {
+    if (!org || !linkType) return '';
+    var analyticsAttrs = organizationAnalyticsAttrString(org);
+    var normalizedLinkType = normalizeProviderOutboundLinkType(linkType);
+    if (!analyticsAttrs || !normalizedLinkType) return '';
+    return ' data-sales-track="org-link"' + analyticsAttrs +
+      ' data-link-type="' + escapeHtml(normalizedLinkType) + '"' +
+      ' data-matomo-ignore="1"';
+  }
+
+  function trackWalletDetailOpen(wallet) {
+    if (!wallet) return;
+    var providerId = walletSalesProviderId(wallet);
+    var entityId = walletSalesWalletId(wallet);
+    if (!providerId || !entityId) return;
+    trackMatomoEvent(
+      'Wallet Catalog',
+      'Detail Open',
+      [providerId, 'wallet', entityId].join('|')
+    );
+  }
+
+  function trackOrganizationDetailOpen(org, options) {
+    if (!org) return;
+    var providerId = organizationSalesProviderId(org);
+    if (!providerId) return;
+    var eventNameParts = [providerId, 'organization', providerId];
+    var attribution = String((options && options.attributionFrom) || '').trim();
+    var attributionMatch = /^usecase:(.+)$/i.exec(attribution);
+    if (attributionMatch && attributionMatch[1]) {
+      var attributionId = salesTrackAttributionId(attributionMatch[1]);
+      if (attributionId) eventNameParts.push('from:usecase:' + attributionId);
+    }
+    ensureSalesLinkTracking();
+    trackMatomoEvent(
+      'Organization Catalog',
+      'Detail Open',
+      eventNameParts.join('|')
+    );
+  }
+
+  function trackWalletLinkClick(link) {
+    if (!link) return;
+    var href = (link.getAttribute && link.getAttribute('href')) || link.href || '';
+    var dataset = link.dataset || {};
+    var providerId = salesTrackSafePart(dataset.providerId);
+    var entityType = salesTrackSafePart(dataset.entityType) || 'wallet';
+    var entityId = salesTrackSafePart(dataset.entityId || dataset.walletId);
+    var linkType = normalizeProviderOutboundLinkType(dataset.linkType);
+    var destination = salesTrackDestinationFromHref(href);
+    if (!providerId || (entityType !== 'wallet' && entityType !== 'connector') || !entityId || !linkType || !destination) return;
+    var name = [
+      providerId,
+      entityType,
+      entityId,
+      linkType,
+      destination
+    ].join('|');
+    trackMatomoEvent(entityType === 'connector' ? 'Wallet Connector Catalog' : 'Wallet Catalog', 'Provider Outbound', name);
+  }
+
+  function trackOrganizationLinkClick(link) {
+    if (!link) return;
+    var href = (link.getAttribute && link.getAttribute('href')) || link.href || '';
+    var dataset = link.dataset || {};
+    var providerId = salesTrackSafePart(dataset.providerId);
+    var entityType = salesTrackSafePart(dataset.entityType) || 'organization';
+    var entityId = salesTrackSafePart(dataset.entityId) || providerId;
+    var linkType = normalizeProviderOutboundLinkType(dataset.linkType);
+    var destination = salesTrackDestinationFromHref(href);
+    if (!providerId || entityType !== 'organization' || entityId !== providerId || !linkType || !destination) return;
+    var name = [
+      providerId,
+      entityType,
+      entityId,
+      linkType,
+      destination
+    ].join('|');
+    trackMatomoEvent('Organization Catalog', 'Provider Outbound', name);
+  }
+
+  function salesTrackKind(el) {
+    return (el && el.getAttribute && el.getAttribute('data-sales-track')) || '';
+  }
+
+  function isSalesTrackLink(el) {
+    var kind = salesTrackKind(el);
+    return kind === 'wallet-link' || kind === 'org-link';
+  }
+
+  var salesLinkTrackingBound = false;
+  function ensureSalesLinkTracking() {
+    if (salesLinkTrackingBound) return;
+    if (typeof document === 'undefined' || typeof document.addEventListener !== 'function') return;
+    salesLinkTrackingBound = true;
+    // Capture phase: list-view store icons use stopPropagation so the row
+    // click does not open the modal; bubbling would miss those clicks.
+    document.addEventListener('click', function salesLinkClick(event) {
+      var target = event && event.target;
+      if (!target || typeof target.closest !== 'function') return;
+      var link = target.closest('[data-sales-track="wallet-link"], [data-sales-track="org-link"]');
+      if (!link) return;
+      if (salesTrackKind(link) === 'org-link') trackOrganizationLinkClick(link);
+      else trackWalletLinkClick(link);
+    }, true);
+  }
+
+  function ensureWalletSalesLinkTracking() {
+    ensureSalesLinkTracking();
+  }
+
+  /** Default class-to-name map for link tracking (used by initMatomoLinkTracking). */
+  var DEFAULT_LINK_CLASS_TO_NAME = [
+    { classes: 'fides-show-on-map', name: 'Show on map' },
+    { classes: 'fides-rp-visit-button', name: 'Visit website' },
+    { classes: 'fides-modal-visit-button', name: 'Visit website' },
+    { classes: 'fides-modal-provider-link', name: 'Blue Pages' },
+    { classes: 'fides-modal-provider-value', name: 'Provider website' },
+    { classes: 'fides-modal-link-inline', name: 'Organization catalog' },
+    { classes: 'wallet-link', name: 'Wallet catalog' },
+    { classes: 'credential-catalog-link', name: 'Credential catalog' },
+    { classes: 'fides-wallet-link', name: 'Repository' },
+    { classes: 'fides-tag platform clickable', name: 'Platform' }
+  ];
+
+  var matomoLinkTrackingBound = {};
+
+  /**
+   * Initialize document-level link click tracking for Matomo.
+   * Call once per app with { category, containerSelector, modalOverlayId }.
+   * Sales-track links (wallet and organization) use the structured Event Name
+   * contract and are skipped here to avoid duplicate Link Click events.
+   * Other links with data-matomo-name or matching known classes are tracked as "Link Click".
+   */
+  function initMatomoLinkTracking(config) {
+    if (!config || !config.category) return;
+    ensureSalesLinkTracking();
+    var containerSelector = config.containerSelector || null;
+    var modalOverlayId = config.modalOverlayId || 'fides-modal-overlay';
+    var classToName = config.classToName || DEFAULT_LINK_CLASS_TO_NAME;
+    var disableLegacyLinkEvents = config.disableLegacyLinkEvents === true;
+    var bindKey = config.category + '|' + (containerSelector || '') + '|' + modalOverlayId;
+    if (matomoLinkTrackingBound[bindKey]) return;
+    matomoLinkTrackingBound[bindKey] = true;
+
+    document.addEventListener('click', function matomoLinkClick(e) {
+      var a = e.target.closest('a');
+      if (!a || !a.href) return;
+      if (isSalesTrackLink(a)) return;
+      if (a.dataset.matomoIgnore || a.classList.contains('matomo_ignore') || a.classList.contains('piwik_ignore')) return;
+      var inCatalog = containerSelector && document.querySelector(containerSelector) && document.querySelector(containerSelector).contains(a);
+      var overlay = document.getElementById(modalOverlayId);
+      var inModal = overlay && overlay.contains(a);
+      if (!inCatalog && !inModal) return;
+      var explicitAction = a.dataset.matomoAction || '';
+      if (disableLegacyLinkEvents && !explicitAction) return;
+      var name = a.dataset.matomoName;
+      if (!name && classToName.length) {
+        for (var i = 0; i < classToName.length; i++) {
+          var entry = classToName[i];
+          var classes = entry.classes.split(/\s+/);
+          if (classes.every(function(c) { return c && a.classList.contains(c); })) {
+            name = entry.name;
+            break;
+          }
+        }
+      }
+      if (name) {
+        var action = explicitAction || 'Link Click';
+        trackMatomoEvent(config.category, action, name);
+      }
+    });
+  }
+
+  function showToast(message, type, theme) {
+    const toast = document.createElement('div');
+    toast.className = 'fides-toast';
+    toast.setAttribute('data-theme', theme || 'dark');
+    toast.innerHTML = '<div class="fides-toast-icon">' + (type === 'success' ? icons.check : icons.x) + '</div><div class="fides-toast-message">' + escapeHtml(message) + '</div>';
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('fides-toast-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  function closeNestedVocabularyModal() {
+    const nested = document.getElementById('fides-nested-vocab-overlay');
+    if (!nested) return;
+    nested.classList.add('closing');
+    setTimeout(function() {
+      nested.remove();
+    }, 200);
+  }
+
+  function unbindModalEscape() {
+    if (!modalEscHandler) return;
+    document.removeEventListener('keydown', modalEscHandler);
+    modalEscHandler = null;
+  }
+
+  function removeModalOverlayNow() {
+    if (modalCloseTimer) {
+      clearTimeout(modalCloseTimer);
+      modalCloseTimer = null;
+    }
+    closeSharePopover();
+    unbindModalEscape();
+    const overlay = document.getElementById('fides-modal-overlay');
+    if (overlay) overlay.remove();
+  }
+
+  function closeModal() {
+    closeSharePopover();
+    closeMediaLightbox();
+    closeNestedVocabularyModal();
+    unbindModalEscape();
+    const overlay = document.getElementById('fides-modal-overlay');
+    if (!overlay) {
+      syncCatalogBodyScrollLock();
+      selectedContext = null;
+      return;
+    }
+    if (overlay.classList.contains('closing')) return;
+    overlay.classList.add('closing');
+    modalCloseTimer = setTimeout(function() {
+      modalCloseTimer = null;
+      overlay.remove();
+      // Keep page scroll locked when mobile filters are still open.
+      syncCatalogBodyScrollLock();
+      selectedContext = null;
+      document.dispatchEvent(new CustomEvent('fides-catalog-modal-closed'));
+    }, 200);
+  }
+
+  const MOBILE_FILTER_BREAKPOINT = 1024;
+
+  function defaultIsCatalogModalOpen(doc) {
+    return !!(doc || document).getElementById('fides-modal-overlay');
+  }
+
+  /**
+   * Keep document.body overflow in sync with mobile filter drawers and catalog modals.
+   * Catalog listing scripts should use this instead of writing body.style.overflow directly.
+   */
+  function syncCatalogBodyScrollLock(options) {
+    options = options || {};
+    const doc = options.document || document;
+    const root = options.root || null;
+    const isModalOpen = typeof options.isModalOpen === 'function'
+      ? !!options.isModalOpen()
+      : defaultIsCatalogModalOpen(doc);
+    const scope = root || doc;
+    const filtersOpen = !!(scope.querySelector && scope.querySelector('.fides-sidebar.mobile-open'));
+    if (filtersOpen || isModalOpen) {
+      doc.body.style.overflow = 'hidden';
+    } else {
+      doc.body.style.overflow = '';
+    }
+    return { filtersOpen: filtersOpen, modalOpen: isModalOpen };
+  }
+
+  /**
+   * Shared mobile filter drawer controller for all catalog listings.
+   * Prevents drawer close / body scroll-lock drift across full re-renders.
+   *
+   * @param {Object} options
+   * @param {Element|Function} options.root Catalog root element (or getter)
+   * @param {number} [options.breakpoint=1024]
+   * @param {Function} [options.isModalOpen]
+   * @param {Document} [options.document]
+   * @param {Window} [options.window]
+   */
+  function createMobileFiltersController(options) {
+    options = options || {};
+    const doc = options.document || document;
+    const win = options.window || window;
+    const breakpoint = options.breakpoint || MOBILE_FILTER_BREAKPOINT;
+    const getRoot = typeof options.root === 'function'
+      ? options.root
+      : function() { return options.root || null; };
+    const isModalOpen = typeof options.isModalOpen === 'function'
+      ? options.isModalOpen
+      : function() { return defaultIsCatalogModalOpen(doc); };
+    let viewportBound = false;
+    let dialogKeydownBound = false;
+
+    function isMobileViewport() {
+      return win.innerWidth < breakpoint;
+    }
+
+    function getToggle() {
+      const root = getRoot();
+      return root && root.querySelector ? root.querySelector('#fides-mobile-filter-toggle') : null;
+    }
+
+    function getSidebar() {
+      const root = getRoot();
+      return root && root.querySelector ? root.querySelector('.fides-sidebar') : null;
+    }
+
+    function getMainContent() {
+      const root = getRoot();
+      if (!root || !root.querySelector) return null;
+      return root.querySelector('.fides-main-content') || root.querySelector('.fides-content');
+    }
+
+    function isOpen() {
+      const root = getRoot();
+      return !!(root && root.querySelector && root.querySelector('.fides-sidebar.mobile-open'));
+    }
+
+    function dialogId() {
+      const root = getRoot();
+      return root && root.id ? root.id + '-filter-dialog' : 'fides-filter-dialog';
+    }
+
+    function titleId() {
+      return dialogId() + '-title';
+    }
+
+    function setMainContentInert(inert) {
+      const mainContent = getMainContent();
+      if (!mainContent) return;
+      mainContent.inert = !!inert;
+      if (inert) {
+        mainContent.setAttribute('inert', '');
+      } else {
+        mainContent.removeAttribute('inert');
+      }
+    }
+
+    function focusableElements(sidebar) {
+      if (!sidebar || !sidebar.querySelectorAll) return [];
+      const selector = [
+        'a[href]',
+        'button:not([disabled])',
+        'input:not([disabled])',
+        'select:not([disabled])',
+        'textarea:not([disabled])',
+        '[tabindex]:not([tabindex="-1"])'
+      ].join(',');
+      return Array.prototype.slice.call(sidebar.querySelectorAll(selector)).filter(function(element) {
+        if (element.hidden || element.disabled) return false;
+        if (typeof win.getComputedStyle === 'function') {
+          const style = win.getComputedStyle(element);
+          if (style.display === 'none' || style.visibility === 'hidden') return false;
+        }
+        if (typeof element.getClientRects !== 'function') return true;
+        return element.offsetWidth > 0 || element.offsetHeight > 0 || element.getClientRects().length > 0;
+      });
+    }
+
+    function closeAndRestoreFocus() {
+      setOpen(false);
+    }
+
+    function onDialogKeydown(event) {
+      if (!isOpen()) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeAndRestoreFocus();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const sidebar = getSidebar();
+      const focusable = focusableElements(sidebar);
+      if (!focusable.length) {
+        event.preventDefault();
+        if (sidebar && typeof sidebar.focus === 'function') sidebar.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && doc.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && doc.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    function bindDialogKeydown() {
+      if (dialogKeydownBound) return;
+      doc.addEventListener('keydown', onDialogKeydown);
+      dialogKeydownBound = true;
+    }
+
+    function unbindDialogKeydown() {
+      if (!dialogKeydownBound) return;
+      doc.removeEventListener('keydown', onDialogKeydown);
+      dialogKeydownBound = false;
+    }
+
+    function applyDialogSemantics(open) {
+      const sidebar = getSidebar();
+      const toggle = getToggle();
+      if (toggle) {
+        toggle.setAttribute('aria-controls', dialogId());
+        toggle.setAttribute('aria-expanded', String(!!open));
+      }
+      if (!sidebar) return;
+      sidebar.id = dialogId();
+      const title = sidebar.querySelector('.fides-sidebar-title');
+      if (title) title.id = titleId();
+      if (open && isMobileViewport()) {
+        sidebar.setAttribute('role', 'dialog');
+        sidebar.setAttribute('aria-modal', 'true');
+        if (title) sidebar.setAttribute('aria-labelledby', titleId());
+        else sidebar.removeAttribute('aria-labelledby');
+        sidebar.setAttribute('tabindex', '-1');
+        setMainContentInert(true);
+        bindDialogKeydown();
+      } else {
+        sidebar.removeAttribute('role');
+        sidebar.removeAttribute('aria-modal');
+        sidebar.removeAttribute('aria-labelledby');
+        sidebar.removeAttribute('tabindex');
+        setMainContentInert(false);
+        unbindDialogKeydown();
+      }
+    }
+
+    function syncScrollLock() {
+      return syncCatalogBodyScrollLock({
+        document: doc,
+        root: getRoot(),
+        isModalOpen: isModalOpen
+      });
+    }
+
+    function setOpen(open, restoreFocus) {
+      const sidebar = getSidebar();
+      const shouldOpen = !!open && isMobileViewport();
+      if (sidebar) {
+        sidebar.classList.toggle('mobile-open', shouldOpen);
+      }
+      applyDialogSemantics(shouldOpen);
+      syncScrollLock();
+      if (shouldOpen) {
+        const root = getRoot();
+        const closeBtn = root && root.querySelector ? root.querySelector('#fides-sidebar-close') : null;
+        if (closeBtn && typeof closeBtn.focus === 'function') closeBtn.focus();
+        else if (sidebar && typeof sidebar.focus === 'function') sidebar.focus();
+      } else if (open === false && restoreFocus !== false) {
+        const toggle = getToggle();
+        if (toggle && typeof toggle.focus === 'function') toggle.focus();
+      }
+      return isOpen();
+    }
+
+    function captureOpenState() {
+      return isOpen();
+    }
+
+    function applyAfterRender(wasOpen) {
+      if (wasOpen && isMobileViewport()) {
+        setOpen(true);
+      } else {
+        setOpen(false, false);
+      }
+    }
+
+    function bindShell() {
+      const root = getRoot();
+      if (!root) return;
+      const sidebar = root.querySelector('.fides-sidebar');
+      const toggle = root.querySelector('#fides-mobile-filter-toggle');
+      const closeBtn = root.querySelector('#fides-sidebar-close');
+      applyDialogSemantics(isOpen());
+      if (toggle && sidebar) {
+        toggle.addEventListener('click', function() { setOpen(true); });
+      }
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function() { setOpen(false); });
+      }
+      if (sidebar) {
+        sidebar.addEventListener('click', function(e) {
+          if (e.target === sidebar && sidebar.classList.contains('mobile-open')) {
+            setOpen(false);
+          }
+        });
+      }
+    }
+
+    function bindCollapsibleToggles(filterGroupState) {
+      const root = getRoot();
+      if (!root) return;
+      root.querySelectorAll('.fides-filter-label-toggle').forEach(function(toggle) {
+        toggle.addEventListener('click', function(e) {
+          if (e.target.closest && e.target.closest('.fides-vocab-info')) return;
+          const filterGroup = toggle.closest('.fides-filter-group');
+          if (!filterGroup) return;
+          filterGroup.classList.toggle('collapsed');
+          const isExpanded = !filterGroup.classList.contains('collapsed');
+          toggle.setAttribute('aria-expanded', String(isExpanded));
+          const group = filterGroup.getAttribute('data-filter-group')
+            || (filterGroup.dataset && filterGroup.dataset.filterGroup);
+          if (group && filterGroupState && Object.prototype.hasOwnProperty.call(filterGroupState, group)) {
+            filterGroupState[group] = isExpanded;
+          }
+        });
+      });
+    }
+
+    function onLeavingMobileViewport() {
+      if (!isMobileViewport() && isOpen()) {
+        setOpen(false, false);
+      } else {
+        syncScrollLock();
+      }
+    }
+
+    function bindViewportGuard(onCrossBreakpoint) {
+      if (viewportBound) return;
+      viewportBound = true;
+      let lastWidth = win.innerWidth;
+      let timer = null;
+      win.addEventListener('resize', function() {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(function() {
+          timer = null;
+          onLeavingMobileViewport();
+          const width = win.innerWidth;
+          const crossed = (lastWidth < breakpoint) !== (width < breakpoint);
+          lastWidth = width;
+          if (crossed && typeof onCrossBreakpoint === 'function') {
+            onCrossBreakpoint(isMobileViewport());
+          }
+        }, 150);
+      });
+    }
+
+    return {
+      isMobileViewport: isMobileViewport,
+      isOpen: isOpen,
+      setOpen: setOpen,
+      syncScrollLock: syncScrollLock,
+      captureOpenState: captureOpenState,
+      applyAfterRender: applyAfterRender,
+      bindShell: bindShell,
+      bindCollapsibleToggles: bindCollapsibleToggles,
+      onLeavingMobileViewport: onLeavingMobileViewport,
+      bindViewportGuard: bindViewportGuard
+    };
+  }
+
+  function getDirectLink(contextType, item, options) {
+    if (options && options.directLinkUrl) return options.directLinkUrl;
+    if (item && item.id && options && options.sharePath) {
+      try {
+        const url = new URL(String(options.sharePath).replace(/\/?$/, '/') + encodeURIComponent(item.id) + '/', window.location.origin);
+        url.search = '';
+        url.hash = '';
+        return url.toString();
+      } catch (e) {
+        return window.location.origin + String(options.sharePath).replace(/\/?$/, '/') + encodeURIComponent(item.id) + '/';
+      }
+    }
+    const url = new URL(window.location.href);
+    if (contextType === 'wallet') url.searchParams.set('wallet', item.id);
+    if (contextType === 'connector') url.searchParams.set('connector', item.id);
+    if (contextType === 'rp') url.searchParams.set('rp', item.id);
+    if (contextType === 'issuer') url.searchParams.set('issuer', item.id);
+    if (contextType === 'organization') url.searchParams.set('org', item.id);
+    if (contextType === 'vocabulary') url.searchParams.set('term', item.id);
+    return url.toString();
+  }
+
+  function buildModalShareButtonHtml(options, noun) {
+    if (options && options.showShare === false) return '';
+    if (options && options.sharePath) {
+      const label = 'Share this ' + noun;
+      return '<div class="fides-modal-share">' +
+        '<button type="button" class="fides-modal-copy-link" id="fides-modal-copy-link" aria-label="' + escapeHtml(label) + '" title="' + escapeHtml(label) + '" aria-haspopup="menu" aria-expanded="false" aria-controls="fides-modal-share-popover">' +
+        icons.share +
+        '</button>' +
+        '<div class="fides-modal-share-popover" id="fides-modal-share-popover" hidden role="menu" aria-label="' + escapeHtml(label) + '">' +
+        '<p class="fides-modal-share-popover-title">' + escapeHtml(label) + '</p>' +
+        '<button type="button" class="fides-modal-share-option" id="fides-modal-share-linkedin" role="menuitem">' +
+        icons.linkedin + ' Share on LinkedIn</button>' +
+        '<button type="button" class="fides-modal-share-option" id="fides-modal-share-copy" role="menuitem">' +
+        icons.link + ' <span data-share-copy-label>Copy link</span></button>' +
+        '</div></div>';
+    }
+    return '<button type="button" class="fides-modal-copy-link" id="fides-modal-copy-link" aria-label="Copy link">' + icons.share + '</button>';
+  }
+
+  function buildVocabularyUpdateFormUrl(termId, options) {
+    const updateFormUrl = (options && options.updateFormUrl) ? String(options.updateFormUrl).trim() : '';
+    const isLoggedIn = boolFromMixed(
+      options && (options.isLoggedIn != null ? options.isLoggedIn : options.ratingsIsLoggedIn)
+    );
+    if (!isLoggedIn || !updateFormUrl || !termId) return '';
+    try {
+      const url = new URL(updateFormUrl, window.location.origin);
+      url.searchParams.set('term', String(termId));
+      return url.toString();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function buildVocabularyEditActionHtml(term, options) {
+    const href = buildVocabularyUpdateFormUrl(term && term.id, options);
+    if (!href) return '';
+    return '<a href="' + escapeHtml(href) + '" class="fides-modal-copy-link fides-modal-edit-link" aria-label="Suggest an update" title="Suggest an update">' + icons.pencil + '</a>';
+  }
+
+  function buildLoginUrlWithReturnTo(loginUrl, returnToUrl) {
+    const base = String(loginUrl || '').trim();
+    const returnTo = String(returnToUrl || '').trim();
+    if (!base) return '';
+    if (!returnTo) return base;
+    try {
+      const u = new URL(base, window.location.origin);
+      u.searchParams.set('return_to', returnTo);
+      return u.toString();
+    } catch (e) {
+      const sep = base.indexOf('?') === -1 ? '?' : '&';
+      return base + sep + 'return_to=' + encodeURIComponent(returnTo);
+    }
+  }
+
+  function copySelectedLink() {
+    if (!selectedContext) return;
+    const url = getDirectLink(selectedContext.type, selectedContext.item, selectedContext.options || {});
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Link copied to clipboard', 'success', selectedContext.theme);
+      }).catch(() => {
+        showToast('Failed to copy link', 'error', selectedContext.theme);
+      });
+      return;
+    }
+    const textarea = document.createElement('textarea');
+    textarea.value = url;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    const success = document.execCommand('copy');
+    textarea.remove();
+    showToast(success ? 'Link copied to clipboard' : 'Failed to copy link', success ? 'success' : 'error', selectedContext.theme);
+  }
+
+  function shareButtonEl() {
+    return document.getElementById('fides-modal-copy-link');
+  }
+
+  function sharePopoverEl() {
+    return document.getElementById('fides-modal-share-popover');
+  }
+
+  function isSharePopoverOpen() {
+    const popover = sharePopoverEl();
+    return !!(popover && !popover.hidden);
+  }
+
+  function onSharePopoverOutsideClick(event) {
+    const wrap = document.querySelector('#fides-modal-overlay .fides-modal-share');
+    if (wrap && wrap.contains(event.target)) return;
+    closeSharePopover();
+  }
+
+  function closeSharePopover() {
+    const popover = sharePopoverEl();
+    const button = shareButtonEl();
+    if (popover) popover.hidden = true;
+    if (button) button.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('mousedown', onSharePopoverOutsideClick, true);
+  }
+
+  function openSharePopover() {
+    const popover = sharePopoverEl();
+    const button = shareButtonEl();
+    if (!popover || !button) return;
+    popover.hidden = false;
+    button.setAttribute('aria-expanded', 'true');
+    document.addEventListener('mousedown', onSharePopoverOutsideClick, true);
+  }
+
+  function toggleSharePopover() {
+    if (isSharePopoverOpen()) closeSharePopover();
+    else openSharePopover();
+  }
+
+  function shouldUseNativeShare() {
+    if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') return false;
+    const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    const narrow = window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
+    return !!(coarse || narrow);
+  }
+
+  function itemShareSummary(item) {
+    const raw = String((item && item.description) || '').replace(/\s+/g, ' ').trim();
+    if (!raw) return '';
+    return raw.length > 180 ? raw.slice(0, 177) + '…' : raw;
+  }
+
+  function linkedInShareUrlForContext() {
+    if (!selectedContext || !selectedContext.item) return '';
+    const canonical = getDirectLink(selectedContext.type, selectedContext.item, selectedContext.options || {});
+    if (!canonical) return '';
+    try {
+      const tracked = new URL(canonical);
+      tracked.searchParams.set('utm_source', 'linkedin');
+      tracked.searchParams.set('utm_medium', 'social');
+      tracked.searchParams.set('utm_campaign', selectedContext.type === 'wallet' ? 'wallet_share' : (selectedContext.type + '_share'));
+      return 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(tracked.toString());
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function trackContextShare(method) {
+    if (!selectedContext || !selectedContext.item) return;
+    const itemId = selectedContext.item.id || '';
+    const name = [salesTrackSafePart(itemId), salesTrackSafePart(method)].join('|');
+    const category = selectedContext.type === 'wallet' ? 'Wallet Catalog' : 'Catalog';
+    const action = selectedContext.type === 'wallet' ? 'share_wallet' : 'share';
+    trackMatomoEvent(category, action, name);
+  }
+
+  function markCopyLinkSuccess() {
+    const label = document.querySelector('#fides-modal-share-copy [data-share-copy-label]');
+    if (label) label.textContent = 'Link copied ✓';
+    setTimeout(function() {
+      if (label) label.textContent = 'Copy link';
+      closeSharePopover();
+    }, 900);
+  }
+
+  async function nativeShareContext() {
+    if (!selectedContext || !selectedContext.item) return;
+    const item = selectedContext.item;
+    const url = getDirectLink(selectedContext.type, item, selectedContext.options || {});
+    const title = String(item.name || item.displayName || item.id || 'FIDES catalog');
+    const text = itemShareSummary(item) || title;
+    try {
+      await navigator.share({ title: title, text: text, url: url });
+      trackContextShare('native');
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+      openSharePopover();
+    }
+  }
+
+  function onShareButtonClick(event) {
+    event.stopPropagation();
+    if (!selectedContext || !selectedContext.item) return;
+    if (shouldUseNativeShare()) {
+      nativeShareContext();
+      return;
+    }
+    toggleSharePopover();
+  }
+
+  function shareContextOnLinkedIn() {
+    if (!selectedContext || !selectedContext.item) return;
+    const href = linkedInShareUrlForContext();
+    if (!href) return;
+    trackContextShare('linkedin');
+    closeSharePopover();
+    window.open(href, '_blank', 'noopener,noreferrer');
+  }
+
+  function copyContextShareLink() {
+    if (!selectedContext || !selectedContext.item) return;
+    const text = getDirectLink(selectedContext.type, selectedContext.item, selectedContext.options || {});
+    const onSuccess = function() {
+      trackContextShare('copy_link');
+      if (isSharePopoverOpen()) markCopyLinkSuccess();
+      else showToast('Link copied to clipboard', 'success', selectedContext.theme);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(onSuccess).catch(function() {
+        showToast('Failed to copy link', 'error', selectedContext.theme);
+      });
+      return;
+    }
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    const success = document.execCommand('copy');
+    textarea.remove();
+    if (success) onSuccess();
+    else showToast('Failed to copy link', 'error', selectedContext.theme);
+  }
+
+  function attachModalShareListeners(overlay) {
+    const copyBtn = overlay.querySelector('#fides-modal-copy-link');
+    if (!copyBtn) return;
+    if (overlay.querySelector('#fides-modal-share-popover')) {
+      copyBtn.addEventListener('click', onShareButtonClick);
+      const linkedInButton = overlay.querySelector('#fides-modal-share-linkedin');
+      if (linkedInButton) {
+        linkedInButton.addEventListener('click', function(e) {
+          e.stopPropagation();
+          shareContextOnLinkedIn();
+        });
+      }
+      const copyOption = overlay.querySelector('#fides-modal-share-copy');
+      if (copyOption) {
+        copyOption.addEventListener('click', function(e) {
+          e.stopPropagation();
+          copyContextShareLink();
+        });
+      }
+      return;
+    }
+    copyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      copySelectedLink();
+    });
+  }
+
+  function attachModalListeners() {
+    const overlay = document.getElementById('fides-modal-overlay');
+    if (!overlay) return;
+    const closeBtn = overlay.querySelector('.fides-modal-close');
+    attachModalShareListeners(overlay);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+    unbindModalEscape();
+    modalEscHandler = function(e) {
+      if (e.key !== 'Escape') return;
+      if (document.getElementById('fides-media-lightbox')) {
+        closeMediaLightbox();
+        return;
+      }
+      if (document.getElementById('fides-nested-vocab-overlay')) {
+        closeNestedVocabularyModal();
+        return;
+      }
+      if (isSharePopoverOpen()) {
+        e.preventDefault();
+        closeSharePopover();
+        const button = shareButtonEl();
+        if (button) button.focus();
+        return;
+      }
+      closeModal();
+    };
+    document.addEventListener('keydown', modalEscHandler);
+  }
+
+  function attachNestedVocabularyListeners() {
+    const nested = document.getElementById('fides-nested-vocab-overlay');
+    if (!nested) return;
+    const closeBtn = nested.querySelector('.fides-modal-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeNestedVocabularyModal();
+      });
+    }
+    nested.addEventListener('click', function(e) {
+      if (e.target === nested) closeNestedVocabularyModal();
+    });
+  }
+
+  function initWalletTechnicalGlossaryLinks(options) {
+    const overlay = document.getElementById('fides-modal-overlay');
+    const vocabulary = options && options.vocabulary;
+    if (!overlay || !vocabulary) return;
+    overlay.querySelectorAll('.fides-kv-glossary-link').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const key = btn.getAttribute('data-vocab-key');
+        if (!key) return;
+        const entry = vocabulary[key];
+        if (!entry || !entry.description) return;
+        const term = {
+          id: key,
+          name: (btn.textContent || '').trim() || key,
+          description: entry.description,
+          url: entry.url || '',
+          aliases: entry.aliases || []
+        };
+        const nestedOptions = Object.assign({}, options || {}, { nested: true, showShare: false });
+        openVocabularyModal(term, nestedOptions);
+      });
+    });
+  }
+
+  function mountModal(html) {
+    removeModalOverlayNow();
+    document.body.insertAdjacentHTML('beforeend', html);
+    document.body.style.overflow = 'hidden';
+    attachModalListeners();
+    return document.getElementById('fides-modal-overlay');
+  }
+
+  function boolFromMixed(value) {
+    if (value === true || value === 1 || value === '1') return true;
+    if (typeof value === 'string') {
+      const v = value.trim().toLowerCase();
+      return v === 'true' || v === 'yes' || v === 'on';
+    }
+    return false;
+  }
+
+  function getRatingsClient(options) {
+    const ratings = (options && options.ratings) || {};
+    const apiBase = (ratings.apiBase || options && options.ratingsApiBase || '').trim().replace(/\/$/, '');
+    const nonce = String(ratings.nonce || options && options.ratingsNonce || '').trim();
+    const loginUrl = String(ratings.loginUrl || options && options.ratingsLoginUrl || options && options.loginUrl || '').trim();
+    return {
+      apiBase: apiBase,
+      nonce: nonce,
+      loginUrl: loginUrl,
+      isLoggedIn: boolFromMixed(ratings.isLoggedIn != null ? ratings.isLoggedIn : (options && options.ratingsIsLoggedIn))
+    };
+  }
+
+  function buildRatingsEndpoint(client, path, queryParams) {
+    const safePath = String(path || '').replace(/^\/+/, '');
+    const rawBase = String(client && client.apiBase ? client.apiBase : '').trim();
+    if (!rawBase) return '';
+    try {
+      const url = new URL(rawBase, window.location.origin);
+      if (url.origin !== window.location.origin) {
+        url.protocol = window.location.protocol;
+        url.host = window.location.host;
+      }
+      if (url.searchParams.has('rest_route')) {
+        const currentRoute = String(url.searchParams.get('rest_route') || '').replace(/\/+$/, '');
+        url.searchParams.set('rest_route', currentRoute + '/' + safePath);
+      } else {
+        const basePath = url.pathname.replace(/\/+$/, '');
+        url.pathname = basePath + '/' + safePath;
+      }
+      if (queryParams && typeof queryParams === 'object') {
+        Object.keys(queryParams).forEach(function(key) {
+          const value = queryParams[key];
+          if (value === null || value === undefined || value === '') return;
+          url.searchParams.set(key, String(value));
+        });
+      }
+      return url.toString();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function formatLikeCount(count) {
+    const n = Number(count) || 0;
+    if (n <= 0) return 'No likes yet';
+    return n + ' like' + (n === 1 ? '' : 's');
+  }
+
+  async function fetchRatingBatch(client, contextType, itemIds) {
+    const ids = (Array.isArray(itemIds) ? itemIds : []).map(String).filter(Boolean);
+    if (!ids.length) return {};
+    const url = buildRatingsEndpoint(client, 'ratings/batch', {
+      type: String(contextType || '').trim(),
+      ids: ids.join(',').slice(0, 512),
+      _wpnonce: client.nonce || ''
+    });
+    if (!url) return {};
+    const res = await fetch(url, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: { 'X-WP-Nonce': client.nonce || '' }
+    });
+    if (!res.ok) return {};
+    const data = await res.json();
+    const results = data && data.results ? data.results : {};
+    const out = {};
+    ids.forEach(function(id) {
+      const result = results[id] || { avg: 0, count: 0, likes: 0, my_rating: null, my_like: null };
+      const likeCount = Number(result.likes);
+      out[id] = {
+        avg: Number(result.avg) || 0,
+        count: isFinite(likeCount) ? likeCount : (Number(result.count) || 0),
+        myRating: Number(result.my_like) > 0 || Number(result.my_rating) > 0 ? 1 : null
+      };
+    });
+    return out;
+  }
+
+  async function populateRpModalEntityRatings(overlay, rp, options) {
+    if (!overlay || !rp) return;
+    const client = getRatingsClient(options || {});
+    if (!client.apiBase) return;
+    const issuers = (options && Array.isArray(options.ecosystemIssuers)) ? options.ecosystemIssuers : [];
+    const credentialRows = getAcceptedCredentialRows(rp, options);
+    const walletIds = rpSupportedWalletCatalogIds(rp);
+    const batches = [
+      { type: 'issuer', ids: issuers.map(function(i) { return i.id; }).filter(Boolean) },
+      { type: 'credential', ids: credentialRows.map(function(r) { return r.credentialId; }).filter(Boolean) },
+      { type: 'wallet', ids: walletIds },
+      { type: 'usecase', ids: getDerivedUseCases(options).map(function(u) { return u.id; }).filter(Boolean) }
+    ];
+    const summaries = { issuer: {}, credential: {}, wallet: {}, usecase: {} };
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i];
+      if (!batch.ids.length) continue;
+      try {
+        const result = await fetchRatingBatch(client, batch.type, batch.ids);
+        Object.assign(summaries[batch.type], result);
+      } catch (e) {
+        console.debug('RP modal entity ratings load failed:', batch.type, e);
+      }
+    }
+    overlay.querySelectorAll('[data-entity-like-type][data-entity-like-id]').forEach(function(cell) {
+      const type = cell.getAttribute('data-entity-like-type') || '';
+      const id = cell.getAttribute('data-entity-like-id') || '';
+      const summary = summaries[type] && summaries[type][id] ? summaries[type][id] : null;
+      const count = summary ? (Number(summary.count) || 0) : 0;
+      if (count < 1) {
+        cell.innerHTML = '';
+        return;
+      }
+      const likedClass = summary && summary.myRating === 1 ? ' is-liked' : '';
+      cell.innerHTML = '<span class="fides-modal-entity-like' + likedClass + '">' +
+        '<span class="fides-modal-entity-like-star">★</span>' +
+        '<span class="fides-modal-entity-like-count">' + escapeHtml(String(count)) + '</span></span>';
+    });
+  }
+
+  async function fetchRatingSummary(client, contextType, itemId) {
+    const url = buildRatingsEndpoint(client, 'ratings/batch', {
+      type: String(contextType || '').trim(),
+      ids: String(itemId || '').slice(0, 512),
+      _wpnonce: client.nonce || ''
+    });
+    if (!url) throw new Error('ratings_url_invalid');
+    const res = await fetch(url, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {
+        'X-WP-Nonce': client.nonce || ''
+      }
+    });
+    if (!res.ok) throw new Error('ratings_batch_failed');
+    const data = await res.json();
+    const result = data && data.results && data.results[itemId] ? data.results[itemId] : { avg: 0, count: 0, likes: 0, my_rating: null, my_like: null };
+    const likeCount = Number(result.likes);
+    return {
+      avg: Number(result.avg) || 0,
+      count: isFinite(likeCount) ? likeCount : (Number(result.count) || 0),
+      myRating: Number(result.my_like) > 0 || Number(result.my_rating) > 0 ? 1 : null
+    };
+  }
+
+  async function submitRating(client, contextType, itemId) {
+    const url = buildRatingsEndpoint(client, 'ratings', {
+      _wpnonce: client.nonce || ''
+    });
+    if (!url) throw new Error('ratings_url_invalid');
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-WP-Nonce': client.nonce || ''
+      },
+      body: JSON.stringify({
+        type: contextType,
+        item_id: itemId,
+        rating: 1
+      })
+    });
+    let payload = null;
+    try {
+      payload = await res.json();
+    } catch (e) {
+      payload = null;
+    }
+    if (!res.ok) {
+      const reason = payload && (payload.error || payload.code || payload.message);
+      throw new Error(reason || 'like_submit_failed');
+    }
+    return payload || {};
+  }
+
+  async function deleteRating(client, contextType, itemId) {
+    const url = buildRatingsEndpoint(client, 'ratings', {
+      _wpnonce: client.nonce || '',
+      type: contextType,
+      item_id: itemId
+    });
+    if (!url) throw new Error('ratings_url_invalid');
+    const res = await fetch(url, {
+      method: 'DELETE',
+      credentials: 'same-origin',
+      headers: {
+        'X-WP-Nonce': client.nonce || ''
+      }
+    });
+    let payload = null;
+    try {
+      payload = await res.json();
+    } catch (e) {
+      payload = null;
+    }
+    if (!res.ok) {
+      const reason = payload && (payload.error || payload.code || payload.message);
+      throw new Error(reason || 'like_delete_failed');
+    }
+    return payload || {};
+  }
+
+  function renderRatingSlot(slot, state, client) {
+    if (!slot) return;
+    const summaryLabel = formatLikeCount(state.count);
+    const isStarred = state.myRating === 1;
+    const starButton = client.isLoggedIn
+      ? '<button type="button" class="fides-rating-star fides-rating-star-single' + (isStarred ? ' is-filled' : '') + '" data-rating-toggle="1" ' + (state.saving ? 'disabled' : '') + ' aria-label="' + (isStarred ? 'Remove your like' : 'Like this item') + '">★</button>'
+      : '<button type="button" class="fides-rating-star fides-rating-star-single is-readonly' + (isStarred ? ' is-filled' : '') + '" disabled aria-hidden="true">★</button>';
+    const actionLine = client.isLoggedIn
+      ? '<span class="fides-modal-rating-note fides-modal-rating-note-inline">' + (state.saving ? 'Updating like...' : (isStarred ? 'You like this item. Click again to remove.' : 'Click the star to like this item.')) + '</span>'
+      : (client.loginUrl
+          ? '<span class="fides-modal-rating-note fides-modal-rating-note-inline"><a href="' + escapeHtml(client.loginUrl) + '" class="fides-modal-rating-login">Sign in to like</a></span>'
+          : '<span class="fides-modal-rating-note fides-modal-rating-note-inline">Sign in to like</span>');
+    slot.innerHTML =
+      '<div class="fides-modal-rating">' +
+        '<div class="fides-modal-rating-summary">' +
+          starButton +
+          '<span class="fides-modal-rating-value">' + escapeHtml(summaryLabel) + '</span>' +
+          actionLine +
+        '</div>' +
+      '</div>';
+  }
+
+  async function attachModalRating(overlay, contextType, itemId, options, item) {
+    if (!overlay) return;
+    const slot = overlay.querySelector('#fides-modal-rating-slot');
+    if (!slot) return;
+    const client = getRatingsClient(options || {});
+    const deepLinkUrl = getDirectLink(contextType, item || { id: itemId }, options || {});
+    const clientForUi = Object.assign({}, client, {
+      loginUrl: buildLoginUrlWithReturnTo(client.loginUrl, deepLinkUrl)
+    });
+    if (!client.apiBase || !contextType || !itemId) {
+      slot.innerHTML = '';
+      return;
+    }
+    let state = { avg: 0, count: 0, myRating: null, saving: false };
+    renderRatingSlot(slot, state, clientForUi);
+    try {
+      state = Object.assign(state, await fetchRatingSummary(client, contextType, itemId));
+      renderRatingSlot(slot, state, clientForUi);
+    } catch (e) {
+      state = Object.assign(state, { avg: 0, count: 0, myRating: null });
+      renderRatingSlot(slot, state, clientForUi);
+    }
+    if (!client.isLoggedIn) return;
+    slot.addEventListener('click', async function(e) {
+      const btn = e.target && e.target.closest ? e.target.closest('[data-rating-toggle]') : null;
+      if (!btn) return;
+      if (state.saving) return;
+      const previousState = {
+        avg: state.avg,
+        count: state.count,
+        myRating: state.myRating
+      };
+      const removing = state.myRating === 1;
+      state = Object.assign(state, {
+        saving: true,
+        myRating: removing ? null : 1
+      });
+      renderRatingSlot(slot, state, clientForUi);
+      try {
+        const data = removing
+          ? await deleteRating(client, contextType, itemId)
+          : await submitRating(client, contextType, itemId);
+        const summary = data && data.summary ? data.summary : {};
+        state = {
+          avg: Number(summary.avg) || 0,
+          count: Number(summary.likes) || Number(summary.count) || 0,
+          myRating: Number(data && data.my_like) > 0 || Number(data && data.my_rating) > 0 ? 1 : null,
+          saving: false
+        };
+        renderRatingSlot(slot, state, clientForUi);
+        if (options && typeof options.onRatingUpdate === 'function') {
+          options.onRatingUpdate({
+            type: contextType,
+            itemId: itemId,
+            avg: state.avg,
+            count: state.count,
+            myRating: state.myRating
+          });
+        }
+      } catch (err) {
+        state = Object.assign(state, {
+          avg: previousState.avg,
+          count: previousState.count,
+          myRating: previousState.myRating,
+          saving: false
+        });
+        renderRatingSlot(slot, state, clientForUi);
+        const reason = (err && err.message) ? String(err.message) : 'save_failed';
+        showToast('Failed to update like (' + reason + ')', 'error', (options && options.theme) || 'dark');
+      }
+    });
+  }
+
+  function buildWalletUpdateFormUrl(walletId, options) {
+    const updateFormUrl = (options && options.updateFormUrl) ? String(options.updateFormUrl).trim() : '';
+    const isLoggedIn = boolFromMixed(
+      options && (options.isLoggedIn != null ? options.isLoggedIn : options.ratingsIsLoggedIn)
+    );
+    if (!isLoggedIn || !updateFormUrl || !walletId) return '';
+    try {
+      const url = new URL(updateFormUrl, window.location.origin);
+      url.searchParams.set('wallet', String(walletId));
+      return url.toString();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function buildWalletEditActionHtml(wallet, options) {
+    if (!canEditWallet(wallet, options)) return '';
+    const href = buildWalletUpdateFormUrl(wallet && wallet.id, options);
+    if (!href) return '';
+    return '<a href="' + escapeHtml(href) + '" class="fides-modal-copy-link fides-modal-edit-link" aria-label="Suggest an update" title="Suggest an update">' + icons.pencil + '</a>';
+  }
+
+  function buildRpUpdateFormUrl(rpId, options) {
+    const updateFormUrl = (options && options.updateFormUrl) ? String(options.updateFormUrl).trim() : '';
+    const isLoggedIn = boolFromMixed(
+      options && (options.isLoggedIn != null ? options.isLoggedIn : options.ratingsIsLoggedIn)
+    );
+    if (!isLoggedIn || !updateFormUrl || !rpId) return '';
+    try {
+      const url = new URL(updateFormUrl, window.location.origin);
+      url.searchParams.set('rp', String(rpId));
+      return url.toString();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function buildRpEditActionHtml(rp, options) {
+    if (!canEditRp(rp, options)) return '';
+    const href = buildRpUpdateFormUrl(rp && rp.id, options);
+    if (!href) return '';
+    return '<a href="' + escapeHtml(href) + '" class="fides-modal-copy-link fides-modal-edit-link" aria-label="Suggest an update" title="Suggest an update">' + icons.pencil + '</a>';
+  }
+
+  function normalizeWalletLinkKey(href) {
+    const raw = String(href || '').trim();
+    if (!raw) return '';
+    try {
+      const u = new URL(raw);
+      if (u.protocol === 'mailto:') {
+        return ('mailto:' + decodeURIComponent(u.pathname || u.href.replace(/^mailto:/i, ''))).toLowerCase();
+      }
+      const path = u.pathname.replace(/\/$/, '') || '/';
+      return (u.origin + path + u.search).toLowerCase();
+    } catch (e) {
+      return raw.toLowerCase().replace(/\/$/, '');
+    }
+  }
+
+  function buildWalletModalLinkButton(href, label, iconSvg, matomoName, isPrimary, salesAttrs) {
+    return '<a href="' + escapeHtml(href) + '" target="_blank" rel="noopener noreferrer" class="fides-modal-link' +
+      (isPrimary ? ' primary' : '') + (salesAttrs ? ' matomo_ignore piwik_ignore' : '') + '"' +
+      (salesAttrs ? '' : ' data-matomo-name="' + escapeHtml(matomoName) + '"') +
+      (salesAttrs || '') + '>' +
+      iconSvg + ' ' + escapeHtml(label) + '</a>';
+  }
+
+  function buildWalletModalLinksGroupHtml(sectionLabel, linkEntries, groupOptions) {
+    if (!linkEntries.length) return '';
+    const noPrimary = !!(groupOptions && groupOptions.noPrimary);
+    const wallet = groupOptions && groupOptions.wallet;
+    const buttons = linkEntries.map(function(entry, index) {
+      const isPrimary = !noPrimary && index === 0;
+      const salesAttrFn = (groupOptions && groupOptions.salesAttrFn) || walletSalesTrackAttrString;
+      const salesAttrs = wallet && entry.salesLinkType
+        ? salesAttrFn(wallet, entry.salesLinkType, { matomoIgnore: entry.type === 'mailto' })
+        : '';
+      if (entry.type === 'mailto') {
+        return '<a href="mailto:' + escapeHtml(entry.href) + '" class="fides-modal-link' +
+          (isPrimary ? ' primary' : '') + (salesAttrs ? ' matomo_ignore piwik_ignore' : '') + '"' +
+          (salesAttrs ? '' : ' data-matomo-name="' + escapeHtml(entry.matomoName) + '"') +
+          salesAttrs + '>' +
+          entry.icon + ' ' + escapeHtml(entry.label) + '</a>';
+      }
+      if (entry.type === 'internal') {
+        return '<a href="' + escapeHtml(entry.href) + '" class="fides-modal-link' +
+          (isPrimary ? ' primary' : '') + '" data-matomo-name="' + escapeHtml(entry.matomoName) +
+          '" onclick="event.stopPropagation();">' + entry.icon + ' ' + escapeHtml(entry.label) + '</a>';
+      }
+      return buildWalletModalLinkButton(entry.href, entry.label, entry.icon, entry.matomoName, isPrimary, salesAttrs);
+    }).join('');
+    return '<div class="fides-modal-links-group">' +
+      '<div class="fides-modal-links-label">' + escapeHtml(sectionLabel) + '</div>' +
+      '<div class="fides-modal-links">' + buttons + '</div></div>';
+  }
+
+  function resolveOrganizationContactEmail(contact) {
+    const contactObj = contact && typeof contact === 'object' ? contact : {};
+    const email = contactObj.email ? String(contactObj.email).trim() : '';
+    if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return email;
+    }
+    const legacyUrl = contactObj.contactUrl ? String(contactObj.contactUrl).trim() : '';
+    if (legacyUrl.toLowerCase().startsWith('mailto:')) {
+      const legacyEmail = legacyUrl.slice(7).split('?')[0].trim();
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(legacyEmail)) {
+        return legacyEmail;
+      }
+    }
+    return '';
+  }
+
+  function parseItemDate(item, dateFields) {
+    if (!item || !Array.isArray(dateFields)) return null;
+    for (let i = 0; i < dateFields.length; i += 1) {
+      const value = item[dateFields[i]];
+      if (!value) continue;
+      const date = new Date(value);
+      if (!Number.isNaN(date.getTime())) return date;
+    }
+    return null;
+  }
+
+  function formatModalLastUpdatedDate(date) {
+    if (!date || Number.isNaN(date.getTime())) return '';
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  function buildModalLastUpdatedHtml(item, dateFields) {
+    const date = parseItemDate(item, dateFields);
+    if (!date) return '';
+    const label = formatModalLastUpdatedDate(date);
+    const iso = date.toISOString().slice(0, 10);
+    return '<div class="fides-modal-last-updated">' +
+      'Last updated <time datetime="' + escapeHtml(iso) + '">' + escapeHtml(label) + '</time></div>';
+  }
+
+  function buildOrganizationContactFooterHtml(contact, options) {
+    const opts = options || {};
+    if (optionsTierUiEnabled(opts)) {
+      if (opts.item) {
+        if (!walletListingTierIsPro(opts.item, opts)) return '';
+      } else if (opts.isCommunity === true) {
+        return '';
+      }
+    }
+    const contactObj = contact && typeof contact === 'object' ? contact : {};
+    const bookMeetingUrl = contactObj.bookMeetingUrl ? String(contactObj.bookMeetingUrl).trim() : '';
+    const email = resolveOrganizationContactEmail(contactObj);
+    const salesWallet = opts.salesWallet && typeof opts.salesWallet === 'object' ? opts.salesWallet : null;
+    const salesOrg = opts.salesOrg && typeof opts.salesOrg === 'object' ? opts.salesOrg : null;
+    const contactSalesAttrs = salesWallet
+      ? walletSalesTrackAttrString(salesWallet, 'contact', { matomoIgnore: true })
+      : (salesOrg ? organizationSalesTrackAttrString(salesOrg, 'contact', { matomoIgnore: true }) : '');
+    const meetingSalesAttrs = salesWallet
+      ? walletSalesTrackAttrString(salesWallet, 'contact', { matomoIgnore: true })
+      : (salesOrg ? organizationSalesTrackAttrString(salesOrg, 'contact', { matomoIgnore: true }) : '');
+    const buttons = [];
+    if (email) {
+      buttons.push(
+        '<a href="mailto:' + escapeHtml(email) + '" class="fides-modal-footer-btn fides-modal-footer-btn--accent' +
+        (contactSalesAttrs ? ' matomo_ignore piwik_ignore' : '') + '"' +
+        (contactSalesAttrs ? '' : ' data-matomo-name="Contact"') + contactSalesAttrs + '>' +
+        icons.mail + ' Contact</a>'
+      );
+    }
+    if (bookMeetingUrl) {
+      buttons.push(
+        '<a href="' + escapeHtml(bookMeetingUrl) + '" target="_blank" rel="noopener noreferrer" class="fides-modal-footer-btn' +
+        (meetingSalesAttrs ? ' matomo_ignore piwik_ignore' : '') + '"' +
+        (meetingSalesAttrs ? '' : ' data-matomo-name="Book a Meeting"') +
+        meetingSalesAttrs + '>' +
+        icons.externalLink + ' Book a Meeting</a>'
+      );
+    }
+    if (!buttons.length) return '';
+    return '<div class="fides-modal-footer">' + buttons.join('') + '</div>';
+  }
+
+  function buildWalletModalFooterHtml(wallet, options) {
+    if (!walletListingTierIsPro(wallet, options)) return '';
+    const provider = wallet.provider && typeof wallet.provider === 'object' ? wallet.provider : {};
+    const contact = provider.contact && typeof provider.contact === 'object' ? provider.contact : {};
+    return buildOrganizationContactFooterHtml(contact, {
+      tierUiEnabled: optionsTierUiEnabled(options),
+      salesWallet: wallet
+    });
+  }
+
+  function buildWalletModalLinksHtml(wallet, options) {
+    if (!walletListingTierIsPro(wallet, options)) return '';
+    const productSeen = new Set();
+    const productEntries = [];
+    const appLinks = wallet.appStoreLinks && typeof wallet.appStoreLinks === 'object' ? wallet.appStoreLinks : {};
+
+    function rememberHttp(href, seenSet) {
+      const url = String(href || '').trim();
+      if (!url) return '';
+      const key = normalizeWalletLinkKey(url);
+      if (!key || seenSet.has(key)) return '';
+      seenSet.add(key);
+      return url;
+    }
+
+    function pushProduct(href, label, icon, matomoName, salesLinkType) {
+      const url = rememberHttp(href, productSeen);
+      if (!url) return;
+      productEntries.push({ type: 'http', href: url, label: label, icon: icon, matomoName: matomoName, salesLinkType: salesLinkType });
+    }
+
+    if (!walletIsPersonal(wallet)) {
+      pushProduct(appLinks.iOS || appLinks.ios, 'App Store', icons.smartphone, 'App Store', 'app_store');
+      pushProduct(appLinks.android, 'Google Play', icons.smartphone, 'Google Play', 'google_play');
+    }
+
+    const productHtml = buildWalletModalLinksGroupHtml('Product', productEntries, { wallet: wallet });
+    if (!productHtml) return '';
+    return '<div class="fides-modal-links-sections">' + productHtml + '</div>';
+  }
+
+  function openWalletModal(wallet, options) {
+    if (!wallet) return;
+    ensureWalletSalesLinkTracking();
+    const theme = (options && options.theme) || 'dark';
+    const tierUi = optionsTierUiEnabled(options);
+    const platformLabelsOnly = tierUi && !walletListingTierIsPro(wallet, options);
+    selectedContext = { type: 'wallet', item: wallet, options: options || {}, theme: theme };
+
+    const organizationCatalogUrl = (options && options.organizationCatalogUrl) || 'https://fides.community/ecosystem-explorer/organization-catalog/';
+    const effectiveWalletOrgId = (wallet.orgId && String(wallet.orgId).trim()) ||
+      (wallet.provider && wallet.provider.orgId && String(wallet.provider.orgId).trim()) || '';
+    const orgCatalogHref = getOrganizationCatalogDeepLink(effectiveWalletOrgId, organizationCatalogUrl);
+    const providerDisplayName = (wallet.provider && wallet.provider.name) ? String(wallet.provider.name) : 'Unknown';
+    const providerNameInHeader = orgCatalogHref && providerDisplayName
+      ? '<a href="' + escapeHtml(orgCatalogHref) + '" class="fides-modal-link-inline" aria-label="View organization in organization catalog" title="Organization catalog" onclick="event.stopPropagation();"><span>' + escapeHtml(providerDisplayName) + '</span></a>'
+      : escapeHtml(providerDisplayName);
+    const bluePagesUrl = getBluePagesUrl(wallet.provider && wallet.provider.did, options);
+
+    const editActionHtml = buildWalletEditActionHtml(wallet, options);
+    const shareButtonHtml = buildModalShareButtonHtml(options, 'wallet');
+    const listingHeaderBadge = buildCatalogListingHeaderBadgeHtml(wallet, options);
+    const countryModalFlagHtml = buildWalletCountryModalFlagHtml(wallet, options);
+    const awardRecognitionHtml = buildModalAwardRecognitionBadgeHtml(options && options.awardRecognition);
+    const standardsList = walletStandardsList(wallet);
+    const capabilitiesHtml = buildWalletCapabilitiesOrAppStoresHtml(wallet, options);
+    const heroSectionHtml = buildWalletHeroSectionHtml(wallet, options);
+    const accordionsHtml = buildWalletAccordionsHtml(wallet, options, platformLabelsOnly, standardsList);
+
+    const modalHtml = '<div class="fides-modal-overlay fides-modal-overlay--rp fides-modal-overlay--wallet" id="fides-modal-overlay" data-theme="' + escapeHtml(theme) + '">' +
+      '<div class="fides-modal" role="dialog" aria-modal="true">' +
+      '<div class="fides-modal-header"><div class="fides-modal-header-content">' +
+      (wallet.logo ? '<img src="' + escapeHtml(wallet.logo) + '" alt="' + escapeHtml(wallet.name) + '" class="fides-modal-logo">' : '<div class="fides-modal-logo-placeholder">' + icons.wallet + '</div>') +
+      '<div class="fides-modal-title-wrap"><div class="fides-modal-title-row"><h2 class="fides-modal-title">' + escapeHtml(wallet.name) + '</h2>' + listingHeaderBadge + '</div><p class="fides-modal-provider">' + icons.building + ' ' + providerNameInHeader + countryModalFlagHtml + awardRecognitionHtml + buildModalBluePagesLinkHtml(bluePagesUrl) + '</p></div>' +
+      '</div><div class="fides-modal-header-actions">' + editActionHtml + shareButtonHtml + '<button class="fides-modal-close" id="fides-modal-close" aria-label="Close modal">' + icons.xLarge + '</button></div></div>' +
+      '<div class="fides-modal-body">' +
+      '<div id="fides-modal-rating-slot"></div>' +
+      heroSectionHtml +
+      capabilitiesHtml +
+      accordionsHtml +
+      buildWalletModalLinksHtml(wallet, options) +
+      buildModalLastUpdatedHtml(wallet, ['updatedAt', 'updated', 'fetchedAt']) +
+      '</div>' +
+      buildWalletModalFooterHtml(wallet, options) +
+      '</div></div>';
+
+    const walletOverlay = mountModal(modalHtml);
+    if (!walletOverlay) {
+      selectedContext = null;
+      return false;
+    }
+    trackWalletDetailOpen(wallet);
+    if (options && typeof options.onOpen === 'function') options.onOpen(wallet);
+    initModalMediaCarousels();
+    initModalAccordions();
+    initWalletTechnicalGlossaryLinks(options || {});
+    if (walletOverlay) attachModalRating(walletOverlay, 'wallet', wallet.id, options || {}, wallet);
+    return true;
+  }
+
+  function getBluePagesUrl(did, options) {
+    const base = (options && options.bluePagesUrl) || '';
+    if (!base || !did) return null;
+    return base.replace(/\/$/, '') + '/' + encodeURIComponent(did) + '/';
+  }
+
+  /** Temporarily hide modal header Blue Pages link. Set true to restore. */
+  var MODAL_BLUE_PAGES_LINK_ENABLED = false;
+
+  function buildModalBluePagesLinkHtml(bluePagesUrl) {
+    if (!MODAL_BLUE_PAGES_LINK_ENABLED || !bluePagesUrl) return '';
+    return ' <a href="' + escapeHtml(bluePagesUrl) + '" target="_blank" rel="noopener" class="fides-modal-provider-link">' + icons.externalLink + ' View in Blue Pages</a>';
+  }
+
+  /** English labels — keep in sync with fides-rp-catalog assets/rp-catalog.js (SECTOR_LABELS). */
+  const RP_SECTOR_LABELS = {
+    public_sector: 'Public Sector',
+    finance: 'Finance',
+    trade: 'Trade',
+    supply_chain: 'Supply Chain',
+    manufacturing: 'Manufacturing',
+    energy: 'Energy',
+    agriculture: 'Agriculture',
+    food: 'Food',
+    retail: 'Retail',
+    healthcare: 'Healthcare',
+    education: 'Education',
+    construction: 'Construction',
+    mobility: 'Mobility',
+    digital: 'Digital'
+  };
+
+  /** Legacy sector strings → canonical code (same as rp-catalog.js LEGACY_SECTOR_TO_CANONICAL). */
+  const RP_LEGACY_SECTOR_TO_CANONICAL = {
+    government: 'public_sector',
+    finance: 'finance',
+    healthcare: 'healthcare',
+    education: 'education',
+    retail: 'retail',
+    travel: 'mobility',
+    hospitality: 'retail',
+    employment: 'digital',
+    telecom: 'digital',
+    utilities: 'energy',
+    insurance: 'finance',
+    'real-estate': 'construction',
+    automotive: 'mobility',
+    entertainment: 'retail',
+    other: 'digital'
+  };
+
+  function rpCanonicalSectorCode(code) {
+    if (!code || typeof code !== 'string') return '';
+    if (Object.prototype.hasOwnProperty.call(RP_SECTOR_LABELS, code)) return code;
+    return RP_LEGACY_SECTOR_TO_CANONICAL[code] || code;
+  }
+
+  function rpSectorDisplayLabel(code) {
+    if (!code || typeof code !== 'string') return '';
+    const canonical = rpCanonicalSectorCode(code);
+    if (Object.prototype.hasOwnProperty.call(RP_SECTOR_LABELS, canonical)) return RP_SECTOR_LABELS[canonical];
+    return code.replace(/[-_]+/g, ' ').replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
+  }
+
+  const INTERACTION_MODE_LABELS = {
+    proximity: 'Proximity',
+    remote: 'Remote',
+    both: 'Both'
+  };
+
+  function getRpInteractionMode(rp) {
+    const m = rp && rp.interactionMode;
+    if (m === 'proximity' || m === 'remote' || m === 'both') return m;
+    return 'remote';
+  }
+
+  function openRpModal(rp, options) {
+    if (!rp) return;
+    const theme = (options && options.theme) || 'dark';
+    selectedContext = { type: 'rp', item: rp, options: options || {}, theme: theme };
+    if (options && typeof options.onOpen === 'function') options.onOpen(rp);
+
+    const organizationCatalogUrl = (options && options.organizationCatalogUrl) || 'https://fides.community/ecosystem-explorer/organization-catalog/';
+    const providerOrgId = String(rp.orgId || '').trim();
+    const orgCatalogHref = getOrganizationCatalogDeepLink(providerOrgId, organizationCatalogUrl);
+    const providerDisplayName = rp.provider && rp.provider.name ? String(rp.provider.name) : '';
+    const providerNameInHeader = orgCatalogHref && providerDisplayName
+      ? '<a href="' + escapeHtml(orgCatalogHref) + '" class="fides-modal-link-inline" aria-label="View organization in organization catalog" title="Organization catalog" onclick="event.stopPropagation();"><span>' + escapeHtml(providerDisplayName) + '</span></a>'
+      : escapeHtml(providerDisplayName);
+    const bluePagesUrl = getBluePagesUrl(rp.provider && rp.provider.did, options);
+    const modalLogoUrl = rp.logo || (rp.country ? 'https://flagcdn.com/w80/' + String(rp.country).toLowerCase() + '.png' : null);
+    const countryModalFlagHtml = buildRpCountryModalFlagHtml(rp, options);
+    const heroSectionHtml = buildRpHeroSectionHtml(rp);
+    const actionBarHtml = buildRpActionBarHtml(rp);
+    const accordionsHtml = buildRpAccordionsHtml(rp, options);
+    const linksHtml = buildRpModalLinksHtml(rp);
+
+    const shareButtonHtml = (options && options.showShare === false)
+      ? ''
+      : '<button type="button" class="fides-modal-copy-link" id="fides-modal-copy-link" aria-label="Copy link">' + icons.share + '</button>';
+    const editActionHtml = buildRpEditActionHtml(rp, options);
+    const listingHeaderBadge = buildCatalogListingHeaderBadgeHtml(rp, options);
+
+    const modalHtml = '<div class="fides-modal-overlay fides-modal-overlay--rp" id="fides-modal-overlay" data-theme="' + escapeHtml(theme) + '">' +
+      '<div class="fides-modal" role="dialog" aria-modal="true">' +
+      '<div class="fides-modal-header"><div class="fides-modal-header-content">' +
+      (modalLogoUrl ? '<img src="' + escapeHtml(modalLogoUrl) + '" alt="' + escapeHtml(rp.name) + '" class="fides-modal-logo">' : '<div class="fides-modal-logo-placeholder">' + icons.globe + '</div>') +
+      '<div class="fides-modal-title-wrap"><div class="fides-modal-title-row"><h2 class="fides-modal-title">' + escapeHtml(rp.name) + '</h2>' + listingHeaderBadge + '</div><p class="fides-modal-provider">' +
+      icons.building + ' ' + providerNameInHeader + countryModalFlagHtml +
+      buildModalBluePagesLinkHtml(bluePagesUrl) +
+      '</p></div>' +
+      '</div><div class="fides-modal-header-actions">' + editActionHtml + shareButtonHtml + '<button class="fides-modal-close" id="fides-modal-close" aria-label="Close modal">' + icons.xLarge + '</button></div></div>' +
+      '<div class="fides-modal-body">' +
+      '<div id="fides-modal-rating-slot"></div>' +
+      heroSectionHtml +
+      actionBarHtml +
+      accordionsHtml +
+      linksHtml +
+      buildModalLastUpdatedHtml(rp, ['updatedAt', 'updated', 'fetchedAt']) +
+      '</div>' +
+      buildRpModalFooterHtml(rp, options) +
+      '</div></div>';
+
+    mountModal(modalHtml);
+    initModalMediaCarousels();
+    initModalAccordions();
+    initModalEcosystemTargets();
+    initWalletTechnicalGlossaryLinks(options || {});
+    const rpOverlay = document.getElementById('fides-modal-overlay');
+    if (rpOverlay) attachModalRating(rpOverlay, 'rp', rp.id, options || {}, rp);
+    populateRpModalEntityRatings(rpOverlay, rp, options || {});
+  }
+
+  function getCredentialRefCatalogId(ref) {
+    if (!ref || typeof ref !== 'object') return null;
+    const id = ref.credentialCatalogId != null ? ref.credentialCatalogId : ref.id;
+    return typeof id === 'string' && id.indexOf('cred:') === 0 ? id : null;
+  }
+
+  /**
+   * All ids that resolve to this credential (canonical type id + legacy format aliases).
+   * Used so RP / issuer / use-case catalogs can keep publishing format-era refs
+   * while the credential catalog uses attestation-type ids.
+   */
+  function credentialResolvableIds(credential) {
+    if (!credential || typeof credential.id !== 'string') return [];
+    const ids = {};
+    ids[credential.id] = true;
+    const aliases = Array.isArray(credential.aliasIds) ? credential.aliasIds : [];
+    for (let i = 0; i < aliases.length; i++) {
+      if (aliases[i]) ids[String(aliases[i])] = true;
+    }
+    const formats = Array.isArray(credential.formats) ? credential.formats : [];
+    for (let j = 0; j < formats.length; j++) {
+      const format = formats[j];
+      if (format && format.credentialId) ids[String(format.credentialId)] = true;
+    }
+    return Object.keys(ids);
+  }
+
+  /**
+   * Build lookup tables from credential catalog rows.
+   * @returns {{ byId: Object, canonicalIdByRef: Object }}
+   */
+  function buildCredentialAliasIndex(credentials) {
+    const byId = Object.create(null);
+    const canonicalIdByRef = Object.create(null);
+    const list = Array.isArray(credentials) ? credentials : [];
+    for (let i = 0; i < list.length; i++) {
+      const credential = list[i];
+      if (!credential || typeof credential.id !== 'string') continue;
+      const resolvable = credentialResolvableIds(credential);
+      for (let j = 0; j < resolvable.length; j++) {
+        const id = resolvable[j];
+        byId[id] = credential;
+        canonicalIdByRef[id] = credential.id;
+      }
+    }
+    return { byId: byId, canonicalIdByRef: canonicalIdByRef };
+  }
+
+  function resolveCredentialCanonicalId(credentialId, aliasIndexOrMap) {
+    const wanted = String(credentialId || '').trim();
+    if (!wanted) return null;
+    if (!aliasIndexOrMap) return wanted;
+    if (aliasIndexOrMap.canonicalIdByRef) {
+      return aliasIndexOrMap.canonicalIdByRef[wanted] || wanted;
+    }
+    if (typeof aliasIndexOrMap.get === 'function') {
+      return aliasIndexOrMap.get(wanted) || wanted;
+    }
+    if (typeof aliasIndexOrMap === 'object') {
+      return aliasIndexOrMap[wanted] || wanted;
+    }
+    return wanted;
+  }
+
+  function lookupCredentialByIdOrAlias(credentialId, byId) {
+    const wanted = String(credentialId || '').trim();
+    if (!wanted || !byId) return null;
+    return byId[wanted] || null;
+  }
+
+  function getAcceptedCredentialRows(rp, options) {
+    const labels = Array.isArray(rp && rp.acceptedCredentials) ? rp.acceptedCredentials : [];
+    const refs = Array.isArray(rp && rp.acceptedCredentialRefs) ? rp.acceptedCredentialRefs : [];
+    const n = Math.max(labels.length, refs.length);
+    const rows = [];
+    for (let i = 0; i < n; i++) {
+      const credentialId = getCredentialRefCatalogId(refs[i]);
+      const raw = typeof labels[i] === 'string' ? String(labels[i]).trim() : '';
+      let label = raw;
+      if (!label && credentialId) {
+        const segs = credentialId.split(':');
+        const tail = segs.length ? segs[segs.length - 1] : credentialId;
+        label = tail.replace(/-/g, ' ');
+      }
+      if (!label) continue;
+      rows.push({ label: label, credentialId: credentialId });
+    }
+
+    const aliasIndex = options && options.credentialAliasIndex;
+    const credById = (options && options.credentialById)
+      || (aliasIndex && aliasIndex.byId)
+      || null;
+    if (!aliasIndex && !credById) return rows;
+
+    const seen = Object.create(null);
+    const deduped = [];
+    for (let r = 0; r < rows.length; r++) {
+      const row = rows[r];
+      const canonical = resolveCredentialCanonicalId(row.credentialId, aliasIndex);
+      const key = canonical || row.label;
+      if (seen[key]) continue;
+      seen[key] = true;
+      const meta = lookupCredentialByIdOrAlias(canonical || row.credentialId, credById);
+      deduped.push({
+        label: (meta && meta.displayName) ? meta.displayName : row.label,
+        credentialId: canonical || row.credentialId
+      });
+    }
+    return deduped;
+  }
+
+  function getCredentialCatalogDeepLink(credentialId, catalogBase, aliasIndexOrMap) {
+    if (!credentialId || typeof credentialId !== 'string' || credentialId.indexOf('cred:') !== 0) return null;
+    const resolved = resolveCredentialCanonicalId(credentialId, aliasIndexOrMap) || credentialId;
+    const base = (catalogBase || '').trim();
+    if (!base) return null;
+    try {
+      const u = new URL(base);
+      u.searchParams.set('credential', resolved);
+      return u.toString();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function getOrganizationCatalogDeepLink(orgId, catalogBase) {
+    if (!orgId || typeof orgId !== 'string' || orgId.indexOf('org:') !== 0) return null;
+    const base = (catalogBase || '').trim();
+    if (!base) return null;
+    try {
+      const u = new URL(base);
+      u.searchParams.set('org', orgId);
+      return u.toString();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function renderAcceptedCredentialTagsHtmlForRpModal(rp, catalogBase, options) {
+    const rows = getAcceptedCredentialRows(rp, options);
+    const aliasIndex = options && options.credentialAliasIndex;
+    return rows.map(function(row) {
+      const href = row.credentialId
+        ? getCredentialCatalogDeepLink(row.credentialId, catalogBase, aliasIndex)
+        : null;
+      const safe = escapeHtml(row.label);
+      if (href) {
+        return '<a href="' + escapeHtml(href) + '" class="fides-tag accepted-credential credential-catalog-link">' + icons.externalLink + ' ' + safe + '</a>';
+      }
+      return '<span class="fides-tag accepted-credential">' + safe + '</span>';
+    }).join('');
+  }
+
+  function arrayValues(input) {
+    return Array.isArray(input) ? input : [];
+  }
+
+  function renderTagList(values, className) {
+    return arrayValues(values).filter(function(v) { return typeof v === 'string' && v.trim() !== ''; }).map(function(v) {
+      return '<span class="fides-tag ' + escapeHtml(className || '') + '">' + escapeHtml(v) + '</span>';
+    }).join('');
+  }
+
+  /**
+   * Human-readable labels for connector taxonomy values.
+   * Keep in sync with wallet-connector-catalog docs/CONTRACT.md.
+   */
+  const CONNECTOR_VALUE_LABELS = {
+    issuer: 'Issuer',
+    verifier: 'Verifier',
+    saas: 'SaaS',
+    on_premises: 'On-premises',
+    hybrid: 'Hybrid',
+    software_only: 'Software only',
+    managed_verification: 'Managed verification',
+    managed_issuance: 'Managed issuance',
+    oidc_oauth2: 'OIDC / OAuth 2.0',
+    saml2: 'SAML 2.0',
+    rest_api: 'REST API',
+    webhooks: 'Webhooks',
+    server_sdk: 'Server SDK',
+    hosted_ui_redirect: 'Hosted UI (redirect)',
+    headless_api: 'Headless API',
+    frontend_sdk: 'Frontend SDK',
+    web_component: 'Web component',
+    other: 'Other',
+    rp_intermediary: 'RP intermediary',
+    eaa_provider: 'EAA provider',
+    qeaa_provider: 'QEAA provider',
+    provider_managed: 'Provider-managed',
+    customer_managed: 'Customer-managed',
+    both: 'Provider- or customer-managed',
+    development: 'In Development',
+    beta: 'Beta',
+    production: 'Production',
+    deprecated: 'Deprecated'
+  };
+
+  const CONNECTOR_ROLE_ORDER = ['rp_intermediary', 'eaa_provider', 'qeaa_provider'];
+
+  /** Label for a connector taxonomy value; `group` is optional ('vcFormat' uses the shared credential format labels). */
+  function connectorValueLabel(value, group) {
+    const raw = String(value == null ? '' : value);
+    if (!raw) return '';
+    if (group === 'vcFormat') return credentialFormatDisplayLabel(raw);
+    if (Object.prototype.hasOwnProperty.call(CONNECTOR_VALUE_LABELS, raw)) return CONNECTOR_VALUE_LABELS[raw];
+    if (raw.indexOf('_') === -1) return raw;
+    const spaced = raw.replace(/_/g, ' ');
+    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+  }
+
+  function connectorProviderId(connector) {
+    return walletSalesProviderId(connector) ||
+      salesTrackSafePart(String((connector && connector.organization && connector.organization.id) || '').replace(/^org:/i, ''));
+  }
+
+  function connectorAnalyticsAttrString(connector) {
+    const providerId = connectorProviderId(connector);
+    const entityId = salesTrackSafePart(connector && connector.id);
+    if (!providerId || !entityId) return '';
+    const providerName = connector.organization && connector.organization.name
+      ? String(connector.organization.name).trim()
+      : '';
+    const entityName = String(connector.name || '').trim();
+    return ' data-provider-id="' + escapeHtml(providerId) + '"' +
+      ' data-provider-name="' + escapeHtml(providerName) + '"' +
+      ' data-entity-type="connector"' +
+      ' data-entity-id="' + escapeHtml(entityId) + '"' +
+      ' data-entity-name="' + escapeHtml(entityName) + '"';
+  }
+
+  function connectorSalesTrackAttrString(connector, linkType) {
+    if (!connector || !linkType) return '';
+    const analyticsAttrs = connectorAnalyticsAttrString(connector);
+    const normalizedLinkType = normalizeProviderOutboundLinkType(linkType);
+    if (!analyticsAttrs || !normalizedLinkType) return '';
+    return ' data-sales-track="wallet-link"' + analyticsAttrs +
+      ' data-link-type="' + escapeHtml(normalizedLinkType) + '"' +
+      ' data-matomo-ignore="1"';
+  }
+
+  function trackConnectorDetailOpen(connector) {
+    if (!connector) return;
+    const providerId = connectorProviderId(connector);
+    const entityId = salesTrackSafePart(connector.id);
+    if (!providerId || !entityId) return;
+    ensureSalesLinkTracking();
+    trackMatomoEvent('Wallet Connector Catalog', 'Detail Open', [providerId, 'connector', entityId].join('|'));
+  }
+
+  function connectorCountryCode(connector) {
+    const org = connector && connector.organization && typeof connector.organization === 'object' ? connector.organization : {};
+    return normalizeIsoCountryCode(org.country || (connector && connector.country));
+  }
+
+  function connectorCountryLabel(connector, options) {
+    const code = connectorCountryCode(connector);
+    if (!code) return '';
+    if (code === 'EU') return 'European Union';
+    const names = options && options.countryNames && typeof options.countryNames === 'object' ? options.countryNames : {};
+    return names[code] ? String(names[code]) : code;
+  }
+
+  function buildConnectorUpdateFormUrl(connectorId, options) {
+    const updateFormUrl = (options && options.updateFormUrl) ? String(options.updateFormUrl).trim() : '';
+    const isLoggedIn = boolFromMixed(
+      options && (options.isLoggedIn != null ? options.isLoggedIn : options.ratingsIsLoggedIn)
+    );
+    if (!isLoggedIn || !updateFormUrl || !connectorId) return '';
+    try {
+      const url = new URL(updateFormUrl, window.location.origin);
+      url.searchParams.set('connector', String(connectorId));
+      return url.toString();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function buildConnectorEditActionHtml(connector, options) {
+    if (!canEditWallet(connector, options)) return '';
+    const href = buildConnectorUpdateFormUrl(connector && connector.id, options);
+    if (!href) return '';
+    return '<a href="' + escapeHtml(href) + '" class="fides-modal-copy-link fides-modal-edit-link" aria-label="Suggest an update" title="Suggest an update">' + icons.pencil + '</a>';
+  }
+
+  /** Check-box style option with an optional glossary link (same markup as the wallet eIDAS trust services). */
+  function renderConnectorCheckOption(label, active, vocabulary, vocabKey) {
+    const match = vocabulary && vocabKey ? walletVocabEntry(vocabulary, 'connector', vocabKey) : null;
+    const labelHtml = match
+      ? '<button type="button" class="fides-kv-glossary-link fides-wallet-check-vocab-link" data-vocab-key="' +
+        escapeHtml(match.key) + '" aria-label="Definition: ' + escapeHtml(label) + '">' + escapeHtml(label) + '</button>'
+      : '<span class="fides-wallet-check-label">' + escapeHtml(label) + '</span>';
+    return '<span class="fides-wallet-check-option' + (active ? ' is-active' : ' is-inactive') + '">' +
+      '<span class="fides-wallet-check-box" aria-hidden="true">' + (active ? icons.check : '') + '</span>' +
+      labelHtml + '</span>';
+  }
+
+  function connectorValueSet(values) {
+    return new Set(arrayValues(values).map(function(v) { return String(v || '').trim(); }).filter(Boolean));
+  }
+
+  function connectorIsEudi(connector) {
+    return !!(connector && (connector.isEudiWalletConnector === true ||
+      arrayValues(connector.interoperabilityProfiles).indexOf('EUDI Wallet ARF') !== -1));
+  }
+
+  function buildConnectorTechnicalKvHtml(connector, vocabulary) {
+    const functions = connectorValueSet(connector.connectorFunctions);
+    const keyCapabilities = '<div class="fides-kv-section" data-section="capabilities">' +
+      '<div class="fides-kv-section-title">Key capabilities</div>' +
+      '<div class="fides-wallet-key-capabilities fides-wallet-check-group-wrap">' +
+      renderWalletCheckGroup([
+        renderConnectorCheckOption('Issuer', functions.has('issuer'), vocabulary, 'issuer'),
+        renderConnectorCheckOption('Verifier', functions.has('verifier'), vocabulary, 'verifier'),
+        renderConnectorCheckOption('EUDI Wallet Connector', connectorIsEudi(connector), vocabulary, 'EUDI Wallet ARF')
+      ]) + '</div></div>';
+
+    const deploymentChecks = renderWalletDeploymentChecksHtml(connector);
+    const operations = buildTechnicalKvSection('Product & deployment', 'operations', [
+      deploymentChecks ? renderTechnicalKvRow('Deployment', deploymentChecks) : '',
+      renderTechnicalKvRowText('Service model', arrayValues(connector.serviceModels), connectorValueLabel),
+      renderTechnicalKvRow('Status', escapeHtml(walletStatusDisplay(connector))),
+      renderTechnicalKvRow('License', escapeHtml(walletLicenseKvDisplay(connector)))
+    ]);
+
+    const integration = buildTechnicalKvSection('Integration', 'integration', [
+      renderTechnicalKvRowText('Backend integration', arrayValues(connector.backendIntegrations), connectorValueLabel),
+      renderTechnicalKvRowText('Frontend integration', arrayValues(connector.frontendIntegrations), connectorValueLabel)
+    ]);
+
+    const formats = buildTechnicalKvSection('Formats & protocols', 'compatibility', [
+      renderTechnicalKvRowText('VC formats', sortCredentialFormats(arrayValues(connector.vcFormat)), credentialFormatDisplayLabel, vocabulary, 'vcFormat'),
+      renderTechnicalKvRowText('Issuance protocols', arrayValues(connector.issuanceProtocols), null, vocabulary, 'issuanceProtocol'),
+      renderTechnicalKvRowText('Presentation protocols', arrayValues(connector.presentationProtocols), null, vocabulary, 'presentationProtocol'),
+      renderTechnicalKvRowText('Interop profiles', arrayValues(connector.interoperabilityProfiles), null, vocabulary, 'interopProfile'),
+      renderTechnicalKvRowText('Credential status', arrayValues(connector.credentialStatusMethods), null, vocabulary, 'credentialStatus')
+    ]);
+
+    const roles = connectorValueSet(connector.eidasRoles);
+    let eidas = '';
+    if (roles.size || connector.certificateManagement) {
+      const roleOptions = CONNECTOR_ROLE_ORDER.map(function(role) {
+        return renderConnectorCheckOption(connectorValueLabel(role), roles.has(role), null, '');
+      });
+      eidas = '<div class="fides-kv-section" data-section="eidas">' +
+        '<div class="fides-kv-section-title">eIDAS &amp; certificates</div>' +
+        '<div class="fides-wallet-check-group-wrap">' + renderWalletCheckGroup(roleOptions) + '</div>' +
+        (connector.certificateManagement
+          ? '<div class="fides-details-kv fides-details-kv--technical-grid">' +
+            renderTechnicalKvRow('Certificate management', escapeHtml(connectorValueLabel(connector.certificateManagement))) + '</div>'
+          : '') +
+        '</div>';
+    }
+    return [keyCapabilities, operations, integration, formats, eidas].filter(Boolean).join('');
+  }
+
+  function connectorWalletHref(walletId, options) {
+    const base = String((options && options.walletSharePath) || '/wallet/').replace(/\/?$/, '/');
+    return base + encodeURIComponent(walletId) + '/';
+  }
+
+  function connectorWalletRows(wallets, options) {
+    return arrayValues(wallets).filter(function(w) { return w && w.id; }).map(function(w) {
+      return { id: String(w.id), name: String(w.name || w.id), href: connectorWalletHref(w.id, options), organization: w.providerName ? String(w.providerName) : '', ratingType: 'wallet' };
+    });
+  }
+
+  function buildConnectorWalletAccordionsHtml(connector, options) {
+    const reference = connector.walletReference && connector.walletReference.id
+      ? connector.walletReference
+      : (connector.walletRef && connector.walletRef.walletCatalogId ? { id: connector.walletRef.walletCatalogId, name: connector.walletRef.walletCatalogId } : null);
+    const referenceRows = reference ? connectorWalletRows([reference], options) : [];
+    const compatibleRows = connectorWalletRows(connector.compatibleWallets, options);
+    const tableOptions = function(nameLabel, ariaLabel, rows) {
+      return buildModalEntityTableHtml({
+        rows: rows,
+        nameColumnLabel: nameLabel,
+        organizationColumnLabel: 'Provider',
+        alwaysShowOrganizationColumn: true,
+        sameWindowLinks: true,
+        ariaLabel: ariaLabel,
+        options: options || {}
+      });
+    };
+    return [
+      renderModalAccordion(
+        'fides-accordion-connector-wallet',
+        'Business wallet',
+        icons.wallet,
+        referenceRows.length ? tableOptions('Business wallet', 'Business wallet', referenceRows) : '',
+        true
+      ),
+      renderModalAccordion(
+        'fides-accordion-connector-compatible-wallets',
+        'Compatible personal wallets',
+        icons.wallet,
+        compatibleRows.length ? tableOptions('Compatible wallet', 'Compatible personal wallets', compatibleRows) : '',
+        true,
+        compatibleRows.length
+      )
+    ].filter(Boolean).join('');
+  }
+
+  function buildConnectorAccordionsHtml(connector, options) {
+    const vocabulary = options && options.vocabulary;
+    const technicalKv = buildConnectorTechnicalKvHtml(connector, vocabulary);
+    const accordions = buildConnectorWalletAccordionsHtml(connector, options) +
+      renderModalAccordion(
+        'fides-accordion-connector-technical',
+        'Specifications',
+        icons.fileCheck,
+        technicalKv ? '<div class="fides-wallet-technical-specs">' + technicalKv + '</div>' : '',
+        true
+      );
+    if (!accordions) return '';
+    return '<div class="fides-use-case-modal-accordions">' + accordions + '</div>';
+  }
+
+  /**
+   * Links bar (same markup as the RP modal): website, documentation, code and playground buttons.
+   * Provider/organization-catalog link lives in the modal header, like the RP and wallet modals.
+   */
+  function buildConnectorActionBarHtml(connector, options) {
+    if (!connector || !catalogListingHasFullFields(connector, options)) return '';
+    const seen = new Set();
+    const buttons = [];
+    function addButton(href, icon, smallText, strongText, matomoName, ariaLabel, salesLinkType, secondary) {
+      const url = String(href || '').trim();
+      if (!url) return;
+      const key = normalizeWalletLinkKey(url);
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      buttons.push(renderWalletAppStoreButton(
+        'web',
+        icon,
+        smallText,
+        strongText,
+        url,
+        true,
+        matomoName,
+        ariaLabel,
+        secondary ? 'fides-rp-link-secondary' : '',
+        connectorSalesTrackAttrString(connector, salesLinkType)
+      ));
+    }
+    addButton(connector.website, icons.globeApp, 'Visit the', 'Website', 'Product website', 'Visit website', 'product', false);
+    addButton(connector.documentation, icons.book, 'Read the', 'Documentation', 'Documentation', 'Read documentation', 'documentation', true);
+    addButton(connector.repository, icons.github, 'View the', 'Code', 'Code Repository', 'View the code', 'code_repository', true);
+    const playgrounds = arrayValues(connector.playgroundUrls);
+    playgrounds.forEach(function(url, index) {
+      addButton(
+        url,
+        icons.externalLink,
+        'Try the',
+        playgrounds.length > 1 ? 'Playground ' + (index + 1) : 'Playground',
+        'Playground',
+        'Try the playground',
+        'demo',
+        true
+      );
+    });
+    if (!buttons.length) return '';
+    return '<div class="fides-wallet-capabilities fides-wallet-app-stores fides-rp-action-bar">' +
+      '<span class="fides-wallet-capabilities-label">Links</span>' +
+      '<div class="fides-wallet-capabilities-list fides-modal-app-stores">' + buttons.join('') + '</div></div>';
+  }
+
+  function openConnectorModal(connector, options) {
+    if (!connector) return false;
+    ensureSalesLinkTracking();
+    const theme = (options && options.theme) || 'dark';
+    selectedContext = { type: 'connector', item: connector, options: options || {}, theme: theme };
+    const organization = connector.organization || {};
+    const organizationName = organization.name || connector.orgId || 'Unknown organization';
+    const organizationUrl = getOrganizationCatalogDeepLink(
+      connector.orgId || organization.id || '',
+      (options && options.organizationCatalogUrl) || 'https://fides.community/ecosystem-explorer/organization-catalog/'
+    );
+    const providerHtml = organizationUrl
+      ? '<a href="' + escapeHtml(organizationUrl) + '" class="fides-modal-link-inline" aria-label="View organization in organization catalog" title="Organization catalog" onclick="event.stopPropagation();"><span>' + escapeHtml(organizationName) + '</span></a>'
+      : escapeHtml(organizationName);
+    const countryLabel = connectorCountryLabel(connector, options);
+    const countryHtml = countryLabel ? buildModalProviderCountryGlobeHtml(countryLabel) : '';
+    const shareButtonHtml = buildModalShareButtonHtml(options, 'connector');
+    const editActionHtml = buildConnectorEditActionHtml(connector, options);
+    const listingHeaderBadge = buildCatalogListingHeaderBadgeHtml(connector, options);
+    const heroSectionHtml = buildWalletHeroSectionHtml(connector, options);
+    const modalHtml = '<div class="fides-modal-overlay fides-modal-overlay--rp fides-modal-overlay--wallet fides-modal-overlay--connector" id="fides-modal-overlay" data-theme="' + escapeHtml(theme) + '">' +
+      '<div class="fides-modal" role="dialog" aria-modal="true">' +
+      '<div class="fides-modal-header"><div class="fides-modal-header-content">' +
+      (connector.logo ? '<img src="' + escapeHtml(connector.logo) + '" alt="' + escapeHtml(connector.name || connector.id) + '" class="fides-modal-logo">' : '<div class="fides-modal-logo-placeholder">' + icons.link + '</div>') +
+      '<div class="fides-modal-title-wrap"><div class="fides-modal-title-row"><h2 class="fides-modal-title">' + escapeHtml(connector.name || connector.id) + '</h2>' + listingHeaderBadge + '</div>' +
+      '<p class="fides-modal-provider">' + icons.building + ' ' + providerHtml + countryHtml + '</p></div>' +
+      '</div><div class="fides-modal-header-actions">' + editActionHtml + shareButtonHtml + '<button class="fides-modal-close" id="fides-modal-close" aria-label="Close modal">' + icons.xLarge + '</button></div></div>' +
+      '<div class="fides-modal-body">' +
+      '<div id="fides-modal-rating-slot"></div>' +
+      heroSectionHtml +
+      buildConnectorActionBarHtml(connector, options) +
+      buildConnectorAccordionsHtml(connector, options) +
+      buildModalLastUpdatedHtml(connector, ['updatedAt', 'fetchedAt']) +
+      '</div></div></div>';
+    const overlay = mountModal(modalHtml);
+    if (!overlay) {
+      selectedContext = null;
+      return false;
+    }
+    trackConnectorDetailOpen(connector);
+    if (options && typeof options.onOpen === 'function') options.onOpen(connector);
+    initModalAccordions();
+    initWalletTechnicalGlossaryLinks(options || {});
+    attachModalRating(overlay, 'connector', connector.id, options || {}, connector);
+    return true;
+  }
+
+  function openIssuerModal(issuer, options) {
+    if (!issuer) return;
+    const theme = (options && options.theme) || 'dark';
+    selectedContext = { type: 'issuer', item: issuer, options: options || {}, theme: theme };
+    if (options && typeof options.onOpen === 'function') options.onOpen(issuer);
+
+    const provider = issuer.organization || {};
+    const providerName = provider.name ? String(provider.name) : 'Unknown organization';
+    const orgCatalogHref = getOrganizationCatalogDeepLink((issuer.orgId || '').trim(), (options && options.organizationCatalogUrl) || 'https://fides.community/ecosystem-explorer/organization-catalog/');
+    const providerInHeader = orgCatalogHref
+      ? '<a href="' + escapeHtml(orgCatalogHref) + '" class="fides-modal-link-inline" aria-label="View organization in organization catalog" title="Organization catalog" onclick="event.stopPropagation();"><span>' + escapeHtml(providerName) + '</span></a>'
+      : escapeHtml(providerName);
+    const logo = issuer.logoUri || provider.logoUri || '';
+    const vcFormatTags = arrayValues(issuer.credentialConfigurations).map(function(conf) {
+      return conf && conf.vcFormat ? credentialFormatDisplayLabel(conf.vcFormat) : '';
+    }).filter(Boolean);
+    const credentialTypeTags = arrayValues(issuer.credentialConfigurations).map(function(conf) {
+      return conf && conf.displayName ? conf.displayName : '';
+    }).filter(Boolean);
+
+    const shareButtonHtml = (options && options.showShare === false)
+      ? ''
+      : '<button type="button" class="fides-modal-copy-link" id="fides-modal-copy-link" aria-label="Copy link">' + icons.share + '</button>';
+
+    const modalHtml = '<div class="fides-modal-overlay" id="fides-modal-overlay" data-theme="' + escapeHtml(theme) + '">' +
+      '<div class="fides-modal" role="dialog" aria-modal="true">' +
+      '<div class="fides-modal-header"><div class="fides-modal-header-content">' +
+      (logo ? '<img src="' + escapeHtml(logo) + '" alt="' + escapeHtml(issuer.displayName || issuer.id) + '" class="fides-modal-logo">' : '<div class="fides-modal-logo-placeholder">' + icons.building + '</div>') +
+      '<div class="fides-modal-title-wrap"><h2 class="fides-modal-title">' + escapeHtml(issuer.displayName || issuer.id) + '</h2><p class="fides-modal-provider">' + icons.building + ' ' + providerInHeader + '</p></div>' +
+      '</div><div class="fides-modal-header-actions">' + shareButtonHtml + '<button class="fides-modal-close" id="fides-modal-close" aria-label="Close modal">' + icons.xLarge + '</button></div></div>' +
+      '<div class="fides-modal-body">' +
+      '<div class="fides-modal-badges">' +
+      (issuer.environment ? '<span class="fides-modal-badge">' + escapeHtml(issuer.environment) + '</span>' : '') +
+      (issuer.issuanceProtocol ? '<span class="fides-modal-badge">' + escapeHtml(String(issuer.issuanceProtocol).toUpperCase()) + '</span>' : '') +
+      '</div>' +
+      (issuer.description ? '<div class="fides-modal-section"><p class="fides-modal-description">' + escapeHtml(issuer.description) + '</p></div>' : '') +
+      '<div class="fides-modal-grid">' +
+      (vcFormatTags.length ? '<div class="fides-modal-grid-item"><div class="fides-modal-grid-label">' + icons.fileCheck + ' VC formats</div><div class="fides-modal-grid-value">' + renderTagList(vcFormatTags, 'credential-format') + '</div></div>' : '') +
+      (credentialTypeTags.length ? '<div class="fides-modal-grid-item"><div class="fides-modal-grid-label">' + icons.shield + ' Credential types</div><div class="fides-modal-grid-value">' + renderTagList(credentialTypeTags, '') + '</div></div>' : '') +
+      '</div>' +
+      '<div class="fides-modal-links">' +
+      (issuer.issuerWebsiteUrl ? '<a href="' + escapeHtml(issuer.issuerWebsiteUrl) + '" target="_blank" rel="noopener" class="fides-modal-link primary" data-matomo-name="Issuer website">' + icons.externalLink + ' Issuer Website</a>' : '') +
+      (issuer.oid4vciMetadataUrl ? '<a href="' + escapeHtml(issuer.oid4vciMetadataUrl) + '" target="_blank" rel="noopener" class="fides-modal-link" data-matomo-name="Issuer metadata">' + icons.book + ' OID4VCI metadata</a>' : '') +
+      '</div>' +
+      buildModalLastUpdatedHtml(issuer, ['updatedAt', 'updated', 'fetchedAt']) +
+      '</div></div></div>';
+
+    mountModal(modalHtml);
+  }
+
+  function openOrganizationModal(org, options) {
+    if (!org) return;
+    ensureSalesLinkTracking();
+    const theme = (options && options.theme) || 'dark';
+    const tierUi = optionsTierUiEnabled(options);
+    const isCommunity = tierUi ? !walletListingTierIsPro(org, options) : itemIsCommunity(org);
+    selectedContext = { type: 'organization', item: org, options: options || {}, theme: theme };
+
+    const logo = org.logo || '';
+    const countryLabel = org.country
+      ? resolveOrganizationCountryLabel(org, resolveOrganizationCountryCode(org), options)
+      : 'Country unknown';
+    const countryHeaderHtml = buildCatalogCountryGlobeMetaHtml(countryLabel);
+    const issuerCatalogBase = (options && options.issuerCatalogUrl) || 'https://fides.community/ecosystem-explorer/issuer-catalog/';
+    const rpCatalogBase = (options && options.rpCatalogUrl) || 'https://fides.community/ecosystem-explorer/relying-party-catalog/';
+    const walletCatalogBase = (options && options.walletCatalogUrl) || 'https://fides.community/community-tools/personal-wallets/';
+    const credentialCatalogBase = (options && options.credentialCatalogUrl) || 'https://fides.community/ecosystem-explorer/credential-catalog/';
+
+    const issuerLinks = arrayValues(org.issuers).map(function(i) {
+      const issuerId = i && i.id ? i.id : '';
+      if (!issuerId) return '';
+      const href = issuerCatalogBase ? issuerCatalogBase.replace(/\/$/, '') + '?issuer=' + encodeURIComponent(issuerId) : null;
+      const label = i.displayName || issuerId;
+      if (href) return '<a href="' + escapeHtml(href) + '" class="fides-tag" target="_blank" rel="noopener">' + escapeHtml(label) + ' ' + icons.externalLinkSmall + '</a>';
+      return '<span class="fides-tag">' + escapeHtml(label) + '</span>';
+    }).filter(Boolean).join('');
+
+    const walletLinks = arrayValues(org.wallets).map(function(w) {
+      const walletId = w && w.id ? w.id : '';
+      const href = walletCatalogBase && walletId ? walletCatalogBase.replace(/\/$/, '') + '?wallet=' + encodeURIComponent(walletId) : null;
+      const label = (w && w.name) ? w.name : walletId;
+      if (!label) return '';
+      if (href) return '<a href="' + escapeHtml(href) + '" class="fides-tag wallet-link" target="_blank" rel="noopener">' + escapeHtml(label) + ' ' + icons.externalLinkSmall + '</a>';
+      return '<span class="fides-tag wallet-link">' + escapeHtml(label) + '</span>';
+    }).filter(Boolean).join('');
+
+    const rpLinks = arrayValues(org.relyingParties).map(function(rp) {
+      const rpId = rp && rp.id ? rp.id : '';
+      const href = rpCatalogBase && rpId ? rpCatalogBase.replace(/\/$/, '') + '?rp=' + encodeURIComponent(rpId) : null;
+      const label = (rp && rp.name) ? rp.name : rpId;
+      if (!label) return '';
+      if (href) return '<a href="' + escapeHtml(href) + '" class="fides-tag" target="_blank" rel="noopener">' + escapeHtml(label) + ' ' + icons.externalLinkSmall + '</a>';
+      return '<span class="fides-tag">' + escapeHtml(label) + '</span>';
+    }).filter(Boolean).join('');
+
+    const credentialAliasIndex = options && options.credentialAliasIndex;
+    const credentialLinks = arrayValues(org.credentials).map(function(c) {
+      const credentialId = c && c.id ? c.id : '';
+      const href = getCredentialCatalogDeepLink(credentialId, credentialCatalogBase, credentialAliasIndex);
+      const label = (c && c.displayName) ? c.displayName : credentialId;
+      if (!label) return '';
+      if (href) return '<a href="' + escapeHtml(href) + '" class="fides-tag credential-catalog-link" target="_blank" rel="noopener">' + escapeHtml(label) + ' ' + icons.externalLinkSmall + '</a>';
+      return '<span class="fides-tag credential-catalog-link">' + escapeHtml(label) + '</span>';
+    }).filter(Boolean).join('');
+
+    const shareButtonHtml = (options && options.showShare === false)
+      ? ''
+      : '<button type="button" class="fides-modal-copy-link" id="fides-modal-copy-link" aria-label="Copy link">' + icons.share + '</button>';
+    const organizationWebsiteSalesAttrs = !isCommunity && org.website
+      ? organizationSalesTrackAttrString(org, 'website')
+      : '';
+
+    const modalHtml = '<div class="fides-modal-overlay" id="fides-modal-overlay" data-theme="' + escapeHtml(theme) + '">' +
+      '<div class="fides-modal" role="dialog" aria-modal="true">' +
+      '<div class="fides-modal-header"><div class="fides-modal-header-content">' +
+      (logo ? '<img src="' + escapeHtml(logo) + '" alt="' + escapeHtml(org.name || org.id) + '" class="fides-modal-logo">' : '<div class="fides-modal-logo-placeholder">' + icons.building + '</div>') +
+      '<div class="fides-modal-title-wrap"><h2 class="fides-modal-title">' + escapeHtml(org.name || org.id) + '</h2><p class="fides-modal-provider">' +
+      (countryHeaderHtml) +
+      '</p></div>' +
+      '</div><div class="fides-modal-header-actions">' + shareButtonHtml + '<button class="fides-modal-close" id="fides-modal-close" aria-label="Close modal">' + icons.xLarge + '</button></div></div>' +
+      '<div class="fides-modal-body">' +
+      '<div class="fides-modal-badges">' +
+      (org.sectors && org.sectors.length ? org.sectors.slice(0, 3).map(function(s) { return '<span class="fides-modal-badge">' + escapeHtml(s) + '</span>'; }).join('') : '') +
+      '</div>' +
+      (org.description ? '<div class="fides-modal-section"><p class="fides-modal-description">' + escapeHtml(org.description) + '</p></div>' : '') +
+      '<div class="fides-modal-grid">' +
+      (issuerLinks ? '<div class="fides-modal-grid-item"><div class="fides-modal-grid-label">' + icons.building + ' Issuers</div><div class="fides-modal-grid-value">' + issuerLinks + '</div></div>' : '') +
+      (walletLinks ? '<div class="fides-modal-grid-item"><div class="fides-modal-grid-label">' + icons.wallet + ' Wallets</div><div class="fides-modal-grid-value">' + walletLinks + '</div></div>' : '') +
+      (rpLinks ? '<div class="fides-modal-grid-item"><div class="fides-modal-grid-label">' + icons.laptop + ' Relying Parties</div><div class="fides-modal-grid-value">' + rpLinks + '</div></div>' : '') +
+      (credentialLinks ? '<div class="fides-modal-grid-item"><div class="fides-modal-grid-label">' + icons.fileCheck + ' Credentials</div><div class="fides-modal-grid-value">' + credentialLinks + '</div></div>' : '') +
+      '</div>' +
+      '<div class="fides-modal-links">' +
+      (!isCommunity && org.website ? '<a href="' + escapeHtml(org.website) + '" target="_blank" rel="noopener" class="fides-modal-link primary' +
+        (organizationWebsiteSalesAttrs ? ' matomo_ignore piwik_ignore' : '') + '"' + organizationWebsiteSalesAttrs + '>' + icons.externalLink + ' Visit Website</a>' : '') +
+      '</div>' +
+      buildListingNewsAccordionHtml(org, { entityType: 'organization', salesItem: org, accordionId: 'fides-accordion-org-news' }) +
+      buildModalLastUpdatedHtml(org, ['updatedAt', 'updated', 'fetchedAt']) +
+      '</div>' +
+      buildOrganizationContactFooterHtml(org.contact, { tierUiEnabled: optionsTierUiEnabled(options), isCommunity: isCommunity, item: org, editAccess: options && options.editAccess, salesOrg: org }) +
+      '</div></div>';
+
+    const organizationOverlay = mountModal(modalHtml);
+    if (!organizationOverlay) {
+      selectedContext = null;
+      return false;
+    }
+    trackOrganizationDetailOpen(org, options);
+    if (options && typeof options.onOpen === 'function') options.onOpen(org);
+    initModalAccordions();
+    return true;
+  }
+
+  function openVocabularyModal(term, options) {
+    if (!term) return;
+    const theme = (options && options.theme) || 'dark';
+    const nested = !!(options && options.nested);
+    if (!nested) {
+      selectedContext = { type: 'vocabulary', item: term, options: options || {}, theme: theme };
+      if (options && typeof options.onOpen === 'function') options.onOpen(term);
+    }
+
+    const name = term.name || term.id || '';
+    const description = term.description ? String(term.description) : '';
+    const aliases = arrayValues(term.aliases).filter(function (a) { return typeof a === 'string' && a.trim() !== ''; });
+    const sourceUrl = term.url ? String(term.url).trim() : '';
+    const editActionHtml = nested ? '' : buildVocabularyEditActionHtml(term, options);
+
+    const shareButtonHtml = (nested || (options && options.showShare === false))
+      ? ''
+      : '<button type="button" class="fides-modal-copy-link" id="fides-modal-copy-link" aria-label="Copy link">' + icons.share + '</button>';
+
+    const aliasesSection = aliases.length
+      ? '<div class="fides-modal-section"><h3 class="fides-modal-section-title">Aliases</h3><p class="fides-modal-description">' + escapeHtml(aliases.join(', ')) + '</p></div>'
+      : '';
+    const sourceSection = sourceUrl
+      ? '<div class="fides-modal-section"><h3 class="fides-modal-section-title">Source</h3><p class="fides-modal-description fides-modal-description--link"><a href="' + escapeHtml(sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(sourceUrl) + '</a></p></div>'
+      : '';
+
+    const overlayId = nested ? 'fides-nested-vocab-overlay' : 'fides-modal-overlay';
+    const closeBtnId = nested ? 'fides-nested-vocab-close' : 'fides-modal-close';
+    const modalHtml = '<div class="fides-modal-overlay fides-modal-overlay--vocabulary' +
+      (nested ? ' fides-modal-overlay--nested' : '') + '" id="' + overlayId + '" data-theme="' + escapeHtml(theme) + '">' +
+      '<div class="fides-modal fides-modal--vocabulary" role="dialog" aria-modal="true">' +
+      '<div class="fides-modal-header"><div class="fides-modal-header-content">' +
+      '<div class="fides-modal-title-wrap"><h2 class="fides-modal-title">' + escapeHtml(name) + '</h2></div>' +
+      '</div><div class="fides-modal-header-actions">' + editActionHtml + shareButtonHtml +
+      '<button class="fides-modal-close" id="' + closeBtnId + '" aria-label="Close modal">' + icons.xLarge + '</button></div></div>' +
+      '<div class="fides-modal-body">' +
+      (nested ? '' : '<div id="fides-modal-rating-slot" class="fides-modal-entity-like-slot"></div>') +
+      (description ? '<div class="fides-modal-section"><h3 class="fides-modal-section-title">Description</h3><p class="fides-modal-description">' + escapeHtml(description) + '</p></div>' : '') +
+      aliasesSection +
+      sourceSection +
+      '</div></div></div>';
+
+    if (nested) {
+      closeNestedVocabularyModal();
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      attachNestedVocabularyListeners();
+      return;
+    }
+
+    mountModal(modalHtml);
+    const vocabularyOverlay = document.getElementById('fides-modal-overlay');
+    if (vocabularyOverlay) attachModalRating(vocabularyOverlay, 'vocabulary', term.id, options || {}, term);
+  }
+
+  var CATALOG_SOURCE_TIMEOUT_MS = 4000;
+  var OUTAGE_CACHE_NAME = 'fides-catalog-outage-v1';
+  var OUTAGE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+  var OUTAGE_CACHE_STORAGE_PREFIX = 'fides-catalog-outage:';
+
+  function isFidesLocalDevHost() {
+    try {
+      var host = window.location.hostname || '';
+      var href = window.location.href || '';
+      return host.indexOf('.local') !== -1 || href.indexOf('.local') !== -1;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function latestSnapshotDate(data) {
+    if (!data || typeof data !== 'object') return '';
+    var latest = '';
+    Object.keys(data).forEach(function (key) {
+      var value = data[key];
+      if (!Array.isArray(value)) return;
+      value.forEach(function (item) {
+        if (!item || typeof item !== 'object') return;
+        var stamp = item.fetchedAt || '';
+        if (stamp && String(stamp) > latest) latest = String(stamp);
+      });
+    });
+    return latest;
+  }
+
+  function formatSnapshotDate(value) {
+    if (!value) return '';
+    var date = new Date(value);
+    if (isNaN(date.getTime())) return '';
+    try {
+      return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch (err) {
+      return date.toISOString().slice(0, 10);
+    }
+  }
+
+  function fetchJsonWithTimeout(url, timeoutMs) {
+    timeoutMs = timeoutMs == null ? CATALOG_SOURCE_TIMEOUT_MS : Number(timeoutMs);
+    if (!url) {
+      return Promise.resolve({ ok: false, reason: 'empty url' });
+    }
+    var controller = new AbortController();
+    var timer = setTimeout(function () {
+      controller.abort();
+    }, timeoutMs);
+    return fetch(url, { signal: controller.signal })
+      .then(function (res) {
+        if (!res.ok) return { ok: false, reason: 'HTTP ' + res.status };
+        return res.json().then(function (data) {
+          return { ok: true, data: data };
+        });
+      })
+      .catch(function (err) {
+        var timedOut = err && err.name === 'AbortError';
+        return {
+          ok: false,
+          reason: timedOut ? ('timeout ' + timeoutMs + 'ms') : ((err && err.message) || 'network error')
+        };
+      })
+      .then(function (result) {
+        clearTimeout(timer);
+        return result;
+      });
+  }
+
+  function emptyCatalogLoadResult(reason, remoteFailed) {
+    return {
+      ok: false,
+      data: null,
+      source: null,
+      showStaleNotice: false,
+      remoteFailed: !!remoteFailed,
+      snapshotDate: '',
+      reason: reason || 'all sources failed'
+    };
+  }
+
+  function rememberGithubOutageCache(url, data) {
+    if (!url || !data) return;
+    var wrapper;
+    try {
+      wrapper = JSON.stringify({ cachedAt: Date.now(), payload: data });
+    } catch (err) {
+      return;
+    }
+    if (typeof caches !== 'undefined') {
+      try {
+        caches.open(OUTAGE_CACHE_NAME).then(function (cache) {
+          return cache.put(url, new Response(wrapper, {
+            headers: { 'Content-Type': 'application/json' }
+          }));
+        }).catch(function () {});
+        return;
+      } catch (err) {}
+    }
+    try {
+      if (window.localStorage) {
+        localStorage.setItem(OUTAGE_CACHE_STORAGE_PREFIX + url, wrapper);
+      }
+    } catch (err) {}
+  }
+
+  function parseOutageCacheWrapper(wrapper) {
+    if (!wrapper || !wrapper.payload) return null;
+    return {
+      data: wrapper.payload,
+      age: Date.now() - Number(wrapper.cachedAt || 0)
+    };
+  }
+
+  function readGithubOutageCache(url) {
+    if (!url) return Promise.resolve(null);
+    var fromStorage = function () {
+      try {
+        if (!window.localStorage) return null;
+        var raw = localStorage.getItem(OUTAGE_CACHE_STORAGE_PREFIX + url);
+        return raw ? parseOutageCacheWrapper(JSON.parse(raw)) : null;
+      } catch (err) {
+        return null;
+      }
+    };
+    if (typeof caches === 'undefined') {
+      return Promise.resolve(fromStorage());
+    }
+    return caches.open(OUTAGE_CACHE_NAME)
+      .then(function (cache) { return cache.match(url); })
+      .then(function (response) {
+        if (!response) return fromStorage();
+        return response.json().then(function (wrapper) {
+          return parseOutageCacheWrapper(wrapper) || fromStorage();
+        });
+      })
+      .catch(function () { return fromStorage(); });
+  }
+
+  function catalogCollectionSize(data) {
+    if (!data || typeof data !== 'object') return 0;
+    var keys = [
+      'wallets', 'connectors', 'relyingParties', 'issuers', 'organizations',
+      'credentials', 'useCases', 'profiles', 'terms'
+    ];
+    var max = 0;
+    for (var i = 0; i < keys.length; i++) {
+      var value = data[keys[i]];
+      if (Array.isArray(value) && value.length > max) max = value.length;
+    }
+    return max;
+  }
+
+  function isUsableCatalogPayload(data) {
+    return catalogCollectionSize(data) > 0;
+  }
+
+  /**
+   * Load aggregated JSON: GitHub/raw first, then 12h browser cache, then
+   * same-origin WP last-known-good, then local/plugin snapshot.
+   * On *.local hosts local is tried first and no stale notice is shown.
+   * Empty collections (e.g. upstream wipe) are skipped so a later source can win.
+   */
+  function loadCatalogAggregatedJson(options) {
+    options = options || {};
+    var remoteUrl = String(options.remoteUrl || '').trim();
+    var cacheUrl = String(options.cacheUrl || '').trim();
+    var localUrl = String(options.localUrl || '').trim();
+    var timeoutMs = options.timeoutMs == null ? CATALOG_SOURCE_TIMEOUT_MS : options.timeoutMs;
+    var preferLocal = options.preferLocal;
+    if (preferLocal == null) preferLocal = isFidesLocalDevHost();
+
+    var remote = remoteUrl ? { url: remoteUrl, source: 'github' } : null;
+    var cache = cacheUrl ? { url: cacheUrl, source: 'cache' } : null;
+    var local = localUrl ? { url: localUrl, source: 'local' } : null;
+    var order = (preferLocal ? [local, remote, cache] : [remote, cache, local]).filter(Boolean);
+    var remoteFailed = false;
+
+    function successResult(data, source) {
+      if ((source === 'github' || source === 'cache') && remoteUrl) {
+        rememberGithubOutageCache(remoteUrl, data);
+      }
+      var usedFallback = !preferLocal && remoteFailed && source !== 'github';
+      return {
+        ok: true,
+        data: data,
+        source: source,
+        showStaleNotice: usedFallback,
+        remoteFailed: remoteFailed,
+        snapshotDate: latestSnapshotDate(data),
+        reason: null
+      };
+    }
+
+    function tryExpiredBrowserCache() {
+      return readGithubOutageCache(remoteUrl).then(function (cached) {
+        if (cached && cached.data && isUsableCatalogPayload(cached.data)) {
+          return successResult(cached.data, 'cache');
+        }
+        return emptyCatalogLoadResult('all sources failed', remoteFailed);
+      });
+    }
+
+    function tryNext(index) {
+      if (index >= order.length) {
+        return tryExpiredBrowserCache();
+      }
+      var item = order[index];
+      return fetchJsonWithTimeout(item.url, timeoutMs).then(function (result) {
+        if (result.ok && result.data && isUsableCatalogPayload(result.data)) {
+          return successResult(result.data, item.source);
+        }
+        if (item.source === 'github') {
+          remoteFailed = true;
+          return readGithubOutageCache(remoteUrl).then(function (cached) {
+            if (cached && cached.data && isUsableCatalogPayload(cached.data) &&
+                cached.age <= OUTAGE_CACHE_MAX_AGE_MS) {
+              return successResult(cached.data, 'cache');
+            }
+            return tryNext(index + 1);
+          });
+        }
+        return tryNext(index + 1);
+      });
+    }
+
+    return tryNext(0);
+  }
+
+  function staleNoticeStorageKey(catalogType) {
+    return 'fides-stale-catalog-notice:' + (catalogType || 'catalog');
+  }
+
+  function isStaleNoticeDismissed(catalogType) {
+    try {
+      return sessionStorage.getItem(staleNoticeStorageKey(catalogType)) === '1';
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function dismissStaleNotice(catalogType) {
+    try {
+      sessionStorage.setItem(staleNoticeStorageKey(catalogType), '1');
+    } catch (err) {
+      /* ignore quota / private mode */
+    }
+  }
+
+  /**
+   * Insert a dismissible stale-data banner after a catalog render.
+   * No-op when showStaleNotice is false, on dismissed session, or without a container.
+   */
+  function mountStaleCatalogNotice(container, options) {
+    options = options || {};
+    if (!container) return;
+    var existing = container.querySelector('[data-fides-stale-catalog-notice]');
+    if (!existing && container.previousElementSibling &&
+        container.previousElementSibling.getAttribute('data-fides-stale-catalog-notice')) {
+      existing = container.previousElementSibling;
+    }
+    if (!options.showStaleNotice) {
+      if (existing) existing.remove();
+      return;
+    }
+    var catalogType = options.catalogType || 'catalog';
+    if (isStaleNoticeDismissed(catalogType)) {
+      if (existing) existing.remove();
+      return;
+    }
+    if (existing) return;
+
+    var snapshotLabel = formatSnapshotDate(options.snapshotDate);
+    var message = snapshotLabel
+      ? 'Live catalog data is temporarily unavailable. Showing a snapshot from ' + snapshotLabel + '.'
+      : 'Live catalog data is temporarily unavailable. This list may not include the latest entries.';
+
+    var banner = document.createElement('div');
+    banner.className = 'fides-stale-catalog-notice';
+    banner.setAttribute('data-fides-stale-catalog-notice', catalogType);
+    banner.setAttribute('role', 'status');
+    banner.innerHTML =
+      '<span class="fides-stale-catalog-notice-icon" aria-hidden="true">' + icons.alert + '</span>' +
+      '<p class="fides-stale-catalog-notice-text">' + escapeHtml(message) + '</p>' +
+      '<button type="button" class="fides-stale-catalog-notice-dismiss" aria-label="Dismiss">' +
+      icons.x + '</button>';
+
+    var dismissBtn = banner.querySelector('.fides-stale-catalog-notice-dismiss');
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', function () {
+        dismissStaleNotice(catalogType);
+        banner.remove();
+      });
+    }
+
+    var host = container.querySelector('.fides-main-content') ||
+      container.querySelector('.fides-content') ||
+      container.querySelector('.fides-interop-container') ||
+      container;
+    if (container.classList && container.classList.contains('fides-catalog-map') && container.parentNode) {
+      container.parentNode.insertBefore(banner, container);
+      return;
+    }
+    if (host === container) {
+      container.insertBefore(banner, container.firstChild);
+    } else {
+      host.insertBefore(banner, host.firstChild);
+    }
+  }
+
+  /**
+   * After magic-link sign-in, Back often restores a cached logged-out catalog
+   * page (bfcache / history). The like UI reads isLoggedIn from that snapshot,
+   * so the star still asks for sign-in. Keep the sign-in click flag across the
+   * logged-in landing page (do not clear it there), then reload the stale
+   * guest snapshot. If the flag is gone, probe the cookie session via admin-ajax.
+   */
+  var PENDING_LOGIN_KEY = 'fidesCatalogPendingLogin';
+  var AUTH_RELOAD_KEY = 'fidesCatalogAuthReloadAt';
+
+  function storageGet(key) {
+    try {
+      return window.sessionStorage ? window.sessionStorage.getItem(key) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function storageSet(key, value) {
+    try {
+      if (window.sessionStorage) window.sessionStorage.setItem(key, value);
+    } catch (e) {}
+  }
+
+  function storageRemove(key) {
+    try {
+      if (window.sessionStorage) window.sessionStorage.removeItem(key);
+    } catch (e) {}
+  }
+
+  function catalogConfigLooksLoggedIn() {
+    var names = [
+      'fidesWalletCatalog',
+      'fidesRPCatalog',
+      'fidesIssuerCatalog',
+      'fidesOrganizationCatalog',
+      'fidesCredentialCatalog',
+      'fidesCatalogMap',
+      'FIDES_USE_CASE_LIST_CONFIG',
+      'fidesVocabularyGlossary'
+    ];
+    for (var i = 0; i < names.length; i++) {
+      var cfg = window[names[i]];
+      if (!cfg || typeof cfg !== 'object') continue;
+      if (truthyFlag(cfg.ratingsIsLoggedIn) || truthyFlag(cfg.isLoggedIn)) return true;
+    }
+    return false;
+  }
+
+  function truthyFlag(value) {
+    return value === true || value === 1 || value === '1';
+  }
+
+  function isSignInHref(href) {
+    var raw = String(href || '').trim();
+    if (!raw || raw.charAt(0) === '#') return false;
+    try {
+      var url = new URL(raw, window.location.href);
+      var path = String(url.pathname || '').replace(/\/+$/, '');
+      if (path === '/signin' || (path.length >= 7 && path.slice(-7) === '/signin')) return true;
+      return path.indexOf('wp-login.php') !== -1;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function markPendingLoginFromEvent(event) {
+    var target = event && event.target;
+    if (!target) return;
+    var link = (typeof target.closest === 'function')
+      ? target.closest('a')
+      : (target.tagName === 'A' ? target : null);
+    if (!link) return;
+    var className = ' ' + String(link.className || '') + ' ';
+    if (className.indexOf(' fides-modal-rating-login ') !== -1) {
+      storageSet(PENDING_LOGIN_KEY, '1');
+      return;
+    }
+    var href = (typeof link.getAttribute === 'function' ? link.getAttribute('href') : '') || link.href || '';
+    if (isSignInHref(href)) storageSet(PENDING_LOGIN_KEY, '1');
+  }
+
+  function isBackOrPersistedShow(event) {
+    if (event && event.persisted) return true;
+    try {
+      if (window.performance && typeof performance.getEntriesByType === 'function') {
+        var nav = performance.getEntriesByType('navigation')[0];
+        if (nav && nav.type === 'back_forward') return true;
+      }
+      if (window.performance && performance.navigation && performance.navigation.type === 2) return true;
+    } catch (e) {}
+    return false;
+  }
+
+  function sessionStatusUrl() {
+    try {
+      var loc = window.location || {};
+      var base = loc.origin || loc.href || '';
+      if (!base) return '';
+      return new URL('/wp-admin/admin-ajax.php?action=fides_catalog_session', base).toString();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function reloadGuestPageForAuth() {
+    var now = Date.now();
+    var prev = parseInt(storageGet(AUTH_RELOAD_KEY) || '0', 10);
+    if (now - prev < 8000) return;
+    storageSet(AUTH_RELOAD_KEY, String(now));
+    storageRemove(PENDING_LOGIN_KEY);
+    if (window.location && typeof window.location.reload === 'function') {
+      window.location.reload();
+    }
+  }
+
+  function probeSessionAndReloadIfLoggedIn() {
+    var fetchFn = window.fetch;
+    if (typeof fetchFn !== 'function') return;
+    var url = sessionStatusUrl();
+    if (!url) return;
+    fetchFn(url, { credentials: 'same-origin', cache: 'no-store' })
+      .then(function (res) { return res && res.ok ? res.json() : null; })
+      .then(function (data) {
+        if (data && (data.loggedIn === true || data.loggedIn === 1 || data.loggedIn === '1')) {
+          reloadGuestPageForAuth();
+        }
+      })
+      .catch(function () {});
+  }
+
+  function resumeLoginAfterBack(event) {
+    if (catalogConfigLooksLoggedIn()) return;
+    if (!isBackOrPersistedShow(event)) return;
+    if (storageGet(PENDING_LOGIN_KEY) === '1') {
+      reloadGuestPageForAuth();
+      return;
+    }
+    probeSessionAndReloadIfLoggedIn();
+  }
+
+  function bindGuestLoginResume() {
+    if (typeof document.addEventListener === 'function') {
+      document.addEventListener('click', markPendingLoginFromEvent, true);
+    }
+    if (typeof window.addEventListener === 'function') {
+      window.addEventListener('pageshow', resumeLoginAfterBack);
+    }
+  }
+
+  bindGuestLoginResume();
+
+  window.FidesCatalogUI = {
+    openWalletModal,
+    openConnectorModal,
+    connectorValueLabel,
+    openRpModal,
+    openIssuerModal,
+    openOrganizationModal,
+    openVocabularyModal,
+    closeModal,
+    isFidesLocalDevHost,
+    fetchJsonWithTimeout,
+    loadCatalogAggregatedJson,
+    mountStaleCatalogNotice,
+    CATALOG_SOURCE_TIMEOUT_MS,
+    trackMatomoEvent,
+    createCatalogLoadTracker,
+    trackWalletDetailOpen,
+    trackOrganizationDetailOpen,
+    walletAnalyticsAttrString,
+    walletSalesTrackAttrString,
+    platformSalesLinkType,
+    organizationAnalyticsAttrString,
+    organizationSalesTrackAttrString,
+    initMatomoLinkTracking,
+    userCanEditCatalogItem,
+    canEditOrganization,
+    canEditWallet,
+    canEditRp,
+    resolveWalletOrgId,
+    catalogListingHasFullFields,
+    buildCatalogListingHeaderBadgeHtml,
+    buildCatalogCountryGlobeMetaHtml,
+    buildModalProviderCountryGlobeHtml,
+    buildModalAwardRecognitionBadgeHtml,
+    buildWalletCountryModalFlagHtml,
+    buildWalletCountryFlagHtml,
+    buildOrganizationCountryFlagHtml,
+    buildOrganizationCountryModalFlagHtml,
+    resolveOrganizationCountryCode,
+    resolveOrganizationCountryLabel,
+    resolveWalletCountryCode,
+    resolveWalletCountryLabel,
+    buildOrganizationContactFooterHtml,
+    buildModalLastUpdatedHtml,
+    buildListingNewsAccordionHtml,
+    attachListingNews,
+    buildOrganizationHeroSectionHtml,
+    buildUseCasesCardsHtml,
+    bindModalUseCasesScroll,
+    initModalMediaCarousels,
+    syncCatalogBodyScrollLock,
+    createMobileFiltersController,
+    MOBILE_FILTER_BREAKPOINT,
+    credentialResolvableIds,
+    buildCredentialAliasIndex,
+    resolveCredentialCanonicalId,
+    lookupCredentialByIdOrAlias,
+    getCredentialCatalogDeepLink,
+    getCredentialRefCatalogId,
+    getAcceptedCredentialRows
+  };
+})();

@@ -1,0 +1,318 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "title": "FIDES Wallet Connector Catalog Descriptor",
+  "description": "Schema for wallet connector products that provide credential issuance, verification, or both.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "orgId", "connectors"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "https://fides.community/schemas/wallet-connector-catalog/v1"
+    },
+    "orgId": {
+      "type": "string",
+      "pattern": "^org:[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Organization ID from the FIDES Organization Catalog."
+    },
+    "connectors": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/Connector" }
+    },
+    "lastUpdated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "WalletReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["walletCatalogId"],
+      "properties": {
+        "walletCatalogId": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$",
+          "description": "ID of an organizational wallet from the FIDES Wallet Catalog."
+        }
+      }
+    },
+    "Connector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "description",
+        "connectorFunctions",
+        "deploymentModel",
+        "openSource",
+        "license",
+        "status",
+        "vcFormat",
+        "backendIntegrations",
+        "serviceModels"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "catalogTier": {
+          "type": "string",
+          "enum": ["Community", "Pro"],
+          "description": "Listing tier stamped by the WordPress export (same semantics as the Wallet Catalog). When absent the organization tier is inherited at crawl time."
+        },
+        "catalogListingDepth": {
+          "type": "string",
+          "const": "full",
+          "description": "Set by the WordPress export for Community organizations with a curated full listing."
+        },
+        "walletRef": { "$ref": "#/$defs/WalletReference" },
+        "logo": { "type": "string", "format": "uri" },
+        "website": { "type": "string", "format": "uri" },
+        "documentation": { "type": "string", "format": "uri" },
+        "repository": { "type": "string", "format": "uri" },
+        "playgroundUrls": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "format": "uri" }
+        },
+        "connectorFunctions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["issuer", "verifier"] }
+        },
+        "deploymentModel": {
+          "type": "string",
+          "enum": ["saas", "on_premises", "hybrid"]
+        },
+        "openSource": { "type": "boolean" },
+        "license": {
+          "type": "string",
+          "enum": [
+            "MIT",
+            "Apache-2.0",
+            "GPL-3.0-or-later",
+            "AGPL-3.0-or-later",
+            "LGPL-3.0-or-later",
+            "EUPL-1.2",
+            "MPL-2.0",
+            "BSD-3-Clause",
+            "ISC",
+            "proprietary",
+            "other"
+          ]
+        },
+        "licenseOther": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "status": {
+          "type": "string",
+          "enum": ["development", "beta", "production", "deprecated"]
+        },
+        "vcFormat": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "sd_jwt_vc",
+              "mdoc",
+              "jwt_vc",
+              "vcdm_1_1",
+              "vcdm_2_0",
+              "anoncreds",
+              "idemix",
+              "apple_wallet_pass",
+              "google_wallet_pass",
+              "acdc"
+            ]
+          }
+        },
+        "issuanceProtocols": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "OpenID4VCI",
+              "DIDComm Issue Credential v1",
+              "DIDComm Issue Credential v2",
+              "ISO 18013-5 (Device Retrieval)"
+            ]
+          }
+        },
+        "presentationProtocols": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "OpenID4VP",
+              "DIDComm Present Proof v1",
+              "DIDComm Present Proof v2",
+              "ISO 18013-5",
+              "SIOPv2"
+            ]
+          }
+        },
+        "interoperabilityProfiles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["DIIP v4", "DIIP v5", "EWC v3", "EUDI Wallet ARF", "HAIP v1"]
+          }
+        },
+        "credentialStatusMethods": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "StatusList2021",
+              "RevocationList2020",
+              "OCSP",
+              "CRL",
+              "IETF Token Status List",
+              "Token Status List",
+              "W3C Verifiable Credentials Status List v2021",
+              "Bitstring Status List",
+              "BitstringStatusList v1.0"
+            ]
+          }
+        },
+        "walletCompatibility": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+        },
+        "backendIntegrations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["oidc_oauth2", "saml2", "rest_api", "webhooks", "server_sdk", "other"]
+          }
+        },
+        "frontendIntegrations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["hosted_ui_redirect", "headless_api", "frontend_sdk", "web_component", "other"]
+          }
+        },
+        "serviceModels": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["software_only", "managed_verification", "managed_issuance"]
+          }
+        },
+        "eidasRoles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["rp_intermediary", "eaa_provider", "qeaa_provider"]
+          }
+        },
+        "certificateManagement": {
+          "type": "string",
+          "enum": ["provider_managed", "customer_managed", "both"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["connectorFunctions"],
+            "properties": {
+              "connectorFunctions": { "type": "array", "contains": { "const": "issuer" } }
+            }
+          },
+          "then": { "required": ["issuanceProtocols"] }
+        },
+        {
+          "if": {
+            "required": ["connectorFunctions"],
+            "properties": {
+              "connectorFunctions": { "type": "array", "contains": { "const": "verifier" } }
+            }
+          },
+          "then": { "required": ["presentationProtocols"] }
+        },
+        {
+          "if": {
+            "required": ["license"],
+            "properties": { "license": { "const": "other" } }
+          },
+          "then": { "required": ["licenseOther"] },
+          "else": { "not": { "required": ["licenseOther"] } }
+        },
+        {
+          "if": {
+            "required": ["eidasRoles"],
+            "properties": {
+              "eidasRoles": { "type": "array", "contains": { "const": "rp_intermediary" } }
+            }
+          },
+          "then": {
+            "required": ["connectorFunctions", "serviceModels", "interoperabilityProfiles"],
+            "properties": {
+              "connectorFunctions": { "type": "array", "contains": { "const": "verifier" } },
+              "serviceModels": { "type": "array", "contains": { "const": "managed_verification" } },
+              "interoperabilityProfiles": { "type": "array", "contains": { "const": "EUDI Wallet ARF" } }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["eidasRoles"],
+            "properties": {
+              "eidasRoles": {
+                "type": "array",
+                "contains": { "enum": ["eaa_provider", "qeaa_provider"] }
+              }
+            }
+          },
+          "then": {
+            "required": ["connectorFunctions", "serviceModels"],
+            "properties": {
+              "connectorFunctions": { "type": "array", "contains": { "const": "issuer" } },
+              "serviceModels": { "type": "array", "contains": { "const": "managed_issuance" } }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

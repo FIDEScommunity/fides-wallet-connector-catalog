@@ -1,0 +1,67 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:igrant",
+  "connectors": [
+    {
+      "id": "igrant-organisation-wallet-suite-connector",
+      "name": "Organisation Wallet Suite (Issuer & Verifier)",
+      "description": "Issuer and verifier functions of the iGrant.io Organisation Wallet Suite, available on-premise or as multi-tenant PaaS. Issues credentials with OpenID4VCI 1.0 and verifies them with OpenID4VP 1.0 and DCQL, supporting SD-JWT VC, mdoc and W3C VC (JWT), with webhook notifications and OpenID Foundation HAIP 1.0 conformance testing.",
+      "walletRef": {
+        "walletCatalogId": "igrant-organization-wallet"
+      },
+      "website": "https://igrant.io",
+      "documentation": "https://docs.igrant.io/docs/organisation-wallet-overview/",
+      "repository": "https://github.com/L3-iGrant/platform-deployment",
+      "playgroundUrls": [
+        "https://igrant.io/demo.html"
+      ],
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1",
+        "EUDI Wallet ARF"
+      ],
+      "credentialStatusMethods": [
+        "IETF Token Status List"
+      ],
+      "walletCompatibility": [
+        "igrant-data-wallet",
+        "eudi-reference-personal-wallet",
+        "national-eudi-wallet-netherlands",
+        "national-eudi-wallet-germany",
+        "national-eudi-wallet-austria",
+        "national-eudi-wallet-belgium",
+        "national-eudi-wallet-estonia",
+        "national-eudi-wallet-finland",
+        "france-identite",
+        "procivis-one-wallet",
+        "namirial-wallet",
+        "heidi-wallet"
+      ],
+      "backendIntegrations": [
+        "rest_api",
+        "webhooks"
+      ],
+      "serviceModels": [
+        "software_only"
+      ]
+    }
+  ]
+}

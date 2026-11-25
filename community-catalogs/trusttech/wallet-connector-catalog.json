@@ -1,0 +1,50 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:trusttech",
+  "connectors": [
+    {
+      "id": "trusttech-id-connector",
+      "name": "TrustTech ID Connector",
+      "description": "ID verifier that lets organisations accept certified EUDI Wallets, business wallets, eIDs, bank logins and document reads through one OpenID Connect integration. Returns a normalised result with an assurance level, handles relying-party registration, access certificates, wallet unit attestation checks and revocation checks, and runs as a managed service, in a private cloud or on-premise.",
+      "website": "https://trusttech.nl/products/id-connector/",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "ISO 18013-5"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1",
+        "EUDI Wallet ARF"
+      ],
+      "walletCompatibility": [
+        "national-eudi-wallet-netherlands",
+        "namirial-wallet",
+        "heidi-wallet",
+        "procivis-one-wallet"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2",
+        "rest_api",
+        "server_sdk"
+      ],
+      "frontendIntegrations": [
+        "headless_api",
+        "web_component"
+      ],
+      "serviceModels": [
+        "software_only",
+        "managed_verification"
+      ]
+    }
+  ]
+}
