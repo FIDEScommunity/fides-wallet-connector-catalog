@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1",
   "catalogType": "wallet-connector-catalog",
-  "lastUpdated": "2026-11-26T19:40:54.085Z",
+  "lastUpdated": "2026-11-26T20:05:11.955Z",
   "connectors": [
     {
       "id": "credenco-business-wallet-connector",
@@ -106,8 +106,8 @@
       "isEudiWalletConnector": false,
       "catalogTier": "Pro",
       "sourcePath": "community-catalogs/credenco/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-26T19:40:54.085Z"
+      "updatedAt": "2026-11-26T19:41:09.000Z",
+      "fetchedAt": "2026-11-26T20:05:11.955Z"
     },
     {
       "id": "eudi-reference-verifier",
@@ -193,7 +193,7 @@
       "catalogListingDepth": "full",
       "sourcePath": "community-catalogs/eu/wallet-connector-catalog.json",
       "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-26T19:40:54.085Z"
+      "fetchedAt": "2026-11-26T20:05:11.955Z"
     },
     {
       "id": "eudi-reference-issuer",
@@ -278,7 +278,7 @@
       "catalogListingDepth": "full",
       "sourcePath": "community-catalogs/eu/wallet-connector-catalog.json",
       "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-26T19:40:54.085Z"
+      "fetchedAt": "2026-11-26T20:05:11.955Z"
     },
     {
       "id": "lissi-eudi-wallet-connector",
@@ -370,7 +370,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/lissi/wallet-connector-catalog.json",
       "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-26T19:40:54.085Z"
+      "fetchedAt": "2026-11-26T20:05:11.955Z"
     },
     {
       "id": "igrant-organisation-wallet-suite-connector",
@@ -527,7 +527,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/igrant/wallet-connector-catalog.json",
       "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-26T19:40:54.085Z"
+      "fetchedAt": "2026-11-26T20:05:11.955Z"
     },
     {
       "id": "trusttech-id-connector",
@@ -612,7 +612,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/trusttech/wallet-connector-catalog.json",
       "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-26T19:40:54.085Z"
+      "fetchedAt": "2026-11-26T20:05:11.955Z"
     },
     {
       "id": "ver-id-platform",
@@ -697,7 +697,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/ver-id/wallet-connector-catalog.json",
       "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-26T19:40:54.085Z"
+      "fetchedAt": "2026-11-26T20:05:11.955Z"
     }
   ],
   "stats": {
