@@ -3,7 +3,7 @@ Contributors: fidescommunity
 Tags: wallet, connector, oid4vci, oid4vp, eudi
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: Apache-2.0
 
 Searchable wallet connector catalog with shared modal, SSR, SEO, sitemap, query deeplinks, and pretty detail URLs.
@@ -19,11 +19,15 @@ Supported deeplinks:
 
 == Changelog ==
 
+= 1.2.1 =
+* Renamed "Compatible personal wallets" to "Supported personal wallets" (modal, forms, validation messages).
+* Connector modal (shared Tiles lib): spec row labels are plain text, only values link to the glossary; demo video carousel is initialised.
+
 = 1.2.0 =
 * Listing: removed the "Official listings only" quick filter; the connector-specific filters (function, deployment, service model, backend/frontend integration, eIDAS role, status) now have (i) info buttons backed by new glossary terms (requires glossary vocabulary 1.14.0 from fides-interop-profiles for the new texts; bundled fallback updated).
 * Modal (needs the matching shared modal library): the Business wallet accordion is replaced by a Business Wallet entry under Key capabilities that links to the wallet record; integration options, service model, deployment, status, eIDAS roles and certificate management link to the glossary.
 * New optional Pro field `media` (videos and images, same shape and limits as the Wallet Catalog): schema, crawler, validation, tier rules (stripped for Community), submission/export, update form prefill and a Media section in both forms (image upload via the shared card-image endpoint).
-* Forms: compatible personal wallets use a type-ahead field with removable chips (same pattern as the Use Case Catalog forms).
+* Forms: supported personal wallets use a type-ahead field with removable chips (same pattern as the Use Case Catalog forms).
 
 = 1.1.1 =
 * Community/Pro listing tiers for connectors, mirroring the Wallet Catalog: Community listings cap the description at 200 characters and cannot publish website, documentation and repository (server-side enforcement on submit and export, tier-aware locks, hints and plan badge in both forms). Official and full Community listings keep all fields. Export stamps `catalogTier` / `catalogListingDepth`.

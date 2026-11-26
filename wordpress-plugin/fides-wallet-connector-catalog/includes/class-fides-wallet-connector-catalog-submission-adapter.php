@@ -103,7 +103,7 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_Submission_Adapter')) {
                         'presentationProtocols'     => 'Presentation protocols',
                         'interoperabilityProfiles'  => 'Interop profiles',
                         'credentialStatusMethods'   => 'Credential status methods',
-                        'walletCompatibility'       => 'Compatible personal wallets',
+                        'walletCompatibility'       => 'Supported personal wallets',
                         'backendIntegrations'       => 'Backend integrations',
                         'frontendIntegrations'      => 'Frontend integrations',
                         'serviceModels'             => 'Service models',

@@ -526,7 +526,7 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_V1_Normalizer')) {
                     continue;
                 }
                 if (! preg_match('/^[a-z0-9-]+$/', $wallet_id)) {
-                    $errors[] = sprintf('Compatible wallet id "%s" is not valid.', $wallet_id);
+                    $errors[] = sprintf('Supported wallet id "%s" is not valid.', $wallet_id);
                     continue;
                 }
                 if (in_array($wallet_id, $compat, true)) {
@@ -534,9 +534,9 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_V1_Normalizer')) {
                 }
                 $wallet = $wallet_lookup ? call_user_func($wallet_lookup, $wallet_id) : null;
                 if (! is_array($wallet)) {
-                    $errors[] = sprintf('Compatible wallet "%s" was not found in the Wallet Catalog.', $wallet_id);
+                    $errors[] = sprintf('Supported wallet "%s" was not found in the Wallet Catalog.', $wallet_id);
                 } elseif (($wallet['type'] ?? '') !== 'personal') {
-                    $errors[] = sprintf('Compatible wallet "%s" must be a personal wallet.', $wallet_id);
+                    $errors[] = sprintf('Supported wallet "%s" must be a personal wallet.', $wallet_id);
                 } else {
                     $compat[] = $wallet_id;
                 }
