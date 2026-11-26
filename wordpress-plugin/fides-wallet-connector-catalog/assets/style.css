@@ -2410,6 +2410,11 @@
   animation: fides-modal-fade-in 0.2s ease;
 }
 
+/* Nested glossary overlay must stack above the connector modal (same as the wallet modal). */
+.fides-modal-overlay.fides-modal-overlay--nested {
+  z-index: 1000000;
+}
+
 .fides-modal-overlay.closing {
   animation: fides-modal-fade-out 0.2s ease forwards;
 }

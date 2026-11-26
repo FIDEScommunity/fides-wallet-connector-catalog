@@ -21,7 +21,7 @@ Supported deeplinks:
 
 = 1.2.1 =
 * Renamed "Compatible personal wallets" to "Supported personal wallets" (modal, forms, validation messages).
-* Connector modal (shared Tiles lib): spec row labels are plain text, only values link to the glossary; demo video carousel is initialised.
+* Connector modal (shared Tiles lib): spec row labels are plain text, only values link to the glossary; demo video carousel is initialised; nested glossary overlay stacks above the modal like in the wallet catalog.
 
 = 1.2.0 =
 * Listing: removed the "Official listings only" quick filter; the connector-specific filters (function, deployment, service model, backend/frontend integration, eIDAS role, status) now have (i) info buttons backed by new glossary terms (requires glossary vocabulary 1.14.0 from fides-interop-profiles for the new texts; bundled fallback updated).
