@@ -55,13 +55,14 @@ final class TierTest extends TestCase {
             'website'       => 'https://acme.example/connect',
             'documentation' => 'https://acme.example/docs',
             'repository'    => 'https://github.com/acme/connect',
+            'media'         => array('videos' => array('https://www.youtube.com/watch?v=abc'), 'images' => array('https://acme.example/shot.png')),
         );
     }
 
     public function test_community_create_strips_pro_fields_and_truncates_description(): void {
         $out = Fides_Wallet_Connector_Catalog_Tier::constrain_submission($this->submission(), 'org:acme', null);
         $this->assertSame(200, strlen($out['description']));
-        foreach (array('website', 'documentation', 'repository') as $key) {
+        foreach (array('website', 'documentation', 'repository', 'media') as $key) {
             $this->assertArrayNotHasKey($key, $out);
         }
         // Logo is not a Pro field (same as the wallet catalog).
@@ -114,6 +115,7 @@ final class TierTest extends TestCase {
         $this->assertArrayNotHasKey('website', $out);
         $this->assertArrayNotHasKey('documentation', $out);
         $this->assertArrayNotHasKey('repository', $out);
+        $this->assertArrayNotHasKey('media', $out);
         $this->assertSame(200, strlen($out['description']));
     }
 

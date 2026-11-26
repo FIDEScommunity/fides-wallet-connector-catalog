@@ -21,7 +21,7 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_Tier')) {
 
         /**
          * Connector payload keys that only full listings (Official / Pro or full Community) may edit.
-         * Wallet equivalents: website, documentation, repository (the other wallet Pro keys have no connector field).
+         * Wallet equivalents: website, documentation, repository plus media (the other wallet Pro keys have no connector field).
          *
          * @var string[]
          */
@@ -29,6 +29,7 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_Tier')) {
             'website',
             'documentation',
             'repository',
+            'media',
         );
 
         /**

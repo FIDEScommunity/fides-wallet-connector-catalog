@@ -22,6 +22,8 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_V1_Normalizer')) {
         const LIMIT_DESCRIPTION    = 2000;
         const LIMIT_LICENSE_OTHER  = 100;
         const LIMIT_PLAYGROUND_URLS = 10;
+        const LIMIT_MEDIA_VIDEOS   = 3;
+        const LIMIT_MEDIA_IMAGES   = 10;
 
         /** @var string[] */
         const FUNCTIONS = array('issuer', 'verifier');
@@ -119,6 +121,7 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_V1_Normalizer')) {
             'name',
             'description',
             'walletRef',
+            'media',
             'logo',
             'website',
             'documentation',
@@ -152,6 +155,8 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_V1_Normalizer')) {
                 'description'    => self::LIMIT_DESCRIPTION,
                 'licenseOther'   => self::LIMIT_LICENSE_OTHER,
                 'playgroundUrls' => self::LIMIT_PLAYGROUND_URLS,
+                'mediaVideos'    => self::LIMIT_MEDIA_VIDEOS,
+                'mediaImages'    => self::LIMIT_MEDIA_IMAGES,
             );
         }
 
@@ -345,6 +350,36 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_V1_Normalizer')) {
                 $errors[] = sprintf('At most %d playground URLs are allowed.', self::LIMIT_PLAYGROUND_URLS);
             } elseif ($playground) {
                 $out['playgroundUrls'] = $playground;
+            }
+
+            // Media (same rules as the Wallet Catalog: deduplicated http(s) URLs, max 3 videos / 10 images).
+            $media_input = isset($input['media']) && is_array($input['media']) ? $input['media'] : array();
+            $media       = array();
+            foreach (array('videos' => self::LIMIT_MEDIA_VIDEOS, 'images' => self::LIMIT_MEDIA_IMAGES) as $media_key => $media_max) {
+                $urls = array();
+                foreach (self::as_list($media_input[ $media_key ] ?? array()) as $raw) {
+                    $raw = trim((string) $raw);
+                    if ($raw === '') {
+                        continue;
+                    }
+                    $url = self::url($raw);
+                    if ($url === '') {
+                        $errors[] = sprintf('Media %s must be valid http(s) URLs.', $media_key);
+                        $urls = array();
+                        break;
+                    }
+                    if (! in_array($url, $urls, true)) {
+                        $urls[] = $url;
+                    }
+                }
+                if (count($urls) > $media_max) {
+                    $errors[] = sprintf('At most %d media %s are allowed.', $media_max, $media_key);
+                } elseif ($urls) {
+                    $media[ $media_key ] = $urls;
+                }
+            }
+            if ($media) {
+                $out['media'] = $media;
             }
 
             // Functions.

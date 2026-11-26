@@ -65,6 +65,8 @@
   let orgHasQeaa = null;
   let compatSelected = [];
   const playgroundRowsState = [{ url: "" }];
+  const imageRowsState = [{ url: "" }];
+  const videoRowsState = [{ url: "" }];
 
   /* ---------------------------------------------- Community / Pro listing tier
    * Mirrors the Wallet Catalog form: Community listings lock the Pro fields and cap the description;
@@ -220,6 +222,15 @@
       const row = el.closest(".fides-form-row");
       if (row) row.classList.toggle("fides-form-row--pro-locked", !hasFullListing);
     });
+    root.querySelectorAll(".fides-form-section--pro-tier").forEach((section) => {
+      section.classList.toggle("fides-form-section--pro-locked", !hasFullListing);
+    });
+    const mediaSection = root.querySelector(".fides-connector-media-section");
+    if (mediaSection) {
+      mediaSection.querySelectorAll("input, button").forEach((el) => {
+        el.disabled = !hasFullListing;
+      });
+    }
     updateLicenseOtherVisibility();
     updateDescriptionLimitUi();
     updatePlanTierBanner();
@@ -477,8 +488,35 @@
     `;
   }
 
+  /** Media (Pro): same section as the Wallet Catalog form (cover images with upload + demo videos). */
+  function formMediaSectionHtml() {
+    return `
+        <section class="fides-form-section fides-form-section--pro-tier fides-connector-media-section" aria-labelledby="fides-connector-media-section-title">
+          <div class="fides-form-accordion-heading">
+            <h3 id="fides-connector-media-section-title" class="fides-form-section-title" data-pro-label="Media">${labelWithProIfNeeded("Media", true)}</h3>
+          </div>
+          <p class="fides-form-section-intro">Visuals shown on your public connector listing — add cover images and optional demo videos.</p>
+          <div class="fides-form-section-body fides-media-section-body">
+            <div class="fides-form-grid fides-media-grid">
+              <div class="fides-media-col">
+                <label>Cover images</label>
+                <p class="fides-help fides-media-col-help">${escapeHtml(helpText("mediaImages") || "Screenshot or product image URLs.")}</p>
+                <div id="fides-connector-image-rows" class="fides-media-rows" aria-live="polite"></div>
+              </div>
+              <div class="fides-media-col">
+                <label>Demo videos</label>
+                <p class="fides-help fides-media-col-help">${escapeHtml(helpText("mediaVideos") || "YouTube or Vimeo links to demos.")}</p>
+                <div id="fides-connector-video-rows" class="fides-media-rows" aria-live="polite"></div>
+              </div>
+            </div>
+            <p id="fides-connector-image-upload-status" class="fides-lookup-hint" hidden></p>
+          </div>
+        </section>`;
+  }
+
   function formAccordionSectionsHtml() {
     return `
+        ${formMediaSectionHtml()}
         ${accordionSection(
           "Formats & protocols",
           "Credential formats and protocols. Issuance protocols apply to issuer connectors, presentation protocols to verifier connectors.",
@@ -510,12 +548,16 @@
           "Wallet compatibility",
           "Personal wallets from the Wallet Catalog that work with this connector.",
           `
-            <div class="fides-form-row" data-row="walletCompatibility">
+            <div class="fides-form-row fides-linked-field" data-row="walletCompatibility">
               ${helpHtml("walletCompatibility")}
-              <input id="fides-connector-compat-filter" type="text" autocomplete="off" placeholder="Filter personal wallets…" />
+              <div class="fides-linked-inputs">
+                <input id="fides-connector-compat-search" type="text" autocomplete="off" placeholder="Search personal wallets by name…" aria-label="Search personal wallets" />
+              </div>
+              <div class="fides-lookup-panel">
+                <p id="fides-connector-compat-hint" class="fides-lookup-hint" hidden></p>
+                <ul id="fides-connector-compat-results" class="fides-lookup-results" role="listbox" aria-label="Personal wallet search results"></ul>
+              </div>
               <div id="fides-connector-compat-chips" class="fides-chip-list" aria-live="polite"></div>
-              <div id="fides-connector-compat-list" class="fides-form-choices fides-connector-compat-list" role="group" aria-label="Personal wallets"></div>
-              <p id="fides-connector-compat-hint" class="fides-help" hidden></p>
             </div>`
         )}
         ${accordionSection(
@@ -739,6 +781,207 @@
     });
   }
 
+  /* ------------------------------------------------------------- media (Pro) */
+
+  const imageRowsEl = root.querySelector("#fides-connector-image-rows");
+  const videoRowsEl = root.querySelector("#fides-connector-video-rows");
+  const imageUploadStatusEl = root.querySelector("#fides-connector-image-upload-status");
+
+  function mediaImageMax() {
+    return Number(limits.mediaImages) || 10;
+  }
+
+  function mediaVideoMax() {
+    return Number(limits.mediaVideos) || 3;
+  }
+
+  function collectMediaUrls(state) {
+    return state.map((entry) => String(entry.url || "").trim()).filter(Boolean);
+  }
+
+  function setImageUploadStatus(text) {
+    if (!imageUploadStatusEl) return;
+    imageUploadStatusEl.hidden = !text;
+    imageUploadStatusEl.textContent = text || "";
+  }
+
+  function renderImageRows() {
+    if (!imageRowsEl) return;
+    const max = mediaImageMax();
+    const lastIndex = imageRowsState.length - 1;
+    imageRowsEl.innerHTML = imageRowsState
+      .map((entry, index) => {
+        const isLast = index === lastIndex;
+        let rowAction = "";
+        if (isLast && imageRowsState.length < max) {
+          rowAction = `<button type="button" class="fides-secondary-btn fides-media-action-btn" data-add-image="1">Add</button>`;
+        } else if (!isLast || imageRowsState.length > 1) {
+          rowAction = `<button type="button" class="fides-secondary-btn fides-media-action-btn" data-remove-image="${index}" aria-label="Remove image">Remove</button>`;
+        }
+        return `
+          <div class="fides-media-row" data-image-index="${index}">
+            <div class="fides-media-inputs fides-media-inputs--image">
+              <input type="url" class="fides-media-url-input" data-image-url="${index}" value="${escapeHtml(entry.url || "")}" placeholder="https://…" inputmode="url" autocomplete="url" />
+              <label class="fides-secondary-btn fides-media-action-btn fides-upload-btn">
+                Upload
+                <input type="file" data-image-file="${index}" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
+              </label>
+              ${rowAction}
+            </div>
+            ${entry.url ? `<div class="fides-image-preview"><img src="${escapeHtml(entry.url)}" alt="Image preview" loading="lazy" /></div>` : ""}
+          </div>`;
+      })
+      .join("");
+  }
+
+  function renderVideoRows() {
+    if (!videoRowsEl) return;
+    const max = mediaVideoMax();
+    const lastIndex = videoRowsState.length - 1;
+    videoRowsEl.innerHTML = videoRowsState
+      .map((entry, index) => {
+        const isLast = index === lastIndex;
+        let rowAction = "";
+        if (isLast && videoRowsState.length < max) {
+          rowAction = `<button type="button" class="fides-secondary-btn fides-media-action-btn" data-add-video="1">Add</button>`;
+        } else if (!isLast || videoRowsState.length > 1) {
+          rowAction = `<button type="button" class="fides-secondary-btn fides-media-action-btn" data-remove-video="${index}" aria-label="Remove video">Remove</button>`;
+        }
+        return `
+          <div class="fides-media-row" data-video-index="${index}">
+            <div class="fides-media-inputs fides-media-inputs--video">
+              <input type="url" class="fides-media-url-input" data-video-url="${index}" value="${escapeHtml(entry.url || "")}" placeholder="https://youtube.com/…" inputmode="url" autocomplete="url" />
+              ${rowAction}
+            </div>
+          </div>`;
+      })
+      .join("");
+  }
+
+  function setMediaRowsFromUrls(images, videos) {
+    imageRowsState.length = 0;
+    const imageUrls = (Array.isArray(images) ? images : []).slice(0, mediaImageMax());
+    if (imageUrls.length) imageUrls.forEach((url) => imageRowsState.push({ url: String(url) }));
+    else imageRowsState.push({ url: "" });
+    videoRowsState.length = 0;
+    const videoUrls = (Array.isArray(videos) ? videos : []).slice(0, mediaVideoMax());
+    if (videoUrls.length) videoUrls.forEach((url) => videoRowsState.push({ url: String(url) }));
+    else videoRowsState.push({ url: "" });
+    renderImageRows();
+    renderVideoRows();
+    setImageUploadStatus("");
+    applyTierFieldState();
+  }
+
+  async function uploadImageFile(file, rowIndex) {
+    if (!file || !apiBase) {
+      setImageUploadStatus("Missing API configuration.");
+      return;
+    }
+    setImageUploadStatus("Uploading…");
+    const formData = new FormData();
+    formData.append("file", file);
+    const headers = {};
+    if (restNonce) headers["X-WP-Nonce"] = restNonce;
+    try {
+      const response = await fetch(`${apiBase}/submissions/card-image`, {
+        method: "POST",
+        credentials: "same-origin",
+        headers,
+        body: formData,
+      });
+      const json = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setImageUploadStatus(json.message || "Image upload failed.");
+        return;
+      }
+      const url = json.url ? String(json.url) : "";
+      if (!url) {
+        setImageUploadStatus("Upload succeeded but no URL was returned.");
+        return;
+      }
+      if (imageRowsState[rowIndex]) imageRowsState[rowIndex].url = url;
+      renderImageRows();
+      applyTierFieldState();
+      setImageUploadStatus("Image uploaded.");
+    } catch (_err) {
+      setImageUploadStatus("Image upload failed due to a network error.");
+    }
+  }
+
+  function initMediaControls() {
+    renderImageRows();
+    renderVideoRows();
+    if (imageRowsEl) {
+      imageRowsEl.addEventListener("input", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement) || !target.hasAttribute("data-image-url")) return;
+        const index = Number(target.getAttribute("data-image-url"));
+        if (!Number.isFinite(index) || !imageRowsState[index]) return;
+        imageRowsState[index].url = target.value.trim();
+      });
+      imageRowsEl.addEventListener("change", (event) => {
+        const target = event.target;
+        if (target instanceof HTMLInputElement && target.hasAttribute("data-image-url")) {
+          renderImageRows();
+          applyTierFieldState();
+          return;
+        }
+        if (!(target instanceof HTMLInputElement) || !target.hasAttribute("data-image-file")) return;
+        const index = Number(target.getAttribute("data-image-file"));
+        const file = target.files && target.files[0];
+        target.value = "";
+        if (!Number.isFinite(index) || !file) return;
+        uploadImageFile(file, index);
+      });
+      imageRowsEl.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        if (target.hasAttribute("data-add-image")) {
+          if (imageRowsState.length >= mediaImageMax()) return;
+          imageRowsState.push({ url: "" });
+          renderImageRows();
+          applyTierFieldState();
+          return;
+        }
+        const indexAttr = target.getAttribute("data-remove-image");
+        if (indexAttr == null) return;
+        const index = Number(indexAttr);
+        if (!Number.isFinite(index) || imageRowsState.length <= 1) return;
+        imageRowsState.splice(index, 1);
+        renderImageRows();
+        applyTierFieldState();
+      });
+    }
+    if (videoRowsEl) {
+      videoRowsEl.addEventListener("input", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement) || !target.hasAttribute("data-video-url")) return;
+        const index = Number(target.getAttribute("data-video-url"));
+        if (!Number.isFinite(index) || !videoRowsState[index]) return;
+        videoRowsState[index].url = target.value.trim();
+      });
+      videoRowsEl.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        if (target.hasAttribute("data-add-video")) {
+          if (videoRowsState.length >= mediaVideoMax()) return;
+          videoRowsState.push({ url: "" });
+          renderVideoRows();
+          applyTierFieldState();
+          return;
+        }
+        const indexAttr = target.getAttribute("data-remove-video");
+        if (indexAttr == null) return;
+        const index = Number(indexAttr);
+        if (!Number.isFinite(index) || videoRowsState.length <= 1) return;
+        videoRowsState.splice(index, 1);
+        renderVideoRows();
+        applyTierFieldState();
+      });
+    }
+  }
+
   /* ------------------------------------------------------------ wallet pickers */
 
   function walletLabel(wallet) {
@@ -769,6 +1012,8 @@
     }
   }
 
+  const COMPAT_RESULT_LIMIT = 8;
+
   function renderCompatChips() {
     const chips = root.querySelector("#fides-connector-compat-chips");
     if (!chips) return;
@@ -782,46 +1027,77 @@
       .join("");
   }
 
-  function renderCompatList() {
-    const listEl = root.querySelector("#fides-connector-compat-list");
+  /** Type-ahead over the personal wallets of the Wallet Catalog (same pattern as the Use Case Catalog link fields). */
+  function renderCompatResults() {
+    const resultsEl = root.querySelector("#fides-connector-compat-results");
     const hint = root.querySelector("#fides-connector-compat-hint");
-    if (!listEl) return;
-    const filter = val("#fides-connector-compat-filter").toLowerCase();
+    const searchEl = root.querySelector("#fides-connector-compat-search");
+    if (!resultsEl || !searchEl) return;
+    const query = String(searchEl.value || "").trim().toLowerCase();
+    const setHint = (text) => {
+      if (!hint) return;
+      hint.hidden = !text;
+      hint.textContent = text || "";
+    };
     const personal = Rules.personalWallets(wallets);
-    const visible = personal.filter((wallet) => {
-      if (!filter) return true;
-      return `${wallet.name} ${wallet.provider || ""} ${wallet.id}`.toLowerCase().includes(filter);
-    });
-    listEl.innerHTML = visible
+    if (!personal.length) {
+      resultsEl.innerHTML = "";
+      setHint(query ? "The personal wallet list is not available right now." : "");
+      return;
+    }
+    if (query.length < 2) {
+      resultsEl.innerHTML = "";
+      setHint("");
+      return;
+    }
+    const matches = personal.filter(
+      (wallet) => !compatSelected.includes(wallet.id) && `${wallet.name} ${wallet.provider || ""} ${wallet.id}`.toLowerCase().includes(query)
+    );
+    if (!matches.length) {
+      setHint("");
+      resultsEl.innerHTML = '<li class="fides-lookup-empty"><span>No matching personal wallets.</span></li>';
+      return;
+    }
+    const shown = matches.slice(0, COMPAT_RESULT_LIMIT);
+    setHint(
+      matches.length > shown.length
+        ? `Showing top ${shown.length} of ${matches.length} matches. Type a more specific name to narrow results.`
+        : matches.length === 1
+          ? "1 match — click to add"
+          : `${matches.length} matches — click to add`
+    );
+    resultsEl.innerHTML = shown
       .map((wallet) => {
-        const checked = compatSelected.includes(wallet.id) ? " checked" : "";
-        return `
-        <label class="fides-form-choice">
-          <input type="checkbox" name="walletCompatibility" value="${escapeHtml(wallet.id)}" data-field="walletCompatibility"${checked} />
-          <span>${escapeHtml(walletLabel(wallet))}</span>
-        </label>`;
+        const title = escapeHtml(wallet.name);
+        const subtitle = wallet.provider ? escapeHtml(wallet.provider) : "";
+        return (
+          `<li><button type="button" class="fides-lookup-option" data-compat-id="${escapeHtml(wallet.id)}" aria-label="Add ${title}${subtitle ? `, ${subtitle}` : ""}">` +
+          `<span class="fides-lookup-option-main"><span class="fides-lookup-option-title">${title}</span>` +
+          (subtitle ? `<span class="fides-lookup-option-subtitle">${subtitle}</span>` : "") +
+          `</span><span class="fides-lookup-option-action">Add</span></button></li>`
+        );
       })
       .join("");
-    if (hint) {
-      hint.hidden = visible.length > 0;
-      hint.textContent = personal.length ? "No personal wallets match this filter." : "The personal wallet list is not available right now.";
-    }
+  }
+
+  function renderCompatList() {
     renderCompatChips();
+    renderCompatResults();
   }
 
   function initCompatControls() {
-    const listEl = root.querySelector("#fides-connector-compat-list");
-    const filterEl = root.querySelector("#fides-connector-compat-filter");
+    const searchEl = root.querySelector("#fides-connector-compat-search");
+    const resultsEl = root.querySelector("#fides-connector-compat-results");
     const chips = root.querySelector("#fides-connector-compat-chips");
-    if (filterEl) filterEl.addEventListener("input", renderCompatList);
-    if (listEl) {
-      listEl.addEventListener("change", (event) => {
-        const target = event.target;
-        if (!(target instanceof HTMLInputElement) || target.name !== "walletCompatibility") return;
-        const id = String(target.value);
-        compatSelected = compatSelected.filter((entry) => entry !== id);
-        if (target.checked) compatSelected.push(id);
-        renderCompatChips();
+    if (searchEl) searchEl.addEventListener("input", renderCompatResults);
+    if (resultsEl) {
+      resultsEl.addEventListener("click", (event) => {
+        const target = event.target instanceof HTMLElement ? event.target.closest("[data-compat-id]") : null;
+        if (!target) return;
+        const id = String(target.getAttribute("data-compat-id") || "");
+        if (id && !compatSelected.includes(id)) compatSelected.push(id);
+        if (searchEl) searchEl.value = "";
+        renderCompatList();
       });
     }
     if (chips) {
@@ -1092,6 +1368,8 @@
     setVal("#fides-connector-license-other", data.licenseOther);
     setVal("#fides-connector-certificate-management", data.certificateManagement || "");
     setPlaygroundRows(data.playgroundUrls);
+    const mediaData = data.media && typeof data.media === "object" ? data.media : {};
+    setMediaRowsFromUrls(mediaData.images, mediaData.videos);
 
     ["connectorFunctions", "serviceModels", "vcFormat", "issuanceProtocols", "presentationProtocols",
       "interoperabilityProfiles", "credentialStatusMethods", "backendIntegrations", "frontendIntegrations"].forEach((name) => {
@@ -1142,6 +1420,13 @@
     const certificateManagement = val("#fides-connector-certificate-management");
     if (certificateManagement) payload.certificateManagement = certificateManagement;
     if (state.walletRef) payload.walletRef = { walletCatalogId: state.walletRef };
+    const videos = collectMediaUrls(videoRowsState).slice(0, mediaVideoMax());
+    const images = collectMediaUrls(imageRowsState).slice(0, mediaImageMax());
+    if (videos.length || images.length) {
+      payload.media = {};
+      if (videos.length) payload.media.videos = videos;
+      if (images.length) payload.media.images = images;
+    }
     return payload;
   }
 
@@ -1330,6 +1615,7 @@
   /* ------------------------------------------------------------------- init */
 
   initPlaygroundControls();
+  initMediaControls();
   initCompatControls();
   renderWalletRefOptions("");
   updateDependentFields();

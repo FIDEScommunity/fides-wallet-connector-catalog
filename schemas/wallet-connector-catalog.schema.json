@@ -39,6 +39,29 @@
         }
       }
     },
+    "ConnectorMedia": {
+      "type": "object",
+      "description": "Promotional media (Pro tier in public export). Same shape as the Wallet Catalog WalletMedia.",
+      "additionalProperties": false,
+      "properties": {
+        "videos": {
+          "type": "array",
+          "maxItems": 3,
+          "items": { "type": "string", "format": "uri" },
+          "description": "Demo or promotional video URLs (YouTube or Vimeo)"
+        },
+        "images": {
+          "type": "array",
+          "maxItems": 10,
+          "items": { "type": "string", "format": "uri" },
+          "description": "Screenshot or product image URLs"
+        }
+      },
+      "anyOf": [
+        { "required": ["videos"], "properties": { "videos": { "type": "array", "minItems": 1 } } },
+        { "required": ["images"], "properties": { "images": { "type": "array", "minItems": 1 } } }
+      ]
+    },
     "Connector": {
       "type": "object",
       "additionalProperties": false,
@@ -81,6 +104,7 @@
           "description": "Set by the WordPress export for Community organizations with a curated full listing."
         },
         "walletRef": { "$ref": "#/$defs/WalletReference" },
+        "media": { "$ref": "#/$defs/ConnectorMedia" },
         "logo": { "type": "string", "format": "uri" },
         "website": { "type": "string", "format": "uri" },
         "documentation": { "type": "string", "format": "uri" },

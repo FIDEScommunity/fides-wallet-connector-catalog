@@ -90,6 +90,8 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_Submission_Adapter')) {
                         'documentation'             => 'Documentation',
                         'repository'                => 'Repository',
                         'playgroundUrls'            => 'Playground URLs',
+                        'media.videos'              => 'Media videos',
+                        'media.images'              => 'Media images',
                         'connectorFunctions'        => 'Connector functions',
                         'deploymentModel'           => 'Deployment model',
                         'openSource'                => 'Open source',

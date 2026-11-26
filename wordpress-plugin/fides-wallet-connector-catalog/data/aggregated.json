@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1",
   "catalogType": "wallet-connector-catalog",
-  "lastUpdated": "2026-11-25T19:41:22.162Z",
+  "lastUpdated": "2026-11-26T19:40:54.085Z",
   "connectors": [
     {
       "id": "credenco-business-wallet-connector",
@@ -9,6 +9,11 @@
       "description": "Issuer and verifier modules of the Credenco Business Wallet, exposed through a REST API. Backends start OpenID4VCI issuance from credential templates and create OpenID4VP authorization requests from verifier templates, then poll or receive callbacks for the verified claims.",
       "walletRef": {
         "walletCatalogId": "credenco-business-wallet"
+      },
+      "media": {
+        "videos": [
+          "https://www.youtube.com/watch?v=IIZ7dlF4gmM"
+        ]
       },
       "website": "https://www.credenco.com",
       "documentation": "https://docs.credenco.com/docs/api/api-intro/",
@@ -101,8 +106,8 @@
       "isEudiWalletConnector": false,
       "catalogTier": "Pro",
       "sourcePath": "community-catalogs/credenco/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:22.162Z",
-      "fetchedAt": "2026-11-25T19:41:22.162Z"
+      "updatedAt": "2026-11-25T19:41:35.000Z",
+      "fetchedAt": "2026-11-26T19:40:54.085Z"
     },
     {
       "id": "eudi-reference-verifier",
@@ -187,8 +192,8 @@
       "catalogTier": "Community",
       "catalogListingDepth": "full",
       "sourcePath": "community-catalogs/eu/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:22.162Z",
-      "fetchedAt": "2026-11-25T19:41:22.162Z"
+      "updatedAt": "2026-11-25T19:41:35.000Z",
+      "fetchedAt": "2026-11-26T19:40:54.085Z"
     },
     {
       "id": "eudi-reference-issuer",
@@ -272,8 +277,8 @@
       "catalogTier": "Community",
       "catalogListingDepth": "full",
       "sourcePath": "community-catalogs/eu/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:22.162Z",
-      "fetchedAt": "2026-11-25T19:41:22.162Z"
+      "updatedAt": "2026-11-25T19:41:35.000Z",
+      "fetchedAt": "2026-11-26T19:40:54.085Z"
     },
     {
       "id": "lissi-eudi-wallet-connector",
@@ -364,8 +369,8 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/lissi/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:22.162Z",
-      "fetchedAt": "2026-11-25T19:41:22.162Z"
+      "updatedAt": "2026-11-25T19:41:35.000Z",
+      "fetchedAt": "2026-11-26T19:40:54.085Z"
     },
     {
       "id": "igrant-organisation-wallet-suite-connector",
@@ -521,8 +526,8 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/igrant/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:22.162Z",
-      "fetchedAt": "2026-11-25T19:41:22.162Z"
+      "updatedAt": "2026-11-25T19:41:35.000Z",
+      "fetchedAt": "2026-11-26T19:40:54.085Z"
     },
     {
       "id": "trusttech-id-connector",
@@ -606,8 +611,8 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/trusttech/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:22.162Z",
-      "fetchedAt": "2026-11-25T19:41:22.162Z"
+      "updatedAt": "2026-11-25T19:41:35.000Z",
+      "fetchedAt": "2026-11-26T19:40:54.085Z"
     },
     {
       "id": "ver-id-platform",
@@ -691,8 +696,8 @@
       "isEudiWalletConnector": false,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/ver-id/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:22.162Z",
-      "fetchedAt": "2026-11-25T19:41:22.162Z"
+      "updatedAt": "2026-11-25T19:41:35.000Z",
+      "fetchedAt": "2026-11-26T19:40:54.085Z"
     }
   ],
   "stats": {

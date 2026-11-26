@@ -33,4 +33,8 @@ Connector-specific fields are:
 - `certificateManagement`: `provider_managed`, `customer_managed`, `both`
 - `eidasRoles`: `rp_intermediary`, `eaa_provider`, `qeaa_provider`
 
+## Media (Pro)
+
+`media` is optional and mirrors the Wallet Catalog `WalletMedia`: `media.videos` (max 3 YouTube/Vimeo URLs) and `media.images` (max 10 screenshot/product image URLs); at least one of them when present. It is a Pro-only field: the WordPress export strips it for Community listings and the connector modal only shows it for Pro/full listings.
+
 “EUDI Wallet Connector” is derived from `interoperabilityProfiles` containing `EUDI Wallet ARF`; it is not stored as a source boolean.

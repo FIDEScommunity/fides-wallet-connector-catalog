@@ -2,7 +2,7 @@
 /**
  * Plugin Name: FIDES Wallet Connector Catalog
  * Description: Searchable catalog of issuer and verifier wallet connector products with shared SSR, SEO, and modal support, plus submit/update forms ([fides_wallet_connector_submit_form], [fides_wallet_connector_update_form]) backed by the shared submission core.
- * Version: 1.1.1
+ * Version: 1.2.0
  * Author: FIDES Community
  * License: Apache-2.0
  * Text Domain: fides-wallet-connector-catalog
@@ -12,7 +12,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-define('FIDES_WALLET_CONNECTOR_CATALOG_VERSION', '1.1.1');
+define('FIDES_WALLET_CONNECTOR_CATALOG_VERSION', '1.2.0');
 define('FIDES_WALLET_CONNECTOR_CATALOG_DIR', plugin_dir_path(__FILE__));
 define('FIDES_WALLET_CONNECTOR_CATALOG_URL', plugin_dir_url(__FILE__));
 

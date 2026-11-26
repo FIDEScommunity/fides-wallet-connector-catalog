@@ -9,11 +9,18 @@ export interface WalletReference {
   walletCatalogId: string;
 }
 
+/** Promotional videos and images (Pro in public export); same shape as the Wallet Catalog WalletMedia. */
+export interface ConnectorMedia {
+  videos?: string[];
+  images?: string[];
+}
+
 export interface SourceConnector {
   id: string;
   name: string;
   description: string;
   walletRef?: WalletReference;
+  media?: ConnectorMedia;
   logo?: string;
   website?: string;
   documentation?: string;

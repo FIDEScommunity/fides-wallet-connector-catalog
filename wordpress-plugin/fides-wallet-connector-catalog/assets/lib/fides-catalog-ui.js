@@ -64,6 +64,35 @@
       'IETF Token Status List': 'ietfTokenStatusList',
       'PKI Cert Validity': 'pkiCertValidity'
     },
+    connectorDeployment: { saas: 'SaaS', on_premises: 'On-premises', hybrid: 'Hybrid deployment' },
+    connectorServiceModel: {
+      software_only: 'Software only',
+      managed_verification: 'Managed verification',
+      managed_issuance: 'Managed issuance'
+    },
+    connectorBackendIntegration: {
+      oidc_oauth2: 'OIDC / OAuth 2.0',
+      saml2: 'SAML 2.0',
+      rest_api: 'REST API',
+      webhooks: 'Webhooks',
+      server_sdk: 'Server SDK'
+    },
+    connectorFrontendIntegration: {
+      hosted_ui_redirect: 'Hosted UI (redirect)',
+      headless_api: 'Headless API',
+      frontend_sdk: 'Frontend SDK',
+      web_component: 'Web component'
+    },
+    connectorEidasRole: {
+      rp_intermediary: 'Intermediary',
+      eaa_provider: 'EAA Provider',
+      qeaa_provider: 'QEAA Provider'
+    },
+    connectorCertificateManagement: {
+      provider_managed: 'Provider-managed certificates',
+      customer_managed: 'Customer-managed certificates',
+      both: 'Provider- or customer-managed certificates'
+    },
     eidasTrustService: {
       'Q_CERT_ESIG': 'QESig',
       'Q_CERT_ESEAL': 'QESeal',
@@ -1904,15 +1933,23 @@
     return walletRecognitionItems(wallet, 'certifications').length;
   }
 
-  function renderTechnicalKvRow(label, valueHtml) {
+  function renderTechnicalKvRow(label, valueHtml, keyVocab) {
     if (!valueHtml) return '';
+    // Optional glossary link on the row label: keyVocab = { vocabulary, key } (rendered only when the term exists).
+    const keyMatch = keyVocab && keyVocab.vocabulary && keyVocab.key
+      ? walletVocabEntry(keyVocab.vocabulary, 'connector', keyVocab.key)
+      : null;
+    const keyHtml = keyMatch
+      ? '<button type="button" class="fides-kv-glossary-link" data-vocab-key="' + escapeHtml(keyMatch.key) +
+        '" aria-label="Definition: ' + escapeHtml(label) + '">' + escapeHtml(label) + '</button>'
+      : escapeHtml(label);
     return '<div class="fides-kv-row">' +
-      '<span class="fides-kv-key">' + escapeHtml(label) + '</span>' +
+      '<span class="fides-kv-key">' + keyHtml + '</span>' +
       '<span class="fides-kv-val">' + valueHtml + '</span>' +
       '</div>';
   }
 
-  function renderTechnicalKvRowText(label, values, labelFn, vocabulary, vocabGroupKey) {
+  function renderTechnicalKvRowText(label, values, labelFn, vocabulary, vocabGroupKey, rowVocabKey) {
     if (!values || !values.length) return '';
     const items = values.map(function(v) {
       const display = String(labelFn ? labelFn(v) : v);
@@ -1928,7 +1965,7 @@
       const comma = index < items.length - 1 ? ',' : '';
       return '<span class="fides-kv-val-item">' + item + comma + '</span>';
     }).join('');
-    return renderTechnicalKvRow(label, valueHtml);
+    return renderTechnicalKvRow(label, valueHtml, rowVocabKey ? { vocabulary: vocabulary, key: rowVocabKey } : null);
   }
 
   function renderPlatformKvValue(wallet, platformLabelsOnly) {
@@ -4519,7 +4556,36 @@
       arrayValues(connector.interoperabilityProfiles).indexOf('EUDI Wallet ARF') !== -1));
   }
 
-  function buildConnectorTechnicalKvHtml(connector, vocabulary) {
+  /** Business wallet reference of a connector (resolved summary, or the raw walletRef id as fallback). */
+  function connectorBusinessWalletReference(connector) {
+    if (connector.walletReference && connector.walletReference.id) return connector.walletReference;
+    if (connector.walletRef && connector.walletRef.walletCatalogId) {
+      return { id: connector.walletRef.walletCatalogId, name: connector.walletRef.walletCatalogId };
+    }
+    return null;
+  }
+
+  /**
+   * Key capability entry "Business Wallet": active check option with a glossary link on the label
+   * and a link to the record in the wallet catalog (same URL building as the compatible-wallets table).
+   */
+  function renderConnectorBusinessWalletOption(connector, vocabulary, options) {
+    const reference = connectorBusinessWalletReference(connector);
+    if (!reference) return '';
+    const match = vocabulary ? walletVocabEntry(vocabulary, 'connector', 'Organizational Wallet') : null;
+    const labelHtml = match
+      ? '<button type="button" class="fides-kv-glossary-link fides-wallet-check-vocab-link" data-vocab-key="' +
+        escapeHtml(match.key) + '" aria-label="Definition: Business Wallet">Business Wallet</button>'
+      : '<span class="fides-wallet-check-label">Business Wallet</span>';
+    const href = connectorWalletHref(reference.id, options);
+    return '<span class="fides-wallet-check-option is-active fides-connector-business-wallet-option">' +
+      '<span class="fides-wallet-check-box" aria-hidden="true">' + icons.check + '</span>' +
+      labelHtml +
+      '<span class="fides-wallet-check-label">: <a href="' + escapeHtml(href) + '" class="fides-modal-link-inline" data-connector-business-wallet-link="1">' +
+      escapeHtml(String(reference.name || reference.id)) + '</a></span></span>';
+  }
+
+  function buildConnectorTechnicalKvHtml(connector, vocabulary, options) {
     const functions = connectorValueSet(connector.connectorFunctions);
     const keyCapabilities = '<div class="fides-kv-section" data-section="capabilities">' +
       '<div class="fides-kv-section-title">Key capabilities</div>' +
@@ -4527,20 +4593,27 @@
       renderWalletCheckGroup([
         renderConnectorCheckOption('Issuer', functions.has('issuer'), vocabulary, 'issuer'),
         renderConnectorCheckOption('Verifier', functions.has('verifier'), vocabulary, 'verifier'),
-        renderConnectorCheckOption('EUDI Wallet Connector', connectorIsEudi(connector), vocabulary, 'EUDI Wallet ARF')
-      ]) + '</div></div>';
+        renderConnectorCheckOption('EUDI Wallet Connector', connectorIsEudi(connector), vocabulary, 'EUDI Wallet ARF'),
+        renderConnectorBusinessWalletOption(connector, vocabulary, options)
+      ].filter(Boolean)) + '</div></div>';
 
-    const deploymentChecks = renderWalletDeploymentChecksHtml(connector);
+    const model = String(connector.deploymentModel || '').toLowerCase();
+    const deploymentChecks = model
+      ? renderWalletCheckGroup([
+        renderConnectorCheckOption('SaaS', model === 'saas' || model === 'hybrid', vocabulary, 'SaaS'),
+        renderConnectorCheckOption('On-premises', model === 'on_premises' || model === 'hybrid', vocabulary, 'On-premises')
+      ])
+      : '';
     const operations = buildTechnicalKvSection('Product & deployment', 'operations', [
-      deploymentChecks ? renderTechnicalKvRow('Deployment', deploymentChecks) : '',
-      renderTechnicalKvRowText('Service model', arrayValues(connector.serviceModels), connectorValueLabel),
-      renderTechnicalKvRow('Status', escapeHtml(walletStatusDisplay(connector))),
+      deploymentChecks ? renderTechnicalKvRow('Deployment', deploymentChecks, { vocabulary: vocabulary, key: 'deploymentModel' }) : '',
+      renderTechnicalKvRowText('Service model', arrayValues(connector.serviceModels), connectorValueLabel, vocabulary, 'connectorServiceModel', 'serviceModels'),
+      renderTechnicalKvRow('Status', escapeHtml(walletStatusDisplay(connector)), { vocabulary: vocabulary, key: 'connectorStatus' }),
       renderTechnicalKvRow('License', escapeHtml(walletLicenseKvDisplay(connector)))
     ]);
 
     const integration = buildTechnicalKvSection('Integration', 'integration', [
-      renderTechnicalKvRowText('Backend integration', arrayValues(connector.backendIntegrations), connectorValueLabel),
-      renderTechnicalKvRowText('Frontend integration', arrayValues(connector.frontendIntegrations), connectorValueLabel)
+      renderTechnicalKvRowText('Backend integration', arrayValues(connector.backendIntegrations), connectorValueLabel, vocabulary, 'connectorBackendIntegration', 'backendIntegrations'),
+      renderTechnicalKvRowText('Frontend integration', arrayValues(connector.frontendIntegrations), connectorValueLabel, vocabulary, 'connectorFrontendIntegration', 'frontendIntegrations')
     ]);
 
     const formats = buildTechnicalKvSection('Formats & protocols', 'compatibility', [
@@ -4555,14 +4628,15 @@
     let eidas = '';
     if (roles.size || connector.certificateManagement) {
       const roleOptions = CONNECTOR_ROLE_ORDER.map(function(role) {
-        return renderConnectorCheckOption(connectorValueLabel(role), roles.has(role), null, '');
+        const vocabKey = resolveWalletVocabKey('connectorEidasRole', role);
+        return renderConnectorCheckOption(connectorValueLabel(role), roles.has(role), vocabulary, vocabKey);
       });
       eidas = '<div class="fides-kv-section" data-section="eidas">' +
         '<div class="fides-kv-section-title">eIDAS &amp; certificates</div>' +
         '<div class="fides-wallet-check-group-wrap">' + renderWalletCheckGroup(roleOptions) + '</div>' +
         (connector.certificateManagement
           ? '<div class="fides-details-kv fides-details-kv--technical-grid">' +
-            renderTechnicalKvRow('Certificate management', escapeHtml(connectorValueLabel(connector.certificateManagement))) + '</div>'
+            renderTechnicalKvRowText('Certificate management', [connector.certificateManagement], connectorValueLabel, vocabulary, 'connectorCertificateManagement', 'certificateManagement') + '</div>'
           : '') +
         '</div>';
     }
@@ -4580,45 +4654,31 @@
     });
   }
 
+  /** Compatible personal wallets accordion (the business wallet itself is a Key capabilities entry). */
   function buildConnectorWalletAccordionsHtml(connector, options) {
-    const reference = connector.walletReference && connector.walletReference.id
-      ? connector.walletReference
-      : (connector.walletRef && connector.walletRef.walletCatalogId ? { id: connector.walletRef.walletCatalogId, name: connector.walletRef.walletCatalogId } : null);
-    const referenceRows = reference ? connectorWalletRows([reference], options) : [];
     const compatibleRows = connectorWalletRows(connector.compatibleWallets, options);
-    const tableOptions = function(nameLabel, ariaLabel, rows) {
-      return buildModalEntityTableHtml({
-        rows: rows,
-        nameColumnLabel: nameLabel,
+    if (!compatibleRows.length) return '';
+    return renderModalAccordion(
+      'fides-accordion-connector-compatible-wallets',
+      'Compatible personal wallets',
+      icons.wallet,
+      buildModalEntityTableHtml({
+        rows: compatibleRows,
+        nameColumnLabel: 'Compatible wallet',
         organizationColumnLabel: 'Provider',
         alwaysShowOrganizationColumn: true,
         sameWindowLinks: true,
-        ariaLabel: ariaLabel,
+        ariaLabel: 'Compatible personal wallets',
         options: options || {}
-      });
-    };
-    return [
-      renderModalAccordion(
-        'fides-accordion-connector-wallet',
-        'Business wallet',
-        icons.wallet,
-        referenceRows.length ? tableOptions('Business wallet', 'Business wallet', referenceRows) : '',
-        true
-      ),
-      renderModalAccordion(
-        'fides-accordion-connector-compatible-wallets',
-        'Compatible personal wallets',
-        icons.wallet,
-        compatibleRows.length ? tableOptions('Compatible wallet', 'Compatible personal wallets', compatibleRows) : '',
-        true,
-        compatibleRows.length
-      )
-    ].filter(Boolean).join('');
+      }),
+      true,
+      compatibleRows.length
+    );
   }
 
   function buildConnectorAccordionsHtml(connector, options) {
     const vocabulary = options && options.vocabulary;
-    const technicalKv = buildConnectorTechnicalKvHtml(connector, vocabulary);
+    const technicalKv = buildConnectorTechnicalKvHtml(connector, vocabulary, options);
     const accordions = buildConnectorWalletAccordionsHtml(connector, options) +
       renderModalAccordion(
         'fides-accordion-connector-technical',

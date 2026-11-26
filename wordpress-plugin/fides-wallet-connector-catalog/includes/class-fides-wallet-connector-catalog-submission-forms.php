@@ -17,7 +17,7 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_Submission_Forms')) {
 
     class Fides_Wallet_Connector_Catalog_Submission_Forms {
 
-        const VERSION = '1.1.1';
+        const VERSION = '1.2.0';
 
         /**
          * @param string $mode create|update.
@@ -45,6 +45,8 @@ if (! class_exists('Fides_Wallet_Connector_Catalog_Submission_Forms')) {
             'documentation'            => 'Link to technical or product documentation — API references and integration guides.',
             'repository'               => 'Public source code repository, if applicable — for example GitHub or GitLab.',
             'playgroundUrls'           => 'Public sandboxes or demo environments where developers can try the connector. One URL per row.',
+            'mediaVideos'              => 'Short product demos embedded on your public listing. Paste YouTube or Vimeo links — one per row (max 3).',
+            'mediaImages'              => 'Screenshots or product images visitors see on your connector page. Upload a file or paste a URL — one per row (max 10).',
             'license'                  => 'Software license of the connector. The catalog shows open vs closed source based on this choice.',
             'licenseOther'             => 'Exact license name when none of the standard options apply. Required if you selected Other (max 100 characters).',
             'walletRef'                => 'Optional: the business wallet from the Wallet Catalog that ships with or is part of this connector. Only business wallets of the same organization can be selected.',

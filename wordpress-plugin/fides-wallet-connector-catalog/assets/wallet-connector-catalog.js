@@ -115,12 +115,18 @@
   let vocabulary = null;
   // Filter group -> vocabulary key. Groups without an entry (or without matching terms) get no [i] button.
   const CONNECTOR_FILTER_TO_VOCAB = {
-    connectorFunctions: 'capabilities',
+    connectorFunctions: 'connectorFunctions',
     country: 'country',
     interop: 'interopProfile',
     vcFormat: 'vcFormat',
     credentialStatusMethods: 'credentialStatus',
-    license: 'license'
+    license: 'license',
+    deploymentModel: 'deploymentModel',
+    serviceModels: 'serviceModels',
+    backendIntegrations: 'backendIntegrations',
+    frontendIntegrations: 'frontendIntegrations',
+    eidasRoles: 'eidasRoles',
+    status: 'connectorStatus'
   };
   const CONNECTOR_OPTION_TO_VOCAB = {
     credentialStatus: {
@@ -128,7 +134,13 @@
       'IETF Token Status List': 'ietfTokenStatusList',
       'PKI Cert Validity': 'pkiCertValidity'
     },
-    license: { 'true': 'openSource', 'false': 'proprietary' }
+    license: { 'true': 'openSource', 'false': 'proprietary' },
+    deploymentModel: { saas: 'SaaS', on_premises: 'On-premises', hybrid: 'Hybrid deployment' },
+    serviceModels: { software_only: 'Software only', managed_verification: 'Managed verification', managed_issuance: 'Managed issuance' },
+    backendIntegrations: { oidc_oauth2: 'OIDC / OAuth 2.0', saml2: 'SAML 2.0', rest_api: 'REST API', webhooks: 'Webhooks', server_sdk: 'Server SDK', other: '' },
+    frontendIntegrations: { hosted_ui_redirect: 'Hosted UI (redirect)', headless_api: 'Headless API', frontend_sdk: 'Frontend SDK', web_component: 'Web component', other: '' },
+    eidasRoles: { rp_intermediary: 'Intermediary', eaa_provider: 'EAA Provider', qeaa_provider: 'QEAA Provider' },
+    connectorStatus: { development: '', beta: '', production: '', deprecated: '' }
   };
 
   let connectors = [];
@@ -902,7 +914,6 @@
       (originalIds.length > 0 ? '<label class="fides-filter-checkbox"><input type="checkbox" data-filter="linkedConnectors" data-value="true"' + (filters.ids.length ? ' checked' : '') + '><span>Linked connectors<span class="fides-filter-option-count">(' + originalIds.length + ')</span></span></label>' : '') +
       checkbox('addedLast30Days', 'true', filters.addedLast30Days, 'Added last 30 days', facets.addedLast30Days) +
       checkbox('eudi', 'true', filters.eudi, 'EUDI Wallet Connector', facets.eudi) +
-      (TIER_UI_ENABLED ? checkbox('officialOnly', 'true', filters.officialOnly, OFFICIAL_FILTER_LABEL, facets.officialOnly) : '') +
       '</div>' +
       FACET_GROUPS.map(function (group) { return renderFilterGroup(group, facets); }).join('') +
       '</div></aside>';

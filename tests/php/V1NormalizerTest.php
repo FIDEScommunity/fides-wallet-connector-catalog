@@ -96,6 +96,24 @@ final class V1NormalizerTest extends TestCase {
         $this->assertSame(array('https://a.example.com'), $result['connector']['playgroundUrls']);
     }
 
+    public function test_media_is_normalized_deduplicated_and_limited(): void {
+        $ok = Fides_Wallet_Connector_Catalog_V1_Normalizer::validate($this->issuer(array('media' => array(
+            'videos' => array('https://www.youtube.com/watch?v=abc', 'https://www.youtube.com/watch?v=abc'),
+            'images' => array('https://acme.example/a.png'),
+        ))), $this->context());
+        $this->assertSame(array(), $ok['errors']);
+        $this->assertSame(
+            array('videos' => array('https://www.youtube.com/watch?v=abc'), 'images' => array('https://acme.example/a.png')),
+            $ok['connector']['media']
+        );
+        $empty = Fides_Wallet_Connector_Catalog_V1_Normalizer::validate($this->issuer(array('media' => array('videos' => array(''), 'images' => array()))), $this->context());
+        $this->assertArrayNotHasKey('media', $empty['connector']);
+        $too_many = array_map(static fn(int $i) => 'https://acme.example/' . $i . '.png', range(1, 11));
+        $this->assertNotSame(array(), Fides_Wallet_Connector_Catalog_V1_Normalizer::validate($this->issuer(array('media' => array('images' => $too_many))), $this->context())['errors']);
+        $bad = Fides_Wallet_Connector_Catalog_V1_Normalizer::validate($this->issuer(array('media' => array('videos' => array('javascript:alert(1)')))), $this->context());
+        $this->assertNotSame(array(), $bad['errors']);
+    }
+
     public function test_wallet_ref_must_be_business_wallet_of_same_org(): void {
         $ok = Fides_Wallet_Connector_Catalog_V1_Normalizer::validate($this->issuer(array('walletRef' => 'acme-business')), $this->context());
         $this->assertSame(array(), $ok['errors']);

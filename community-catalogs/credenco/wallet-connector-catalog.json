@@ -9,6 +9,11 @@
       "walletRef": {
         "walletCatalogId": "credenco-business-wallet"
       },
+      "media": {
+        "videos": [
+          "https://www.youtube.com/watch?v=IIZ7dlF4gmM"
+        ]
+      },
       "website": "https://www.credenco.com",
       "documentation": "https://docs.credenco.com/docs/api/api-intro/",
       "playgroundUrls": [
