@@ -1,0 +1,108 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:sphereon",
+  "connectors": [
+    {
+      "id": "sphereon-business-wallet-connector",
+      "name": "Sphereon Business Wallet",
+      "description": "The Sphereon business wallet is an enterprise-grade, API-first application service that provides the comprehensive functionality required to manage the complete digital credential lifecycle. It enables organizations to seamlessly operate as issuers, holders, and verifiers of verifiable credentials. Designed for ecosystem interoperability, it supports cross-border European standards including eIDAS 2.0 profiles, SD-JWT, and ISO 18013-5 mdocs. Its headless architecture allows it to integrate silently into existing ERP, GRC, and procurement workflows, allowing organizations to automate compliance and trust without forcing employees to adopt new standalone interfaces.\n\nWhat distinguishes the Sphereon business wallet from standard digital identity applications is its underlying Sphereon Verifiable Data Exchange (VDX) trust engine. While most wallets passively hold or perform basic checks on credentials, the Sphereon wallet actively gates business operations.\n\nThis allows organizations to create an authoritative semantic model of their specific operational world. Using integrated industry-standard decision engines, the wallet evaluates every single action and credential exchange against internal organizational policies, external regulations, and technical specifications.\n\nThe result is that every data exchange produces a definitive outcome ( Permit, Deny, or Step-Up) that dictates subsequent workflow steps. Furthermore, instead of relying on standard system logs, every decision and its surrounding context is cryptographically written to a tamper-proof, hash-chained audit trail. The Sphereon business wallet does not just verify data; it provides a legally defensible, perfectly reconstructable record of continuous assurance for every operational decision.",
+      "walletRef": {
+        "walletCatalogId": "sphereon-business-wallet"
+      },
+      "website": "https://sphereon.com/solutions/sphereon-business-wallet/",
+      "documentation": "https://docs.sphereon.com/vdx/guides/getting-started/",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "jwt_vc",
+        "vcdm_2_0"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "ISO 18013-5 (Device Retrieval)"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "ISO 18013-5"
+      ],
+      "interoperabilityProfiles": [
+        "DIIP v5",
+        "HAIP v1"
+      ],
+      "credentialStatusMethods": [
+        "OCSP",
+        "CRL",
+        "IETF Token Status List",
+        "Bitstring Status List"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "software_only",
+        "managed_issuance",
+        "managed_verification"
+      ]
+    },
+    {
+      "id": "sphereon-vdx-platform-connector",
+      "name": "Sphereon VDX platform",
+      "description": "Sphereon VDX is a verifiable data layer for policy-driven trust and audit-ready decisions. It is a deployable verifiable data exchange platform that verifies evidence, resolves trust, applies policy, and returns auditable decisions to your existing business systems.\n\nIt is an omni-channel enterprise developer platform supporting management of organizational wallets, mobile wallets and identity integrations, providing holder, issuer, and verifier capabilities with DIIP v5, HAIP and OID4VCI/VP 1.0, ISO-18013-5/7 compliance.\n\nWhere our open-source Sphereon Identity Development Kit (IDK) provides low-level cryptographic control and our Sphereon Enterprise development Kit (EDK) provides production-grade building blocks, the Sphereon Verifiable data Exchange (VDX) platform provides the deployable verifiable data layer with APIs, management tooling, workflow support, and reusable solution patterns for enterprise operations.\n\nSee our developer documentation for all details or contact us for a free consultation",
+      "walletRef": {
+        "walletCatalogId": "sphereon-vdx-platform"
+      },
+      "website": "https://sphereon.com/sphereon-vdx-verifiable-data-exchange/",
+      "documentation": "https://docs.sphereon.com",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "jwt_vc",
+        "vcdm_2_0"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "ISO 18013-5 (Device Retrieval)"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "ISO 18013-5"
+      ],
+      "interoperabilityProfiles": [
+        "DIIP v5",
+        "EUDI Wallet ARF",
+        "HAIP v1"
+      ],
+      "credentialStatusMethods": [
+        "OCSP",
+        "CRL",
+        "IETF Token Status List",
+        "Bitstring Status List"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2",
+        "rest_api"
+      ],
+      "serviceModels": [
+        "software_only",
+        "managed_issuance",
+        "managed_verification"
+      ]
+    }
+  ]
+}

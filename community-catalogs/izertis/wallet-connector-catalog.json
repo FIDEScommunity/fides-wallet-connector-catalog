@@ -1,0 +1,49 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:izertis",
+  "connectors": [
+    {
+      "id": "identfy-business-wallet-connector",
+      "name": "Identfy Business Wallet",
+      "description": "Identfy Business Wallet is an enterprise-grade organizational identity solution designed for managing, issuing and presenting corporate verifiable credentials in B2B and B2G environments. It provides a scalable, production-ready platform for handling business credentials such as licenses, powers of attorney, certificates and registry-based attributes, while enabling secure presentation to third parties with verifiable trust. Integrated through REST APIs and wallet connectors, the solution supports flexible on-premise and cloud deployments and combines HSM-backed operations, role-based access control, encryption and traceability to meet demanding enterprise and public-sector requirements. It is aligned with the European digital identity ecosystem, including EUDI and EU Business Wallet scenarios.",
+      "walletRef": {
+        "walletCatalogId": "identfy-business-wallet"
+      },
+      "website": "https://identfy.es/",
+      "connectorFunctions": [
+        "issuer"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "SIOPv2",
+        "ISO 18013-5"
+      ],
+      "interoperabilityProfiles": [
+        "EUDI Wallet ARF",
+        "HAIP v1"
+      ],
+      "credentialStatusMethods": [
+        "BitstringStatusList v1.0"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "software_only",
+        "managed_issuance"
+      ]
+    }
+  ]
+}

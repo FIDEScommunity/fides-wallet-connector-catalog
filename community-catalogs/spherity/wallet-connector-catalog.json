@@ -1,0 +1,52 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:spherity",
+  "connectors": [
+    {
+      "id": "spherity-business-wallet-connector",
+      "name": "Spherity's European Business Wallet",
+      "description": "Spherity’s European Business Wallet (EBW) enables the seamless exchange of verifiable credentials across organisations, from banking, insurance and beyond. As part of the EBW framework and fully eIDAS",
+      "walletRef": {
+        "walletCatalogId": "spherity-business-wallet"
+      },
+      "website": "https://www.spherity.com/eida",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "vcdm_2_0"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "DIDComm Issue Credential v2"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "DIDComm Present Proof v2"
+      ],
+      "interoperabilityProfiles": [
+        "EUDI Wallet ARF",
+        "HAIP v1"
+      ],
+      "credentialStatusMethods": [
+        "IETF Token Status List",
+        "Bitstring Status List"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2"
+      ],
+      "serviceModels": [
+        "software_only",
+        "managed_issuance",
+        "managed_verification"
+      ]
+    }
+  ]
+}

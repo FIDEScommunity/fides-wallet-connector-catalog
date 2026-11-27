@@ -1,0 +1,54 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:gataca",
+  "connectors": [
+    {
+      "id": "gataca-studio-connector",
+      "name": "Gataca Studio",
+      "description": "Gataca Studio is a cloud-based digital identity platform enabling organizations to interact with ID wallets. From an intuitive dashboard, companies can manage credential issuance and verification to support simple, private, and compliant identity verification and authentication across digital services. Gataca Studio currently works with the Gataca Wallet and other ID wallets aligned with the EU Digital Identity Wallet and European Business Wallet requirements. Built on open standards, the platform supports multiple trust frameworks and integrates easily with existing systems through open APIs without dependence on a specific infrastructure.",
+      "walletRef": {
+        "walletCatalogId": "gataca-studio"
+      },
+      "website": "https://gataca.io/products/gataca-studio",
+      "documentation": "https://docs.gataca.io/studio/platform-tutorials/gataca-studio-overview",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "vcdm_2_0",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "SIOPv2"
+      ],
+      "interoperabilityProfiles": [
+        "DIIP v4",
+        "EUDI Wallet ARF"
+      ],
+      "credentialStatusMethods": [
+        "IETF Token Status List",
+        "W3C Verifiable Credentials Status List v2021",
+        "RevocationList2020"
+      ],
+      "backendIntegrations": [
+        "rest_api",
+        "webhooks"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:cleverbase-id",
+  "connectors": [
+    {
+      "id": "cleverbase-wallet-connector",
+      "name": "Cleverbase Wallet Connector",
+      "description": "Integration platform to request verified attributes from an EUDI wallet and to issue EAA, PubEAA, or QEAA into it.",
+      "website": "https://cleverbase.com/en/products/wallet-connector/",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "beta",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "EUDI Wallet ARF"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ]
+    }
+  ]
+}

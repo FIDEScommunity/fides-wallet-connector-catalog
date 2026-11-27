@@ -1,0 +1,44 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:verana",
+  "connectors": [
+    {
+      "id": "vs-agent-verana-business-wallet-connector",
+      "name": "VS Agent - Verana Business Wallet",
+      "description": "VS Agent is the reference implementation of a Verifiable Service: an open-source, self-hosted business wallet that gives every service an organization operates a verifiable identity, so anyone can che",
+      "walletRef": {
+        "walletCatalogId": "vs-agent-verana-business-wallet"
+      },
+      "website": "https://playground.testnet.verana.network/business-wallets",
+      "repository": "https://github.com/verana-labs/vs-agent/",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "on_premises",
+      "openSource": true,
+      "license": "Apache-2.0",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "anoncreds"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "DIDComm Issue Credential v1",
+        "DIDComm Issue Credential v2"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "DIDComm Present Proof v1",
+        "DIDComm Present Proof v2"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "software_only"
+      ]
+    }
+  ]
+}

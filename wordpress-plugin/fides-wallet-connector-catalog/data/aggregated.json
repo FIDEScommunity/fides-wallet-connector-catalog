@@ -1,8 +1,58 @@
 {
   "schemaVersion": "1",
   "catalogType": "wallet-connector-catalog",
-  "lastUpdated": "2026-11-27T05:47:40.520Z",
+  "lastUpdated": "2026-11-27T06:32:57.644Z",
   "connectors": [
+    {
+      "id": "cleverbase-wallet-connector",
+      "name": "Cleverbase Wallet Connector",
+      "description": "Integration platform to request verified attributes from an EUDI wallet and to issue EAA, PubEAA, or QEAA into it.",
+      "website": "https://cleverbase.com/en/products/wallet-connector/",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "beta",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "EUDI Wallet ARF"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "firstSeenAt": "2026-11-27T06:32:57.644Z",
+      "orgId": "org:cleverbase-id",
+      "organization": {
+        "id": "org:cleverbase-id",
+        "name": "Cleverbase ID",
+        "country": "NL",
+        "website": "https://cleverbase.com/en/",
+        "logoUri": "https://cleverbase.com/apple-touch-icon.png",
+        "catalogTier": "Community"
+      },
+      "logo": "https://cleverbase.com/apple-touch-icon.png",
+      "isEudiWalletConnector": true,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/cleverbase-id/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:32:57.644Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
+    },
     {
       "id": "credenco-business-wallet-connector",
       "name": "Credenco Business Wallet (Issuer & Verifier API)",
@@ -107,7 +157,7 @@
       "catalogTier": "Pro",
       "sourcePath": "community-catalogs/credenco/wallet-connector-catalog.json",
       "updatedAt": "2026-11-26T19:41:09.000Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     },
     {
       "id": "eudi-reference-verifier",
@@ -200,8 +250,8 @@
       "catalogTier": "Community",
       "catalogListingDepth": "full",
       "sourcePath": "community-catalogs/eu/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "updatedAt": "2026-11-27T05:47:54.000Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     },
     {
       "id": "eudiplo",
@@ -259,8 +309,8 @@
       "isEudiWalletConnector": false,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/eudiplo/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T05:47:40.520Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "updatedAt": "2026-11-27T05:47:54.000Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     },
     {
       "id": "eudi-reference-issuer",
@@ -354,8 +404,143 @@
       "catalogTier": "Community",
       "catalogListingDepth": "full",
       "sourcePath": "community-catalogs/eu/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "updatedAt": "2026-11-27T05:47:54.000Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
+    },
+    {
+      "id": "gataca-studio-connector",
+      "name": "Gataca Studio",
+      "description": "Gataca Studio is a cloud-based digital identity platform enabling organizations to interact with ID wallets. From an intuitive dashboard, companies can manage credential issuance and verification to support simple, private, and compliant identity verification and authentication across digital services. Gataca Studio currently works with the Gataca Wallet and other ID wallets aligned with the EU Digital Identity Wallet and European Business Wallet requirements. Built on open standards, the platform supports multiple trust frameworks and integrates easily with existing systems through open APIs without dependence on a specific infrastructure.",
+      "walletRef": {
+        "walletCatalogId": "gataca-studio"
+      },
+      "website": "https://gataca.io/products/gataca-studio",
+      "documentation": "https://docs.gataca.io/studio/platform-tutorials/gataca-studio-overview",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "vcdm_2_0",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "SIOPv2"
+      ],
+      "interoperabilityProfiles": [
+        "DIIP v4",
+        "EUDI Wallet ARF"
+      ],
+      "credentialStatusMethods": [
+        "IETF Token Status List",
+        "W3C Verifiable Credentials Status List v2021",
+        "RevocationList2020"
+      ],
+      "backendIntegrations": [
+        "rest_api",
+        "webhooks"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "gataca-studio",
+        "name": "Gataca Studio",
+        "logo": "https://media-gataca.s3.eu-west-1.amazonaws.com/logo_48x48_6195afe3cb.png",
+        "providerName": "Gataca Labs"
+      },
+      "firstSeenAt": "2026-11-27T06:32:57.644Z",
+      "orgId": "org:gataca",
+      "organization": {
+        "id": "org:gataca",
+        "name": "Gataca Labs",
+        "country": "ES",
+        "website": "https://gataca.io",
+        "logoUri": "https://www.google.com/s2/favicons?domain=gataca.io&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=gataca.io&sz=128",
+      "isEudiWalletConnector": true,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/gataca/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:32:57.644Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
+    },
+    {
+      "id": "identfy-business-wallet-connector",
+      "name": "Identfy Business Wallet",
+      "description": "Identfy Business Wallet is an enterprise-grade organizational identity solution designed for managing, issuing and presenting corporate verifiable credentials in B2B and B2G environments. It provides a scalable, production-ready platform for handling business credentials such as licenses, powers of attorney, certificates and registry-based attributes, while enabling secure presentation to third parties with verifiable trust. Integrated through REST APIs and wallet connectors, the solution supports flexible on-premise and cloud deployments and combines HSM-backed operations, role-based access control, encryption and traceability to meet demanding enterprise and public-sector requirements. It is aligned with the European digital identity ecosystem, including EUDI and EU Business Wallet scenarios.",
+      "walletRef": {
+        "walletCatalogId": "identfy-business-wallet"
+      },
+      "website": "https://identfy.es/",
+      "connectorFunctions": [
+        "issuer"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "SIOPv2",
+        "ISO 18013-5"
+      ],
+      "interoperabilityProfiles": [
+        "EUDI Wallet ARF",
+        "HAIP v1"
+      ],
+      "credentialStatusMethods": [
+        "BitstringStatusList v1.0"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "software_only",
+        "managed_issuance"
+      ],
+      "walletReference": {
+        "id": "identfy-business-wallet",
+        "name": "Identfy Business Wallet",
+        "logo": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF82MDMyXzMpIj4KPHBhdGggZD0iTTk5IDY0OVYyNDZIMjE1VjY0OUg5OVoiIGZpbGw9IiNFQjVCNUIiLz4KPHBhdGggZD0iTTIzMCAxMjAuNjMyQzIyOS45NDEgMTQwLjg1MiAyMjMuMDM5IDE1Ni45NzYgMjA5LjMyMyAxNjkuMDMyQzE5NS42MzcgMTgxLjA2IDE3OC4xMzIgMTg3LjAyOSAxNTYuODY5IDE4N0MxMzUuNTc1IDE4Ni45NzEgMTE4LjI0NyAxODAuNTkxIDEwNC45MTMgMTY3Ljk3OUM5MS42MDg0IDE1NS4zMDggODQuOTcwNyAxMzkuNDQ4IDg1LjAwMDEgMTIwLjMzOUM4NS4wNTg4IDEwMC43MzMgOTEuNzI1OCA4NC43ODQ3IDEwNS4xMTkgNzIuNDA2NUMxMTguNTExIDYwLjA4NjggMTM1Ljg5OCA1My45NzA4IDE1Ny4xNjIgNTQuMDAwMUMxNzkuMDQzIDU0LjAyOTQgMTk2LjY2NSA2MC4yNjI0IDIxMC4wMjggNzIuNjExM0MyMjMuMzMzIDg1LjAxODggMjMwLjAyOSAxMDEuMDI2IDIyOS45NzEgMTIwLjYzMkgyMzBaIiBmaWxsPSIjRUI1QjVCIi8+CjxwYXRoIGQ9Ik0zNDUuOTE2IDUzNi45NzlDMzE5LjM3NCA1MzYuOTc5IDI5NS40NTcgNTMwLjk0NyAyNzQuMTQ1IDUxOC45MDNDMjUyLjgzNCA1MDYuODU5IDIzNS45OTMgNDg5Ljk5MyAyMjMuNjA0IDQ2OC4zNDdDMjExLjE5NSA0NDYuNzAxIDIwNSA0MjEuMTk3IDIwNSAzOTEuODU2QzIwNSAzNjIuNTE2IDIxMS4xOTUgMzM2LjQ5OSAyMjMuNjA0IDMxNC44MzJDMjM1Ljk5MyAyOTMuMTg2IDI1Mi44NTQgMjc2LjQwMiAyNzQuMTQ1IDI2NC41MjJDMjk1LjQzNiAyNTIuNjQyIDMxOS4zNzQgMjQ2LjcxMyAzNDUuOTE2IDI0Ni43MTNDMzY5LjY2OSAyNDYuNzEzIDM5MC40NDcgMjUxLjk0NSA0MDguMjUxIDI2Mi40MjlDNDI2LjA1NiAyNzIuOTE0IDQzOS44NiAyODguODE1IDQ0OS42MjQgMzEwLjExM0M0NTkuMzg3IDMzMS40MzEgNDY0LjI5IDM1OC42NzkgNDY0LjI5IDM5MS44NTZDNDY0LjI5IDQyNS4wMzQgNDczLjcyNSA0OTcuNDIxIDQ2NC4yOSA1MTguOTAzQzQ1NC44NTQgNTQwLjM4NSA0MjcuMTYzIDUxMC43OTkgNDA5LjU0NCA1MjEuMjgzQzM5MS45MDMgNTMxLjc2OCAzNzAuNjk0IDUzNyAzNDUuODk2IDUzN0wzNDUuOTE2IDUzNi45NzlaTTM2MC4wNjkgNDY5LjkwNkMzNzMuMzQgNDY5LjkwNiAzODUuMzgxIDQ2Ni43NjcgMzk2LjIxMSA0NjAuNDY4QzQwNy4wMjEgNDU0LjE5IDQxNS42NzcgNDQ1LjE4MiA0MjIuMTM4IDQzMy40ODdDNDI4LjU5OSA0MjEuNzkyIDQzMS44MTkgNDA3LjkwMSA0MzEuODE5IDM5MS44MzZDNDMxLjgxOSAzNzUuNzcgNDI4LjU3OSAzNjEuNDQ5IDQyMi4xMzggMzQ5LjkxOEM0MTUuNjc3IDMzOC4zODcgNDA3LjAyMSAzMjkuNDgyIDM5Ni4yMTEgMzIzLjIwM0MzODUuMzgxIDMxNi45MjUgMzczLjM0IDMxMy43NjUgMzYwLjA2OSAzMTMuNzY1QzM0Ni43OTggMzEzLjc2NSAzMzQuMjI0IDMxNi45MDQgMzIzLjM5NCAzMjMuMjAzQzMxMi41NjQgMzI5LjQ4MiAzMDMuOTI4IDMzOC40MDcgMjk3LjQ2NyAzNDkuOTE4QzI5MS4wMDYgMzYxLjQ0OSAyODcuNzg2IDM3NS40MjEgMjg3Ljc4NiAzOTEuODM2QzI4Ny43ODYgNDA4LjI1IDI5MS4wMDYgNDIxLjc5MiAyOTcuNDY3IDQzMy40ODdDMzAzLjkyOCA0NDUuMjAzIDMxMi41NjQgNDU0LjE5IDMyMy4zOTQgNDYwLjQ2OEMzMzQuMjI0IDQ2Ni43NDcgMzQ2LjQ0OSA0NjkuOTA2IDM2MC4wNjkgNDY5LjkwNlpNNDMzLjkzMiA1MzIuNzk0VjQ3NS4xNTlMNDM1LjUxMiAzOTEuMzIzTDQzMC4yODEgMzA4LjAyVjIyNi4wMVYxNDRINTEyVjUzMi43OTRINDMzLjk1M0g0MzMuOTMyWiIgZmlsbD0iI0VCNUI1QiIvPgo8L2c+CjxkZWZzPgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzYwMzJfMyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPgo=",
+        "providerName": "Izertis S.A."
+      },
+      "firstSeenAt": "2026-11-27T06:32:57.644Z",
+      "orgId": "org:izertis",
+      "organization": {
+        "id": "org:izertis",
+        "name": "Izertis S.A.",
+        "country": "ES",
+        "website": "https://www.izertis.com/",
+        "logoUri": "https://www.izertis.com/documents/35913/207169/IMAGEN_OG.webp/6a09f6d5-9741-d367-41e1-fbd048febb54?version=1.0&t=1760599004227&imagePreview=1",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.izertis.com/documents/35913/207169/IMAGEN_OG.webp/6a09f6d5-9741-d367-41e1-fbd048febb54?version=1.0&t=1760599004227&imagePreview=1",
+      "isEudiWalletConnector": true,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/izertis/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:32:57.644Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     },
     {
       "id": "lissi-eudi-wallet-connector",
@@ -447,8 +632,8 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/lissi/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "updatedAt": "2026-11-27T05:47:54.000Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     },
     {
       "id": "mattr-vii",
@@ -506,8 +691,8 @@
       "isEudiWalletConnector": false,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/mattr/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T05:47:40.520Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "updatedAt": "2026-11-27T05:47:54.000Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     },
     {
       "id": "nl-wallet-verification-server",
@@ -566,8 +751,8 @@
       "catalogTier": "Community",
       "catalogListingDepth": "full",
       "sourcePath": "community-catalogs/bzk/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T05:47:40.520Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "updatedAt": "2026-11-27T05:47:54.000Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     },
     {
       "id": "igrant-organisation-wallet-suite-connector",
@@ -724,8 +909,8 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/igrant/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "updatedAt": "2026-11-27T05:47:54.000Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     },
     {
       "id": "procivis-one",
@@ -791,8 +976,222 @@
       "isEudiWalletConnector": false,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/procivis/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T05:47:40.520Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "updatedAt": "2026-11-27T05:47:54.000Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
+    },
+    {
+      "id": "sphereon-business-wallet-connector",
+      "name": "Sphereon Business Wallet",
+      "description": "The Sphereon business wallet is an enterprise-grade, API-first application service that provides the comprehensive functionality required to manage the complete digital credential lifecycle. It enables organizations to seamlessly operate as issuers, holders, and verifiers of verifiable credentials. Designed for ecosystem interoperability, it supports cross-border European standards including eIDAS 2.0 profiles, SD-JWT, and ISO 18013-5 mdocs. Its headless architecture allows it to integrate silently into existing ERP, GRC, and procurement workflows, allowing organizations to automate compliance and trust without forcing employees to adopt new standalone interfaces.\n\nWhat distinguishes the Sphereon business wallet from standard digital identity applications is its underlying Sphereon Verifiable Data Exchange (VDX) trust engine. While most wallets passively hold or perform basic checks on credentials, the Sphereon wallet actively gates business operations.\n\nThis allows organizations to create an authoritative semantic model of their specific operational world. Using integrated industry-standard decision engines, the wallet evaluates every single action and credential exchange against internal organizational policies, external regulations, and technical specifications.\n\nThe result is that every data exchange produces a definitive outcome ( Permit, Deny, or Step-Up) that dictates subsequent workflow steps. Furthermore, instead of relying on standard system logs, every decision and its surrounding context is cryptographically written to a tamper-proof, hash-chained audit trail. The Sphereon business wallet does not just verify data; it provides a legally defensible, perfectly reconstructable record of continuous assurance for every operational decision.",
+      "walletRef": {
+        "walletCatalogId": "sphereon-business-wallet"
+      },
+      "website": "https://sphereon.com/solutions/sphereon-business-wallet/",
+      "documentation": "https://docs.sphereon.com/vdx/guides/getting-started/",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "jwt_vc",
+        "vcdm_2_0"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "ISO 18013-5 (Device Retrieval)"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "ISO 18013-5"
+      ],
+      "interoperabilityProfiles": [
+        "DIIP v5",
+        "HAIP v1"
+      ],
+      "credentialStatusMethods": [
+        "OCSP",
+        "CRL",
+        "IETF Token Status List",
+        "Bitstring Status List"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "software_only",
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "sphereon-business-wallet",
+        "name": "Sphereon Business Wallet",
+        "logo": "https://sphereon.com/content/uploads/2024/10/190013-Sphereon-logo-Transparent.png",
+        "providerName": "Sphereon"
+      },
+      "firstSeenAt": "2026-11-27T06:32:57.644Z",
+      "orgId": "org:sphereon",
+      "organization": {
+        "id": "org:sphereon",
+        "name": "Sphereon",
+        "country": "NL",
+        "website": "https://sphereon.com",
+        "logoUri": "https://www.google.com/s2/favicons?domain=sphereon.com&sz=128",
+        "catalogTier": "Pro"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=sphereon.com&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Pro",
+      "sourcePath": "community-catalogs/sphereon/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:32:57.644Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
+    },
+    {
+      "id": "sphereon-vdx-platform-connector",
+      "name": "Sphereon VDX platform",
+      "description": "Sphereon VDX is a verifiable data layer for policy-driven trust and audit-ready decisions. It is a deployable verifiable data exchange platform that verifies evidence, resolves trust, applies policy, and returns auditable decisions to your existing business systems.\n\nIt is an omni-channel enterprise developer platform supporting management of organizational wallets, mobile wallets and identity integrations, providing holder, issuer, and verifier capabilities with DIIP v5, HAIP and OID4VCI/VP 1.0, ISO-18013-5/7 compliance.\n\nWhere our open-source Sphereon Identity Development Kit (IDK) provides low-level cryptographic control and our Sphereon Enterprise development Kit (EDK) provides production-grade building blocks, the Sphereon Verifiable data Exchange (VDX) platform provides the deployable verifiable data layer with APIs, management tooling, workflow support, and reusable solution patterns for enterprise operations.\n\nSee our developer documentation for all details or contact us for a free consultation",
+      "walletRef": {
+        "walletCatalogId": "sphereon-vdx-platform"
+      },
+      "website": "https://sphereon.com/sphereon-vdx-verifiable-data-exchange/",
+      "documentation": "https://docs.sphereon.com",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "jwt_vc",
+        "vcdm_2_0"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "ISO 18013-5 (Device Retrieval)"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "ISO 18013-5"
+      ],
+      "interoperabilityProfiles": [
+        "DIIP v5",
+        "EUDI Wallet ARF",
+        "HAIP v1"
+      ],
+      "credentialStatusMethods": [
+        "OCSP",
+        "CRL",
+        "IETF Token Status List",
+        "Bitstring Status List"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2",
+        "rest_api"
+      ],
+      "serviceModels": [
+        "software_only",
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "sphereon-vdx-platform",
+        "name": "Sphereon VDX platform",
+        "logo": "https://sphereon.com/content/uploads/2024/10/190013-Sphereon-logo-Transparent.png",
+        "providerName": "Sphereon"
+      },
+      "firstSeenAt": "2026-11-27T06:32:57.644Z",
+      "orgId": "org:sphereon",
+      "organization": {
+        "id": "org:sphereon",
+        "name": "Sphereon",
+        "country": "NL",
+        "website": "https://sphereon.com",
+        "logoUri": "https://www.google.com/s2/favicons?domain=sphereon.com&sz=128",
+        "catalogTier": "Pro"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=sphereon.com&sz=128",
+      "isEudiWalletConnector": true,
+      "catalogTier": "Pro",
+      "sourcePath": "community-catalogs/sphereon/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:32:57.644Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
+    },
+    {
+      "id": "spherity-business-wallet-connector",
+      "name": "Spherity's European Business Wallet",
+      "description": "Spherity’s European Business Wallet (EBW) enables the seamless exchange of verifiable credentials across organisations, from banking, insurance and beyond. As part of the EBW framework and fully eIDAS",
+      "walletRef": {
+        "walletCatalogId": "spherity-business-wallet"
+      },
+      "website": "https://www.spherity.com/eida",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "vcdm_2_0"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "DIDComm Issue Credential v2"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "DIDComm Present Proof v2"
+      ],
+      "interoperabilityProfiles": [
+        "EUDI Wallet ARF",
+        "HAIP v1"
+      ],
+      "credentialStatusMethods": [
+        "IETF Token Status List",
+        "Bitstring Status List"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2"
+      ],
+      "serviceModels": [
+        "software_only",
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "spherity-business-wallet",
+        "name": "Spherity's European Business Wallet",
+        "logo": "https://www.google.com/s2/favicons?domain=spherity.com&sz=128",
+        "providerName": "Spherity"
+      },
+      "firstSeenAt": "2026-11-27T06:32:57.644Z",
+      "orgId": "org:spherity",
+      "organization": {
+        "id": "org:spherity",
+        "name": "Spherity",
+        "country": "DE",
+        "website": "https://www.spherity.com",
+        "logoUri": "https://www.google.com/s2/favicons?domain=spherity.com&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=spherity.com&sz=128",
+      "isEudiWalletConnector": true,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/spherity/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:32:57.644Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     },
     {
       "id": "trusttech-id-connector",
@@ -876,8 +1275,8 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/trusttech/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "updatedAt": "2026-11-27T05:47:54.000Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     },
     {
       "id": "ver-id-platform",
@@ -962,8 +1361,68 @@
       "isEudiWalletConnector": false,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/ver-id/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-25T19:41:35.000Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "updatedAt": "2026-11-27T05:47:54.000Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
+    },
+    {
+      "id": "vs-agent-verana-business-wallet-connector",
+      "name": "VS Agent - Verana Business Wallet",
+      "description": "VS Agent is the reference implementation of a Verifiable Service: an open-source, self-hosted business wallet that gives every service an organization operates a verifiable identity, so anyone can che",
+      "walletRef": {
+        "walletCatalogId": "vs-agent-verana-business-wallet"
+      },
+      "website": "https://playground.testnet.verana.network/business-wallets",
+      "repository": "https://github.com/verana-labs/vs-agent/",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "on_premises",
+      "openSource": true,
+      "license": "Apache-2.0",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "anoncreds"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "DIDComm Issue Credential v1",
+        "DIDComm Issue Credential v2"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "DIDComm Present Proof v1",
+        "DIDComm Present Proof v2"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "software_only"
+      ],
+      "walletReference": {
+        "id": "vs-agent-verana-business-wallet",
+        "name": "VS Agent - Verana Business Wallet",
+        "logo": "https://verana.io/logo.svg",
+        "providerName": "Verana"
+      },
+      "firstSeenAt": "2026-11-27T06:32:57.644Z",
+      "orgId": "org:verana",
+      "organization": {
+        "id": "org:verana",
+        "name": "Verana",
+        "country": "EE",
+        "website": "https://verana.io",
+        "logoUri": "https://verana.io/logo.svg",
+        "catalogTier": "Community"
+      },
+      "logo": "https://verana.io/logo.svg",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/verana/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:32:57.644Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     },
     {
       "id": "waltid-community-stack",
@@ -1027,22 +1486,22 @@
       "catalogTier": "Community",
       "catalogListingDepth": "full",
       "sourcePath": "community-catalogs/waltid/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T05:47:40.520Z",
-      "fetchedAt": "2026-11-27T05:47:40.520Z"
+      "updatedAt": "2026-11-27T05:47:54.000Z",
+      "fetchedAt": "2026-11-27T06:32:57.644Z"
     }
   ],
   "stats": {
-    "totalConnectors": 12,
-    "totalOrganizations": 11,
-    "eudiWalletConnectors": 5,
+    "totalConnectors": 19,
+    "totalOrganizations": 17,
+    "eudiWalletConnectors": 10,
     "byFunction": {
-      "issuer": 9,
-      "verifier": 11
+      "issuer": 16,
+      "verifier": 17
     },
     "byDeploymentModel": {
-      "saas": 3,
-      "on_premises": 7,
-      "hybrid": 2
+      "saas": 5,
+      "on_premises": 8,
+      "hybrid": 6
     }
   }
 }
