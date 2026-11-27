@@ -1,0 +1,37 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:authologic",
+  "connectors": [
+    {
+      "id": "authologic-eudi-wallet-playground",
+      "name": "EUDI Wallet Playground",
+      "description": "Sandbox for issuing and verifying EUDI Wallet credentials from one place. Operators create templates, sign credentials and deliver them to a wallet by link or QR, and can revoke them. Verification requests PID, attestations or combined presentations, including in-browser OpenID4VP through the W3C Digital Credentials API. The same page offers SaaS or self-hosted deployment with the operator's own keys, and names mobile documents (mDoc) for citizen and document verification.",
+      "website": "https://eudi.authologic.com/",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "beta",
+      "vcFormat": [
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "software_only",
+        "managed_issuance",
+        "managed_verification"
+      ]
+    }
+  ]
+}

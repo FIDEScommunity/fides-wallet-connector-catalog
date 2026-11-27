@@ -1,0 +1,35 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:scytales",
+  "connectors": [
+    {
+      "id": "scytales-wallet-connector",
+      "name": "Scytáles Wallet Connector",
+      "description": "Verifier listed by the OpenID Foundation as Wallet Connector 1.0 from Scytales AB. The certification covers OpenID4VP 1.0 with HAIP 1.0 for SD-JWT VC and ISO mdoc presentations. The public developer portal describes remote and same-device validation with OpenID Connect and the W3C Digital Credentials API.",
+      "website": "https://scytales.dev/",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "development",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ]
+    }
+  ]
+}

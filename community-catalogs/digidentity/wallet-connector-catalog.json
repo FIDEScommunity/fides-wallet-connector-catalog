@@ -1,0 +1,40 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:digidentity",
+  "connectors": [
+    {
+      "id": "digidentity-eudi-wallet-verifier",
+      "name": "Digidentity EUDI Wallet Verifier",
+      "description": "API that lets a relying party verify credentials from eIDAS 2.0 EUDI Wallets. The caller names the attributes to verify, receives a QR code and deeplink, and gets the shared attributes back over SAML or OpenID Connect. Digidentity describes the service as the intermediary between the relying party and the wallet holder. The product page lists mDoc, SD-JWT and JWT, and says the API implements the protocols in the EU Architecture Reference Framework.",
+      "website": "https://www.digidentity.eu/eudi-wallet-verifier",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "mdoc",
+        "sd_jwt_vc",
+        "jwt_vc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "EUDI Wallet ARF"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2",
+        "saml2"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ],
+      "eidasRoles": [
+        "rp_intermediary"
+      ]
+    }
+  ]
+}

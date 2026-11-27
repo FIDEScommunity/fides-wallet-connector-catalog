@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1",
   "catalogType": "wallet-connector-catalog",
-  "lastUpdated": "2026-11-27T06:32:57.644Z",
+  "lastUpdated": "2026-11-27T06:47:32.724Z",
   "connectors": [
     {
       "id": "cleverbase-wallet-connector",
@@ -50,8 +50,8 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/cleverbase-id/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T06:32:57.644Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "updatedAt": "2026-11-27T06:33:16.000Z",
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "credenco-business-wallet-connector",
@@ -157,30 +157,24 @@
       "catalogTier": "Pro",
       "sourcePath": "community-catalogs/credenco/wallet-connector-catalog.json",
       "updatedAt": "2026-11-26T19:41:09.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
-      "id": "eudi-reference-verifier",
-      "name": "EUDI Reference Verifier",
-      "description": "Reference verifier endpoint for OpenID4VP 1.0. A relying party initializes a DCQL authorization request through the verifier REST API and later reads the wallet response. The service validates mso_mdoc and SD-JWT VC presentations. Apache-2.0. The repository describes the current version as a development tool and recommends against production use.",
-      "walletRef": {
-        "walletCatalogId": "eudi-reference-verifier"
-      },
-      "website": "https://verifier.eudiw.dev/home",
-      "repository": "https://github.com/eu-digital-identity-wallet/eudi-srv-verifier-endpoint",
-      "playgroundUrls": [
-        "https://verifier.eudiw.dev/home"
-      ],
+      "id": "digidentity-eudi-wallet-verifier",
+      "name": "Digidentity EUDI Wallet Verifier",
+      "description": "API that lets a relying party verify credentials from eIDAS 2.0 EUDI Wallets. The caller names the attributes to verify, receives a QR code and deeplink, and gets the shared attributes back over SAML or OpenID Connect. Digidentity describes the service as the intermediary between the relying party and the wallet holder. The product page lists mDoc, SD-JWT and JWT, and says the API implements the protocols in the EU Architecture Reference Framework.",
+      "website": "https://www.digidentity.eu/eudi-wallet-verifier",
       "connectorFunctions": [
         "verifier"
       ],
-      "deploymentModel": "on_premises",
-      "openSource": true,
-      "license": "Apache-2.0",
-      "status": "development",
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
       "vcFormat": [
         "mdoc",
-        "sd_jwt_vc"
+        "sd_jwt_vc",
+        "jwt_vc"
       ],
       "presentationProtocols": [
         "OpenID4VP"
@@ -188,70 +182,78 @@
       "interoperabilityProfiles": [
         "EUDI Wallet ARF"
       ],
-      "walletCompatibility": [
-        "eudi-reference-personal-wallet",
-        "eudi-age-verification-wallet",
-        "national-eudi-wallet-germany",
-        "procivis-one-wallet"
+      "backendIntegrations": [
+        "oidc_oauth2",
+        "saml2"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ],
+      "eidasRoles": [
+        "rp_intermediary"
+      ],
+      "firstSeenAt": "2026-11-27T06:47:32.724Z",
+      "orgId": "org:digidentity",
+      "organization": {
+        "id": "org:digidentity",
+        "name": "Digidentity",
+        "country": "NL",
+        "website": "https://www.digidentity.com",
+        "logoUri": "https://www.google.com/s2/favicons?domain=digidentity.com&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=digidentity.com&sz=128",
+      "isEudiWalletConnector": true,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/digidentity/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:47:32.724Z",
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
+    },
+    {
+      "id": "authologic-eudi-wallet-playground",
+      "name": "EUDI Wallet Playground",
+      "description": "Sandbox for issuing and verifying EUDI Wallet credentials from one place. Operators create templates, sign credentials and deliver them to a wallet by link or QR, and can revoke them. Verification requests PID, attestations or combined presentations, including in-browser OpenID4VP through the W3C Digital Credentials API. The same page offers SaaS or self-hosted deployment with the operator's own keys, and names mobile documents (mDoc) for citizen and document verification.",
+      "website": "https://eudi.authologic.com/",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "hybrid",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "beta",
+      "vcFormat": [
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
       ],
       "backendIntegrations": [
         "rest_api"
       ],
-      "frontendIntegrations": [
-        "hosted_ui_redirect"
-      ],
       "serviceModels": [
-        "software_only"
+        "software_only",
+        "managed_issuance",
+        "managed_verification"
       ],
-      "walletReference": {
-        "id": "eudi-reference-verifier",
-        "name": "EUDI Reference Verifier",
-        "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
-        "providerName": "European Commission"
-      },
-      "compatibleWallets": [
-        {
-          "id": "eudi-reference-personal-wallet",
-          "name": "EUDI Wallet Reference Implementation",
-          "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
-          "providerName": "European Commission"
-        },
-        {
-          "id": "eudi-age-verification-wallet",
-          "name": "EUDI Age Verification App (Reference)",
-          "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
-          "providerName": "European Commission"
-        },
-        {
-          "id": "national-eudi-wallet-germany",
-          "name": "d-you",
-          "logo": "https://www.google.com/s2/favicons?domain=eudi-wallet.gov.de&sz=128",
-          "providerName": "German Government"
-        },
-        {
-          "id": "procivis-one-wallet",
-          "name": "Procivis One Wallet",
-          "logo": "https://www.google.com/s2/favicons?domain=procivis.ch&sz=128",
-          "providerName": "Procivis"
-        }
-      ],
-      "firstSeenAt": "2026-11-24T15:41:04.479Z",
-      "orgId": "org:eu",
+      "firstSeenAt": "2026-11-27T06:47:32.724Z",
+      "orgId": "org:authologic",
       "organization": {
-        "id": "org:eu",
-        "name": "European Commission",
-        "country": "EU",
-        "website": "https://commission.europa.eu/",
-        "logoUri": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
+        "id": "org:authologic",
+        "name": "Authologic",
+        "country": "PL",
+        "logoUri": "https://mobywatel.authologic.com/_nuxt/logo.DrrOjNXC.svg",
         "catalogTier": "Community"
       },
-      "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
-      "isEudiWalletConnector": true,
+      "logo": "https://mobywatel.authologic.com/_nuxt/logo.DrrOjNXC.svg",
+      "isEudiWalletConnector": false,
       "catalogTier": "Community",
-      "catalogListingDepth": "full",
-      "sourcePath": "community-catalogs/eu/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "sourcePath": "community-catalogs/authologic/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:47:32.724Z",
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "eudiplo",
@@ -310,102 +312,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/eudiplo/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
-    },
-    {
-      "id": "eudi-reference-issuer",
-      "name": "EUDIW Reference Issuer",
-      "description": "Reference implementation of a PID and (Q)EAA provider service. It issues mso_mdoc and SD-JWT VC credentials with OpenID4VCI 1.0, including authorization-code and pre-authorized-code offers, and can authenticate the holder with an eIDAS node, an OAuth 2.0 server or a test form. Apache-2.0. The project describes this release as an early development version and recommends against production use.",
-      "walletRef": {
-        "walletCatalogId": "eudi-reference-issuer"
-      },
-      "website": "https://issuer.eudiw.dev/",
-      "repository": "https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py",
-      "playgroundUrls": [
-        "https://issuer.eudiw.dev/"
-      ],
-      "connectorFunctions": [
-        "issuer"
-      ],
-      "deploymentModel": "on_premises",
-      "openSource": true,
-      "license": "Apache-2.0",
-      "status": "development",
-      "vcFormat": [
-        "mdoc",
-        "sd_jwt_vc"
-      ],
-      "issuanceProtocols": [
-        "OpenID4VCI"
-      ],
-      "interoperabilityProfiles": [
-        "EUDI Wallet ARF"
-      ],
-      "walletCompatibility": [
-        "eudi-reference-personal-wallet",
-        "national-eudi-wallet-netherlands",
-        "france-identite",
-        "heidi-wallet"
-      ],
-      "backendIntegrations": [
-        "oidc_oauth2",
-        "rest_api"
-      ],
-      "frontendIntegrations": [
-        "hosted_ui_redirect"
-      ],
-      "serviceModels": [
-        "software_only"
-      ],
-      "walletReference": {
-        "id": "eudi-reference-issuer",
-        "name": "EUDIW Reference Issuer",
-        "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
-        "providerName": "European Commission"
-      },
-      "compatibleWallets": [
-        {
-          "id": "eudi-reference-personal-wallet",
-          "name": "EUDI Wallet Reference Implementation",
-          "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
-          "providerName": "European Commission"
-        },
-        {
-          "id": "national-eudi-wallet-netherlands",
-          "name": "NL Wallet (Netherlands)",
-          "logo": "https://flagcdn.com/w80/nl.png",
-          "providerName": "Dutch Government"
-        },
-        {
-          "id": "france-identite",
-          "name": "France Identité",
-          "logo": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/f1/00/29/f10029ba-79b0-c102-b195-8611663faf6b/Placeholder.mill/400x400bb-75.webp",
-          "providerName": "French Government"
-        },
-        {
-          "id": "heidi-wallet",
-          "name": "Heidi Wallet App",
-          "logo": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/13/2d/44/132d44a4-424b-3dfc-174e-541248ef421b/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/400x400ia-75.webp",
-          "providerName": "Ubique Innovation"
-        }
-      ],
-      "firstSeenAt": "2026-11-24T15:41:04.479Z",
-      "orgId": "org:eu",
-      "organization": {
-        "id": "org:eu",
-        "name": "European Commission",
-        "country": "EU",
-        "website": "https://commission.europa.eu/",
-        "logoUri": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
-        "catalogTier": "Community"
-      },
-      "logo": "https://www.google.com/s2/favicons?domain=ec.europa.eu&sz=128",
-      "isEudiWalletConnector": true,
-      "catalogTier": "Community",
-      "catalogListingDepth": "full",
-      "sourcePath": "community-catalogs/eu/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "gataca-studio-connector",
@@ -474,8 +381,52 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/gataca/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T06:32:57.644Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "updatedAt": "2026-11-27T06:33:16.000Z",
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
+    },
+    {
+      "id": "hopae-connect",
+      "name": "Hopae Connect",
+      "description": "Sandbox verifier for EUDI Wallet presentations through one REST API. Hopae Connect currently gives customers sandbox access to Germany's d-you wallet and Denmark's AltID wallet. Hopae says that support stays sandbox-only until those wallets are available to businesses in production. OpenID Foundation certification for Hopae Connect covers OpenID4VP 1.0 with HAIP 1.0 for the SD-JWT VC and ISO mdoc verifier profiles.",
+      "website": "https://www.hopae.com/blog/start-testing-eudi-wallets-with-hopae-connect",
+      "documentation": "https://docs.hopae.com/guides/api-integration",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "beta",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ],
+      "firstSeenAt": "2026-11-27T06:47:32.724Z",
+      "orgId": "org:hopae",
+      "organization": {
+        "id": "org:hopae",
+        "name": "Hopae",
+        "country": "LU",
+        "website": "https://www.hopae.com/",
+        "logoUri": "https://www.google.com/s2/favicons?domain=hopae.com&sz=128"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=hopae.com&sz=128",
+      "isEudiWalletConnector": false,
+      "sourcePath": "community-catalogs/hopae/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:47:32.724Z",
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "identfy-business-wallet-connector",
@@ -539,8 +490,8 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/izertis/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T06:32:57.644Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "updatedAt": "2026-11-27T06:33:16.000Z",
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "lissi-eudi-wallet-connector",
@@ -633,7 +584,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/lissi/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "mattr-vii",
@@ -692,67 +643,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/mattr/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
-    },
-    {
-      "id": "nl-wallet-verification-server",
-      "name": "NL Wallet verification server",
-      "description": "Open-source verifier from the NL Wallet repository. A relying party runs the verification_server on its own infrastructure, starts a disclosure session from its backend, and receives the verified attributes through the requester API. The NL Wallet presents SD-JWT or ISO/IEC 18013-5:2021 mdoc over OpenID4VP. The architecture walkthrough follows OpenID4VP draft 20. The published guides are development documentation, and the source is EUPL-1.2. This is a component of the NL Wallet solution for relying parties, not a separate commercial connector product.",
-      "website": "https://github.com/MinBZK/nl-wallet",
-      "documentation": "https://minbzk.github.io/nl-wallet/main/get-started/create-a-verifier.html",
-      "repository": "https://github.com/MinBZK/nl-wallet",
-      "connectorFunctions": [
-        "verifier"
-      ],
-      "deploymentModel": "on_premises",
-      "openSource": true,
-      "license": "EUPL-1.2",
-      "status": "development",
-      "vcFormat": [
-        "sd_jwt_vc",
-        "mdoc"
-      ],
-      "presentationProtocols": [
-        "OpenID4VP"
-      ],
-      "walletCompatibility": [
-        "national-eudi-wallet-netherlands"
-      ],
-      "backendIntegrations": [
-        "rest_api"
-      ],
-      "frontendIntegrations": [
-        "frontend_sdk"
-      ],
-      "serviceModels": [
-        "software_only"
-      ],
-      "certificateManagement": "customer_managed",
-      "compatibleWallets": [
-        {
-          "id": "national-eudi-wallet-netherlands",
-          "name": "NL Wallet (Netherlands)",
-          "logo": "https://flagcdn.com/w80/nl.png",
-          "providerName": "Dutch Government"
-        }
-      ],
-      "firstSeenAt": "2026-11-27T05:47:40.520Z",
-      "orgId": "org:bzk",
-      "organization": {
-        "id": "org:bzk",
-        "name": "Ministerie van Binnenlandse Zaken en Koninkrijksrelaties",
-        "country": "NL",
-        "website": "https://www.rijksoverheid.nl/ministeries/ministerie-van-binnenlandse-zaken-en-koninkrijksrelaties",
-        "logoUri": "https://www.google.com/s2/favicons?domain=rijksoverheid.nl&sz=128",
-        "catalogTier": "Community"
-      },
-      "logo": "https://www.google.com/s2/favicons?domain=rijksoverheid.nl&sz=128",
-      "isEudiWalletConnector": false,
-      "catalogTier": "Community",
-      "catalogListingDepth": "full",
-      "sourcePath": "community-catalogs/bzk/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "igrant-organisation-wallet-suite-connector",
@@ -910,7 +801,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/igrant/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "procivis-one",
@@ -977,7 +868,52 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/procivis/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
+    },
+    {
+      "id": "scytales-wallet-connector",
+      "name": "Scytáles Wallet Connector",
+      "description": "Verifier listed by the OpenID Foundation as Wallet Connector 1.0 from Scytales AB. The certification covers OpenID4VP 1.0 with HAIP 1.0 for SD-JWT VC and ISO mdoc presentations. The public developer portal describes remote and same-device validation with OpenID Connect and the W3C Digital Credentials API.",
+      "website": "https://scytales.dev/",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "development",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ],
+      "firstSeenAt": "2026-11-27T06:47:32.724Z",
+      "orgId": "org:scytales",
+      "organization": {
+        "id": "org:scytales",
+        "name": "Scytales",
+        "country": "SE",
+        "website": "https://scytales.com",
+        "logoUri": "https://www.google.com/s2/favicons?domain=scytales.com&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=scytales.com&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/scytales/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:47:32.724Z",
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "sphereon-business-wallet-connector",
@@ -1048,8 +984,8 @@
       "isEudiWalletConnector": false,
       "catalogTier": "Pro",
       "sourcePath": "community-catalogs/sphereon/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T06:32:57.644Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "updatedAt": "2026-11-27T06:33:16.000Z",
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "sphereon-vdx-platform-connector",
@@ -1122,8 +1058,8 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Pro",
       "sourcePath": "community-catalogs/sphereon/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T06:32:57.644Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "updatedAt": "2026-11-27T06:33:16.000Z",
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "spherity-business-wallet-connector",
@@ -1190,15 +1126,16 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/spherity/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T06:32:57.644Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "updatedAt": "2026-11-27T06:33:16.000Z",
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "trusttech-id-connector",
       "name": "TrustTech ID Connector",
-      "description": "ID verifier that lets organisations accept certified EUDI Wallets, business wallets, eIDs, bank logins and document reads through one OpenID Connect integration. Returns a normalised result with an assurance level, handles relying-party registration, access certificates, wallet unit attestation checks and revocation checks, and runs as a managed service, in a private cloud or on-premise. The package is containerised and can use an HSM or keystore. EUDI Wallet verification uses OpenID4VP and DCQL, with SD-JWT VC and ISO mdoc under the HAIP profile.",
+      "description": "ID connector that lets organisations accept certified EUDI Wallets, business wallets, eIDs, bank logins and document reads through one OpenID Connect integration. Returns a normalised result with an assurance level, handles relying-party registration, access certificates, wallet unit attestation checks and revocation checks, and runs as a managed service, in a private cloud or on-premise. The package is containerised and can use an HSM or keystore. EUDI Wallet verification uses OpenID4VP and DCQL, with SD-JWT VC and ISO mdoc under the HAIP profile. The product page lists OpenID4VCI among the same standards.",
       "website": "https://trusttech.nl/products/id-connector/",
       "connectorFunctions": [
+        "issuer",
         "verifier"
       ],
       "deploymentModel": "hybrid",
@@ -1208,6 +1145,9 @@
       "vcFormat": [
         "sd_jwt_vc",
         "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
       ],
       "presentationProtocols": [
         "OpenID4VP",
@@ -1276,7 +1216,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/trusttech/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "ver-id-platform",
@@ -1362,7 +1302,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/ver-id/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "vs-agent-verana-business-wallet-connector",
@@ -1421,8 +1361,8 @@
       "isEudiWalletConnector": false,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/verana/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T06:32:57.644Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "updatedAt": "2026-11-27T06:33:16.000Z",
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     },
     {
       "id": "waltid-community-stack",
@@ -1487,21 +1427,21 @@
       "catalogListingDepth": "full",
       "sourcePath": "community-catalogs/waltid/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:32:57.644Z"
+      "fetchedAt": "2026-11-27T06:47:32.724Z"
     }
   ],
   "stats": {
-    "totalConnectors": 19,
-    "totalOrganizations": 17,
-    "eudiWalletConnectors": 10,
+    "totalConnectors": 20,
+    "totalOrganizations": 19,
+    "eudiWalletConnectors": 9,
     "byFunction": {
-      "issuer": 16,
-      "verifier": 17
+      "issuer": 17,
+      "verifier": 19
     },
     "byDeploymentModel": {
-      "saas": 5,
-      "on_premises": 8,
-      "hybrid": 6
+      "saas": 8,
+      "on_premises": 5,
+      "hybrid": 7
     }
   }
 }

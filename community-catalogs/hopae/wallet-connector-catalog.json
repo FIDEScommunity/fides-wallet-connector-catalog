@@ -1,0 +1,36 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:hopae",
+  "connectors": [
+    {
+      "id": "hopae-connect",
+      "name": "Hopae Connect",
+      "description": "Sandbox verifier for EUDI Wallet presentations through one REST API. Hopae Connect currently gives customers sandbox access to Germany's d-you wallet and Denmark's AltID wallet. Hopae says that support stays sandbox-only until those wallets are available to businesses in production. OpenID Foundation certification for Hopae Connect covers OpenID4VP 1.0 with HAIP 1.0 for the SD-JWT VC and ISO mdoc verifier profiles.",
+      "website": "https://www.hopae.com/blog/start-testing-eudi-wallets-with-hopae-connect",
+      "documentation": "https://docs.hopae.com/guides/api-integration",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "beta",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ]
+    }
+  ]
+}
