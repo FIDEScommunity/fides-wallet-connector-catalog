@@ -1,0 +1,54 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:waltid",
+  "connectors": [
+    {
+      "id": "waltid-community-stack",
+      "name": "walt.id Community Stack",
+      "description": "Open-source issuer and verifier APIs from the walt.id Community Stack. Issuer API v2 issues W3C VC JWTs, SD-JWT VCs and mdocs with OpenID4VCI 1.0. Verifier API v2 checks those formats with OpenID4VP 1.0. The stack also implements HAIP 1.0. You run it yourself, on your own infrastructure or in a private cloud. Portal2 is a white-label UI for issuance and verification. The Issuer and Verifier management APIs do not authenticate callers, so they have to be kept private before production use. This record does not include the separate Wallet API.",
+      "website": "https://walt.id/",
+      "documentation": "https://docs.walt.id/community-stack/home",
+      "repository": "https://github.com/walt-id/waltid-identity",
+      "playgroundUrls": [
+        "https://portal2.demo.walt.id"
+      ],
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "on_premises",
+      "openSource": true,
+      "license": "Apache-2.0",
+      "status": "production",
+      "vcFormat": [
+        "jwt_vc",
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1"
+      ],
+      "credentialStatusMethods": [
+        "StatusList2021",
+        "Token Status List",
+        "Bitstring Status List"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "frontendIntegrations": [
+        "hosted_ui_redirect",
+        "headless_api"
+      ],
+      "serviceModels": [
+        "software_only"
+      ]
+    }
+  ]
+}

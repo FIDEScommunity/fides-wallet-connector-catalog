@@ -35,6 +35,7 @@
       ],
       "backendIntegrations": [
         "oidc_oauth2",
+        "webhooks",
         "server_sdk"
       ],
       "frontendIntegrations": [

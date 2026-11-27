@@ -1,0 +1,43 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:mattr",
+  "connectors": [
+    {
+      "id": "mattr-vii",
+      "name": "MATTR VII",
+      "description": "Cloud platform for issuing and verifying ISO mdocs. MATTR VII issues mdocs with OpenID4VCI 1.0, using the authorization-code and pre-authorized-code flows, and verifies remote mdoc presentations with OpenID4VP as profiled by ISO/IEC 18013-7:2025 Annex B. That profile follows OpenID4VP draft 18 rather than the final 1.0 specification, and remote verification requests mdocs only. Each customer uses an isolated tenant on a regional shared cloud or a dedicated cloud. The platform is reached through REST APIs and OAuth clients, and the verifier web SDK starts the browser session.",
+      "walletRef": {
+        "walletCatalogId": "mattr-vii"
+      },
+      "website": "https://mattr.global",
+      "documentation": "https://learn.mattr.global/docs/verification/oid4vp",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2",
+        "rest_api"
+      ],
+      "frontendIntegrations": [
+        "frontend_sdk"
+      ],
+      "serviceModels": [
+        "software_only"
+      ]
+    }
+  ]
+}

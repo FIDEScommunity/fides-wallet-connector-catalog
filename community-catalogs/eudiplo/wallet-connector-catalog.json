@@ -1,0 +1,50 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:eudiplo",
+  "connectors": [
+    {
+      "id": "eudiplo",
+      "name": "EUDIPLO",
+      "description": "Open-source middleware that a backend calls to issue and verify EUDI Wallet attestations. It implements OpenID4VCI 1.0 and OpenID4VP 1.0 with DCQL, SD-JWT VC and ISO/IEC 18013-5 mdoc, publishes a Token Status List, and returns the result by webhook, server-sent events or polling. Operators run it themselves as a container, with optional PostgreSQL, S3-compatible storage and an external key store. One instance can serve many tenants. It is an LF Decentralized Trust project, previously hosted by the OpenWallet Foundation.",
+      "website": "https://eudiplo.dev/",
+      "documentation": "https://docs.eudiplo.dev/reference/protocols",
+      "repository": "https://github.com/EUDIPLO/eudiplo",
+      "playgroundUrls": [
+        "https://conformance.eudiplo.dev"
+      ],
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "on_premises",
+      "openSource": true,
+      "license": "Apache-2.0",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "credentialStatusMethods": [
+        "IETF Token Status List"
+      ],
+      "backendIntegrations": [
+        "oidc_oauth2",
+        "rest_api",
+        "webhooks",
+        "server_sdk"
+      ],
+      "frontendIntegrations": [
+        "headless_api"
+      ],
+      "serviceModels": [
+        "software_only"
+      ]
+    }
+  ]
+}

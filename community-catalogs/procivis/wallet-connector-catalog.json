@@ -1,0 +1,51 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:procivis",
+  "connectors": [
+    {
+      "id": "procivis-one",
+      "name": "Procivis One Core",
+      "description": "Open-source core used to issue and verify credentials on infrastructure you run yourself, in your data center or at a cloud provider. It exposes a REST API and server SDKs, issues with OpenID4VCI 1.0, and verifies with OpenID4VP 1.0 and the ISO/IEC 18013-5 proximity flow. Documented credential formats are SD-JWT VC and ISO mdoc. Revocation can use a Token Status List, a Bitstring Status List or a CRL. Licensed under Apache-2.0. Desk, the Business Wallet and the Verifier App are separate enterprise components.",
+      "walletRef": {
+        "walletCatalogId": "procivis-one"
+      },
+      "website": "https://www.procivis.ch/",
+      "documentation": "https://docs.procivis.ch/architecture",
+      "repository": "https://github.com/procivis/one-core",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "on_premises",
+      "openSource": true,
+      "license": "Apache-2.0",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "ISO 18013-5"
+      ],
+      "credentialStatusMethods": [
+        "Token Status List",
+        "Bitstring Status List",
+        "CRL"
+      ],
+      "backendIntegrations": [
+        "rest_api",
+        "server_sdk"
+      ],
+      "frontendIntegrations": [
+        "headless_api"
+      ],
+      "serviceModels": [
+        "software_only"
+      ]
+    }
+  ]
+}

@@ -61,7 +61,8 @@
       ],
       "serviceModels": [
         "software_only"
-      ]
+      ],
+      "certificateManagement": "both"
     }
   ]
 }

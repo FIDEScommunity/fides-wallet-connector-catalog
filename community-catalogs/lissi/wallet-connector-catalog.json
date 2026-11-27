@@ -5,7 +5,7 @@
     {
       "id": "lissi-eudi-wallet-connector",
       "name": "Lissi EUDI Wallet Connector",
-      "description": "Containerized software component that gives organisations a single API to issue and verify attestations with EUDI Wallets via OpenID4VCI and OpenID4VP. Holds OpenID Foundation conformance certification for OpenID4VCI 1.0 and OpenID4VP 1.0, both with HAIP 1.0, and supports multi-tenant operation, trust management, HSM and key vault integration.",
+      "description": "Containerized software component that gives organisations a single API to issue and verify attestations with EUDI Wallets via OpenID4VCI and OpenID4VP. For production it is a Docker package that runs in the customer's own environment, including a private cloud, with a separate cloud offering for testing. The same API covers PID identification, SCA, EAA and QEAA attestations, and QES-related flows, and signs with keys in the customer's HSM or key vault. Holds OpenID Foundation conformance certification for OpenID4VCI 1.0 and OpenID4VP 1.0, both with HAIP 1.0, and supports multi-tenant operation and trust management.",
       "walletRef": {
         "walletCatalogId": "lissi-id-wallet-connector"
       },
@@ -44,7 +44,8 @@
       ],
       "serviceModels": [
         "software_only"
-      ]
+      ],
+      "certificateManagement": "customer_managed"
     }
   ]
 }

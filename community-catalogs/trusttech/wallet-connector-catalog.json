@@ -5,7 +5,7 @@
     {
       "id": "trusttech-id-connector",
       "name": "TrustTech ID Connector",
-      "description": "ID verifier that lets organisations accept certified EUDI Wallets, business wallets, eIDs, bank logins and document reads through one OpenID Connect integration. Returns a normalised result with an assurance level, handles relying-party registration, access certificates, wallet unit attestation checks and revocation checks, and runs as a managed service, in a private cloud or on-premise.",
+      "description": "ID verifier that lets organisations accept certified EUDI Wallets, business wallets, eIDs, bank logins and document reads through one OpenID Connect integration. Returns a normalised result with an assurance level, handles relying-party registration, access certificates, wallet unit attestation checks and revocation checks, and runs as a managed service, in a private cloud or on-premise. The package is containerised and can use an HSM or keystore. EUDI Wallet verification uses OpenID4VP and DCQL, with SD-JWT VC and ISO mdoc under the HAIP profile.",
       "website": "https://trusttech.nl/products/id-connector/",
       "connectorFunctions": [
         "verifier"

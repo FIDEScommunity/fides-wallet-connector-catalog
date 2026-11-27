@@ -5,7 +5,10 @@
     {
       "id": "eudi-reference-issuer",
       "name": "EUDIW Reference Issuer",
-      "description": "Reference web issuing service for developing and testing OpenID4VCI flows with EUDI Wallet implementations.",
+      "description": "Reference implementation of a PID and (Q)EAA provider service. It issues mso_mdoc and SD-JWT VC credentials with OpenID4VCI 1.0, including authorization-code and pre-authorized-code offers, and can authenticate the holder with an eIDAS node, an OAuth 2.0 server or a test form. Apache-2.0. The project describes this release as an early development version and recommends against production use.",
+      "walletRef": {
+        "walletCatalogId": "eudi-reference-issuer"
+      },
       "website": "https://issuer.eudiw.dev/",
       "repository": "https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py",
       "playgroundUrls": [
@@ -35,6 +38,7 @@
         "heidi-wallet"
       ],
       "backendIntegrations": [
+        "oidc_oauth2",
         "rest_api"
       ],
       "frontendIntegrations": [
@@ -47,7 +51,10 @@
     {
       "id": "eudi-reference-verifier",
       "name": "EUDI Reference Verifier",
-      "description": "Reference verifier endpoint for developing and testing OpenID4VP and ISO 18013-5 wallet presentation flows.",
+      "description": "Reference verifier endpoint for OpenID4VP 1.0. A relying party initializes a DCQL authorization request through the verifier REST API and later reads the wallet response. The service validates mso_mdoc and SD-JWT VC presentations. Apache-2.0. The repository describes the current version as a development tool and recommends against production use.",
+      "walletRef": {
+        "walletCatalogId": "eudi-reference-verifier"
+      },
       "website": "https://verifier.eudiw.dev/home",
       "repository": "https://github.com/eu-digital-identity-wallet/eudi-srv-verifier-endpoint",
       "playgroundUrls": [
@@ -65,8 +72,7 @@
         "sd_jwt_vc"
       ],
       "presentationProtocols": [
-        "OpenID4VP",
-        "ISO 18013-5"
+        "OpenID4VP"
       ],
       "interoperabilityProfiles": [
         "EUDI Wallet ARF"
