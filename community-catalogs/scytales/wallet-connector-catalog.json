@@ -30,6 +30,41 @@
       "serviceModels": [
         "managed_verification"
       ]
+    },
+    {
+      "id": "scytales-eu-reference-wallet-connector",
+      "name": "Scytales EU Reference Wallet",
+      "description": "An organizational platform based on the EU Digital Identity Wallet reference implementation, providing issuer and verifier capabilities.",
+      "walletRef": {
+        "walletCatalogId": "scytales-eu-reference-wallet"
+      },
+      "website": "https://www.scytales.com",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ]
     }
   ]
 }

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:northernblock",
+  "connectors": [
+    {
+      "id": "orbit-enterprise-connector",
+      "name": "Orbit Enterprise",
+      "description": "An enterprise digital identity platform providing verifier and issuer capabilities for organizations to manage and issue verifiable credentials.",
+      "walletRef": {
+        "walletCatalogId": "orbit-enterprise"
+      },
+      "website": "https://northernblock.io",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "anoncreds"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "DIDComm Issue Credential v2"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "DIDComm Present Proof v2"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ]
+    }
+  ]
+}

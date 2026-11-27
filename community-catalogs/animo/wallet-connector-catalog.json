@@ -1,0 +1,45 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:animo",
+  "connectors": [
+    {
+      "id": "paradym-platform-connector",
+      "name": "Paradym Platform",
+      "description": "An enterprise platform for issuing and verifying verifiable credentials, built on the open-source Credo framework.",
+      "walletRef": {
+        "walletCatalogId": "paradym-platform"
+      },
+      "website": "https://paradym.id",
+      "documentation": "https://docs.paradym.id",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "anoncreds",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "DIDComm Issue Credential v2"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "DIDComm Present Proof v2"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ]
+    }
+  ]
+}

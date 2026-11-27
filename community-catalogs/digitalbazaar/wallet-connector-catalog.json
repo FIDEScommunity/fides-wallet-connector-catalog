@@ -1,0 +1,44 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:digitalbazaar",
+  "connectors": [
+    {
+      "id": "veres-wallet-connector",
+      "name": "Veres Wallet",
+      "description": "An enterprise-grade verifiable credentials platform built by Digital Bazaar, pioneers of the W3C Verifiable Credentials standard, offering issuer and verifier capabilities.",
+      "walletRef": {
+        "walletCatalogId": "veres-wallet"
+      },
+      "website": "https://www.digitalbazaar.com",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": true,
+      "license": "BSD-3-Clause",
+      "status": "production",
+      "vcFormat": [
+        "vcdm_2_0",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "credentialStatusMethods": [
+        "StatusList2021",
+        "RevocationList2020"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ]
+    }
+  ]
+}

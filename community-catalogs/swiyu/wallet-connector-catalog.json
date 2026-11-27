@@ -1,0 +1,66 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:swiyu",
+  "connectors": [
+    {
+      "id": "swiyu-generic-issuer-connector",
+      "name": "SWIYU Generic Issuer",
+      "description": "Generic issuer component of the SWIYU ecosystem, enabling organizations to issue verifiable credentials to compatible wallets within the Swiss e-ID infrastructure.",
+      "walletRef": {
+        "walletCatalogId": "swiyu-generic-issuer"
+      },
+      "website": "https://swiyu-admin-ch.github.io/cookbooks/onboarding-generic-issuer/",
+      "documentation": "https://swiyu-admin-ch.github.io/cookbooks/onboarding-generic-issuer/",
+      "repository": "https://github.com/swiyu-admin-ch/swiyu-issuer",
+      "connectorFunctions": [
+        "issuer"
+      ],
+      "deploymentModel": "saas",
+      "openSource": true,
+      "license": "MIT",
+      "status": "development",
+      "vcFormat": [
+        "sd_jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance"
+      ]
+    },
+    {
+      "id": "swiyu-generic-verifier-connector",
+      "name": "SWIYU Generic Verifier",
+      "description": "Generic verifier component of the SWIYU ecosystem, enabling organizations to request and verify verifiable presentations from compatible wallets within the Swiss e-ID infrastructure.",
+      "walletRef": {
+        "walletCatalogId": "swiyu-generic-verifier"
+      },
+      "website": "https://swiyu-admin-ch.github.io/cookbooks/onboarding-generic-verifier/",
+      "documentation": "https://swiyu-admin-ch.github.io/cookbooks/onboarding-generic-verifier/",
+      "repository": "https://github.com/swiyu-admin-ch/swiyu-verifier",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": true,
+      "license": "MIT",
+      "status": "development",
+      "vcFormat": [
+        "sd_jwt_vc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:ooru",
+  "connectors": [
+    {
+      "id": "credissuer-connector",
+      "name": "CredIssuer",
+      "description": "CredIssuer is a digital credentialing platform that enables institutions and governments to issue tamper-proof, verifiable certificates in real time.",
+      "walletRef": {
+        "walletCatalogId": "credissuer"
+      },
+      "website": "https://ooru.io/products/credissuer",
+      "connectorFunctions": [
+        "issuer"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "vcdm_2_0"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance"
+      ]
+    },
+    {
+      "id": "snapkyc-connector",
+      "name": "SnapKYC",
+      "description": "SnapKYC is a consent-first business verification platform that enables organizations to verify digital credentials. Supports OID4VP-based presentations including mDL/mDoc, SD-JWT VC and VCDM credentials.",
+      "walletRef": {
+        "walletCatalogId": "snapkyc"
+      },
+      "website": "https://ooru.io/products/snapkyc",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "vcdm_2_0"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ]
+    }
+  ]
+}

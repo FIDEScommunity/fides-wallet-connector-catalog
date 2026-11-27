@@ -1,8 +1,121 @@
 {
   "schemaVersion": "1",
   "catalogType": "wallet-connector-catalog",
-  "lastUpdated": "2026-11-27T06:47:32.724Z",
+  "lastUpdated": "2026-11-27T08:28:22.985Z",
   "connectors": [
+    {
+      "id": "affinidi-portal-connector",
+      "name": "Affinidi Portal",
+      "description": "A comprehensive identity and data management platform enabling organizations to issue and verify verifiable credentials with privacy-preserving data sharing.",
+      "walletRef": {
+        "walletCatalogId": "affinidi-portal"
+      },
+      "website": "https://www.affinidi.com",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "vcdm_2_0"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "affinidi-portal",
+        "name": "Affinidi Portal",
+        "logo": "https://www.google.com/s2/favicons?domain=affinidi.com&sz=256",
+        "providerName": "Affinidi"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:affinidi",
+      "organization": {
+        "id": "org:affinidi",
+        "name": "Affinidi",
+        "country": "SG",
+        "website": "https://www.affinidi.com",
+        "logoUri": "https://www.google.com/s2/favicons?domain=affinidi.com&sz=256",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=affinidi.com&sz=256",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/affinidi/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "auth0-platform-connector",
+      "name": "Auth0 Platform",
+      "description": "Auth0's experimental mDL and verifiable credentials platform enabling organizations to issue and verify digital credentials integrated with Auth0's identity platform.",
+      "walletRef": {
+        "walletCatalogId": "auth0-platform"
+      },
+      "website": "https://lab.auth0.com",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "beta",
+      "vcFormat": [
+        "mdoc",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "auth0-platform",
+        "name": "Auth0 Platform",
+        "logo": "https://www.google.com/s2/favicons?domain=auth0.com&sz=128",
+        "providerName": "Auth0 (Okta)"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:auth0",
+      "organization": {
+        "id": "org:auth0",
+        "name": "Auth0 (Okta)",
+        "country": "US",
+        "website": "https://auth0.com",
+        "logoUri": "https://www.google.com/s2/favicons?domain=auth0.com&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=auth0.com&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/auth0/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
     {
       "id": "cleverbase-wallet-connector",
       "name": "Cleverbase Wallet Connector",
@@ -51,7 +164,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/cleverbase-id/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T06:33:16.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "credenco-business-wallet-connector",
@@ -157,7 +270,173 @@
       "catalogTier": "Pro",
       "sourcePath": "community-catalogs/credenco/wallet-connector-catalog.json",
       "updatedAt": "2026-11-26T19:41:09.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "credissuer-connector",
+      "name": "CredIssuer",
+      "description": "CredIssuer is a digital credentialing platform that enables institutions and governments to issue tamper-proof, verifiable certificates in real time.",
+      "walletRef": {
+        "walletCatalogId": "credissuer"
+      },
+      "website": "https://ooru.io/products/credissuer",
+      "connectorFunctions": [
+        "issuer"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "vcdm_2_0"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance"
+      ],
+      "walletReference": {
+        "id": "credissuer",
+        "name": "CredIssuer",
+        "logo": "https://www.google.com/s2/favicons?domain=ooru.io&sz=256",
+        "providerName": "Ooru"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:ooru",
+      "organization": {
+        "id": "org:ooru",
+        "name": "Ooru",
+        "country": "IN",
+        "website": "https://ooru.io/",
+        "logoUri": "https://framerusercontent.com/images/HijkYEeUDpGRn66LacWOyd8jbmE.png",
+        "catalogTier": "Community"
+      },
+      "logo": "https://framerusercontent.com/images/HijkYEeUDpGRn66LacWOyd8jbmE.png",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/ooru/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "dalion-org-wallet-connector",
+      "name": "DALION",
+      "description": "An enterprise digital identity platform providing complete issuer, and verifier capabilities for organizational credential management.",
+      "walletRef": {
+        "walletCatalogId": "dalion-org-wallet"
+      },
+      "website": "https://www.engage.inetum.com/dalion/",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "credentialStatusMethods": [
+        "StatusList2021"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "dalion-org-wallet",
+        "name": "DALION",
+        "providerName": "Inetum"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:inetum",
+      "organization": {
+        "id": "org:inetum",
+        "name": "Inetum",
+        "country": "ES",
+        "website": "https://www.inetum.com/es/es.html",
+        "logoUri": "https://static-p165453-e1803721.adobeaemcloud.com/489b2b9c0d2194574538d78ff4171adc6159a8742a0bddcf233b039a09bb815e/resources/images/favicon.ico",
+        "catalogTier": "Community"
+      },
+      "logo": "https://static-p165453-e1803721.adobeaemcloud.com/489b2b9c0d2194574538d78ff4171adc6159a8742a0bddcf233b039a09bb815e/resources/images/favicon.ico",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/inetum/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "didroom-connector",
+      "name": "DIDroom",
+      "description": "An open-source decentralized identity platform providing issuer and verifier capabilities with a focus on privacy and user sovereignty.",
+      "walletRef": {
+        "walletCatalogId": "didroom"
+      },
+      "website": "https://forkbomb.solutions",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": true,
+      "license": "AGPL-3.0-or-later",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "didroom",
+        "name": "DIDroom",
+        "logo": "https://www.google.com/s2/favicons?domain=forkbomb.solutions&sz=128",
+        "providerName": "Forkbomb"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:forkbomb",
+      "organization": {
+        "id": "org:forkbomb",
+        "name": "Forkbomb",
+        "country": "NL",
+        "website": "https://forkbomb.solutions",
+        "logoUri": "https://www.google.com/s2/favicons?domain=forkbomb.solutions&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=forkbomb.solutions&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/forkbomb/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "digidentity-eudi-wallet-verifier",
@@ -206,8 +485,8 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/digidentity/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T06:47:32.724Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "updatedAt": "2026-11-27T06:47:50.000Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "authologic-eudi-wallet-playground",
@@ -252,8 +531,8 @@
       "isEudiWalletConnector": false,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/authologic/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T06:47:32.724Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "updatedAt": "2026-11-27T06:47:50.000Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "eudiplo",
@@ -312,7 +591,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/eudiplo/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "gataca-studio-connector",
@@ -382,7 +661,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/gataca/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T06:33:16.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "hopae-connect",
@@ -425,8 +704,8 @@
       "logo": "https://www.google.com/s2/favicons?domain=hopae.com&sz=128",
       "isEudiWalletConnector": false,
       "sourcePath": "community-catalogs/hopae/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T06:47:32.724Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "updatedAt": "2026-11-27T06:47:50.000Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "identfy-business-wallet-connector",
@@ -491,7 +770,115 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/izertis/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T06:33:16.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "inji-certifier-connector",
+      "name": "Inji Certifier",
+      "description": "An open-source issuing component by MOSIP enabling governments and organizations to issue verifiable credentials at scale.",
+      "walletRef": {
+        "walletCatalogId": "inji-certifier"
+      },
+      "website": "https://www.mosip.io",
+      "documentation": "https://docs.mosip.io",
+      "repository": "https://github.com/mosip",
+      "connectorFunctions": [
+        "issuer"
+      ],
+      "deploymentModel": "saas",
+      "openSource": true,
+      "license": "MPL-2.0",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance"
+      ],
+      "walletReference": {
+        "id": "inji-certifier",
+        "name": "Inji Certifier",
+        "logo": "https://www.google.com/s2/favicons?domain=mosip.io&sz=128",
+        "providerName": "MOSIP"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:mosip",
+      "organization": {
+        "id": "org:mosip",
+        "name": "MOSIP",
+        "country": "IN",
+        "website": "https://www.mosip.io",
+        "logoUri": "https://www.google.com/s2/favicons?domain=mosip.io&sz=128",
+        "catalogTier": "Pro"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=mosip.io&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Pro",
+      "sourcePath": "community-catalogs/mosip/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "inji-verifier-connector",
+      "name": "Inji Verifier",
+      "description": "An open-source verification component by MOSIP enabling organizations and relying parties to verify verifiable credentials using OpenID4VP.",
+      "walletRef": {
+        "walletCatalogId": "inji-verifier"
+      },
+      "website": "https://www.mosip.io",
+      "documentation": "https://docs.mosip.io",
+      "repository": "https://github.com/mosip",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": true,
+      "license": "MPL-2.0",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "mdoc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "inji-verifier",
+        "name": "Inji Verifier",
+        "logo": "https://www.google.com/s2/favicons?domain=mosip.io&sz=128",
+        "providerName": "MOSIP"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:mosip",
+      "organization": {
+        "id": "org:mosip",
+        "name": "MOSIP",
+        "country": "IN",
+        "website": "https://www.mosip.io",
+        "logoUri": "https://www.google.com/s2/favicons?domain=mosip.io&sz=128",
+        "catalogTier": "Pro"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=mosip.io&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Pro",
+      "sourcePath": "community-catalogs/mosip/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "lissi-eudi-wallet-connector",
@@ -584,7 +971,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/lissi/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "mattr-vii",
@@ -643,7 +1030,65 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/mattr/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "orbit-enterprise-connector",
+      "name": "Orbit Enterprise",
+      "description": "An enterprise digital identity platform providing verifier and issuer capabilities for organizations to manage and issue verifiable credentials.",
+      "walletRef": {
+        "walletCatalogId": "orbit-enterprise"
+      },
+      "website": "https://northernblock.io",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "anoncreds"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "DIDComm Issue Credential v2"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "DIDComm Present Proof v2"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "orbit-enterprise",
+        "name": "Orbit Enterprise",
+        "logo": "https://northernblock.io/wp-content/uploads/2022/10/NB-Orbit-App-Icon-1-1.png",
+        "providerName": "Northern Block"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:northernblock",
+      "organization": {
+        "id": "org:northernblock",
+        "name": "Northern Block",
+        "country": "CA",
+        "website": "https://northernblock.io",
+        "catalogTier": "Community"
+      },
+      "logo": "",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/northernblock/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "igrant-organisation-wallet-suite-connector",
@@ -801,7 +1246,68 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/igrant/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "paradym-platform-connector",
+      "name": "Paradym Platform",
+      "description": "An enterprise platform for issuing and verifying verifiable credentials, built on the open-source Credo framework.",
+      "walletRef": {
+        "walletCatalogId": "paradym-platform"
+      },
+      "website": "https://paradym.id",
+      "documentation": "https://docs.paradym.id",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "anoncreds",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI",
+        "DIDComm Issue Credential v2"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP",
+        "DIDComm Present Proof v2"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "paradym-platform",
+        "name": "Paradym Platform",
+        "logo": "https://play-lh.googleusercontent.com/QHFxEvBMYuMoHg-ha_YEdzryqnogR80FIpDI5I_DBJCD-3FiK3MK9bJvEsthhf7IBsg=w240-h480-rw",
+        "providerName": "Animo Solutions"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:animo",
+      "organization": {
+        "id": "org:animo",
+        "name": "Animo Solutions",
+        "country": "NL",
+        "website": "https://animo.id",
+        "logoUri": "https://www.google.com/s2/favicons?domain=animo.id&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=animo.id&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/animo/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "procivis-one",
@@ -868,7 +1374,64 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/procivis/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "scytales-eu-reference-wallet-connector",
+      "name": "Scytales EU Reference Wallet",
+      "description": "An organizational platform based on the EU Digital Identity Wallet reference implementation, providing issuer and verifier capabilities.",
+      "walletRef": {
+        "walletCatalogId": "scytales-eu-reference-wallet"
+      },
+      "website": "https://www.scytales.com",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "scytales-eu-reference-wallet",
+        "name": "Scytales EU Reference Wallet",
+        "logo": "https://www.google.com/s2/favicons?domain=scytales.com&sz=128",
+        "providerName": "Scytales"
+      },
+      "firstSeenAt": "2026-11-27T06:47:50.000Z",
+      "orgId": "org:scytales",
+      "organization": {
+        "id": "org:scytales",
+        "name": "Scytales",
+        "country": "SE",
+        "website": "https://scytales.com",
+        "logoUri": "https://www.google.com/s2/favicons?domain=scytales.com&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=scytales.com&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/scytales/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T06:47:50.000Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "scytales-wallet-connector",
@@ -912,8 +1475,116 @@
       "isEudiWalletConnector": false,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/scytales/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T06:47:32.724Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "updatedAt": "2026-11-27T06:47:50.000Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "sicpa-digital-trust-suite-connector",
+      "name": "SICPA Digital Trust Suite",
+      "description": "An enterprise digital trust platform from SICPA providing issuer and verifier capabilities for secure credential management, building on their expertise in security authentication.",
+      "walletRef": {
+        "walletCatalogId": "sicpa-digital-trust-suite"
+      },
+      "website": "https://www.sicpa.com",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "sicpa-digital-trust-suite",
+        "name": "SICPA Digital Trust Suite",
+        "logo": "https://www.google.com/s2/favicons?domain=sicpa.com&sz=128",
+        "providerName": "SICPA"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:sicpa",
+      "organization": {
+        "id": "org:sicpa",
+        "name": "SICPA",
+        "country": "CH",
+        "website": "https://www.sicpa.com",
+        "logoUri": "https://www.google.com/s2/favicons?domain=sicpa.com&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=sicpa.com&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/sicpa/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "snapkyc-connector",
+      "name": "SnapKYC",
+      "description": "SnapKYC is a consent-first business verification platform that enables organizations to verify digital credentials. Supports OID4VP-based presentations including mDL/mDoc, SD-JWT VC and VCDM credentials.",
+      "walletRef": {
+        "walletCatalogId": "snapkyc"
+      },
+      "website": "https://ooru.io/products/snapkyc",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "mdoc",
+        "vcdm_2_0"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "snapkyc",
+        "name": "SnapKYC",
+        "logo": "https://www.google.com/s2/favicons?domain=ooru.io&sz=256",
+        "providerName": "Ooru"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:ooru",
+      "organization": {
+        "id": "org:ooru",
+        "name": "Ooru",
+        "country": "IN",
+        "website": "https://ooru.io/",
+        "logoUri": "https://framerusercontent.com/images/HijkYEeUDpGRn66LacWOyd8jbmE.png",
+        "catalogTier": "Community"
+      },
+      "logo": "https://framerusercontent.com/images/HijkYEeUDpGRn66LacWOyd8jbmE.png",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/ooru/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "sphereon-business-wallet-connector",
@@ -985,7 +1656,7 @@
       "catalogTier": "Pro",
       "sourcePath": "community-catalogs/sphereon/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T06:33:16.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "sphereon-vdx-platform-connector",
@@ -1059,7 +1730,7 @@
       "catalogTier": "Pro",
       "sourcePath": "community-catalogs/sphereon/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T06:33:16.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "spherity-business-wallet-connector",
@@ -1127,7 +1798,109 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/spherity/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T06:33:16.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "swiyu-generic-issuer-connector",
+      "name": "SWIYU Generic Issuer",
+      "description": "Generic issuer component of the SWIYU ecosystem, enabling organizations to issue verifiable credentials to compatible wallets within the Swiss e-ID infrastructure.",
+      "walletRef": {
+        "walletCatalogId": "swiyu-generic-issuer"
+      },
+      "website": "https://swiyu-admin-ch.github.io/cookbooks/onboarding-generic-issuer/",
+      "documentation": "https://swiyu-admin-ch.github.io/cookbooks/onboarding-generic-issuer/",
+      "repository": "https://github.com/swiyu-admin-ch/swiyu-issuer",
+      "connectorFunctions": [
+        "issuer"
+      ],
+      "deploymentModel": "saas",
+      "openSource": true,
+      "license": "MIT",
+      "status": "development",
+      "vcFormat": [
+        "sd_jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance"
+      ],
+      "walletReference": {
+        "id": "swiyu-generic-issuer",
+        "name": "SWIYU Generic Issuer",
+        "providerName": "Swiss Confederation"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:swiyu",
+      "organization": {
+        "id": "org:swiyu",
+        "name": "Swiss Confederation",
+        "country": "CH",
+        "website": "https://www.eid.admin.ch/en",
+        "logoUri": "https://play-lh.googleusercontent.com/24M9nEXiuSVZAfEnkDzJ2koRLLfd7s_sSw3CgfzVeNfQjALW800TPcVB_mwDrKpJhz0V",
+        "catalogTier": "Pro"
+      },
+      "logo": "https://play-lh.googleusercontent.com/24M9nEXiuSVZAfEnkDzJ2koRLLfd7s_sSw3CgfzVeNfQjALW800TPcVB_mwDrKpJhz0V",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Pro",
+      "sourcePath": "community-catalogs/swiyu/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "swiyu-generic-verifier-connector",
+      "name": "SWIYU Generic Verifier",
+      "description": "Generic verifier component of the SWIYU ecosystem, enabling organizations to request and verify verifiable presentations from compatible wallets within the Swiss e-ID infrastructure.",
+      "walletRef": {
+        "walletCatalogId": "swiyu-generic-verifier"
+      },
+      "website": "https://swiyu-admin-ch.github.io/cookbooks/onboarding-generic-verifier/",
+      "documentation": "https://swiyu-admin-ch.github.io/cookbooks/onboarding-generic-verifier/",
+      "repository": "https://github.com/swiyu-admin-ch/swiyu-verifier",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": true,
+      "license": "MIT",
+      "status": "development",
+      "vcFormat": [
+        "sd_jwt_vc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "swiyu-generic-verifier",
+        "name": "SWIYU Generic Verifier",
+        "providerName": "Swiss Confederation"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:swiyu",
+      "organization": {
+        "id": "org:swiyu",
+        "name": "Swiss Confederation",
+        "country": "CH",
+        "website": "https://www.eid.admin.ch/en",
+        "logoUri": "https://play-lh.googleusercontent.com/24M9nEXiuSVZAfEnkDzJ2koRLLfd7s_sSw3CgfzVeNfQjALW800TPcVB_mwDrKpJhz0V",
+        "catalogTier": "Pro"
+      },
+      "logo": "https://play-lh.googleusercontent.com/24M9nEXiuSVZAfEnkDzJ2koRLLfd7s_sSw3CgfzVeNfQjALW800TPcVB_mwDrKpJhz0V",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Pro",
+      "sourcePath": "community-catalogs/swiyu/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "trusttech-id-connector",
@@ -1215,8 +1988,67 @@
       "isEudiWalletConnector": true,
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/trusttech/wallet-connector-catalog.json",
-      "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "updatedAt": "2026-11-27T06:47:50.000Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "truvera-platform-connector",
+      "name": "Truvera Platform",
+      "description": "A blockchain-based verifiable credentials platform enabling organizations to issue and verify tamper-proof digital credentials.",
+      "walletRef": {
+        "walletCatalogId": "truvera-platform"
+      },
+      "website": "https://www.dock.io",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "vcdm_2_0",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "credentialStatusMethods": [
+        "StatusList2021"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "truvera-platform",
+        "name": "Truvera Platform",
+        "logo": "https://www.google.com/s2/favicons?domain=dock.io&sz=128",
+        "providerName": "Dock Labs AG"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:docklabs",
+      "organization": {
+        "id": "org:docklabs",
+        "name": "Dock Labs AG",
+        "country": "CH",
+        "website": "https://www.dock.io/",
+        "logoUri": "https://www.google.com/s2/favicons?domain=dock.io&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=dock.io&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/docklabs/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "ver-id-platform",
@@ -1302,7 +2134,67 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/ver-id/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
+    },
+    {
+      "id": "veres-wallet-connector",
+      "name": "Veres Wallet",
+      "description": "An enterprise-grade verifiable credentials platform built by Digital Bazaar, pioneers of the W3C Verifiable Credentials standard, offering issuer and verifier capabilities.",
+      "walletRef": {
+        "walletCatalogId": "veres-wallet"
+      },
+      "website": "https://www.digitalbazaar.com",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": true,
+      "license": "BSD-3-Clause",
+      "status": "production",
+      "vcFormat": [
+        "vcdm_2_0",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "credentialStatusMethods": [
+        "StatusList2021",
+        "RevocationList2020"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ],
+      "walletReference": {
+        "id": "veres-wallet",
+        "name": "Veres Wallet",
+        "logo": "https://www.google.com/s2/favicons?domain=digitalbazaar.com&sz=128",
+        "providerName": "Digital Bazaar"
+      },
+      "firstSeenAt": "2026-11-27T08:28:22.985Z",
+      "orgId": "org:digitalbazaar",
+      "organization": {
+        "id": "org:digitalbazaar",
+        "name": "Digital Bazaar",
+        "country": "US",
+        "website": "https://www.digitalbazaar.com",
+        "logoUri": "https://www.google.com/s2/favicons?domain=digitalbazaar.com&sz=128",
+        "catalogTier": "Community"
+      },
+      "logo": "https://www.google.com/s2/favicons?domain=digitalbazaar.com&sz=128",
+      "isEudiWalletConnector": false,
+      "catalogTier": "Community",
+      "sourcePath": "community-catalogs/digitalbazaar/wallet-connector-catalog.json",
+      "updatedAt": "2026-11-27T08:28:22.985Z",
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "vs-agent-verana-business-wallet-connector",
@@ -1362,7 +2254,7 @@
       "catalogTier": "Community",
       "sourcePath": "community-catalogs/verana/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T06:33:16.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     },
     {
       "id": "waltid-community-stack",
@@ -1427,19 +2319,19 @@
       "catalogListingDepth": "full",
       "sourcePath": "community-catalogs/waltid/wallet-connector-catalog.json",
       "updatedAt": "2026-11-27T05:47:54.000Z",
-      "fetchedAt": "2026-11-27T06:47:32.724Z"
+      "fetchedAt": "2026-11-27T08:28:22.985Z"
     }
   ],
   "stats": {
-    "totalConnectors": 20,
-    "totalOrganizations": 19,
+    "totalConnectors": 36,
+    "totalOrganizations": 31,
     "eudiWalletConnectors": 9,
     "byFunction": {
-      "issuer": 17,
-      "verifier": 19
+      "issuer": 30,
+      "verifier": 32
     },
     "byDeploymentModel": {
-      "saas": 8,
+      "saas": 24,
       "on_premises": 5,
       "hybrid": 7
     }

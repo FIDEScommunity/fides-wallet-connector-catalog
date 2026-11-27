@@ -1,0 +1,70 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:mosip",
+  "connectors": [
+    {
+      "id": "inji-certifier-connector",
+      "name": "Inji Certifier",
+      "description": "An open-source issuing component by MOSIP enabling governments and organizations to issue verifiable credentials at scale.",
+      "walletRef": {
+        "walletCatalogId": "inji-certifier"
+      },
+      "website": "https://www.mosip.io",
+      "documentation": "https://docs.mosip.io",
+      "repository": "https://github.com/mosip",
+      "connectorFunctions": [
+        "issuer"
+      ],
+      "deploymentModel": "saas",
+      "openSource": true,
+      "license": "MPL-2.0",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "mdoc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance"
+      ]
+    },
+    {
+      "id": "inji-verifier-connector",
+      "name": "Inji Verifier",
+      "description": "An open-source verification component by MOSIP enabling organizations and relying parties to verify verifiable credentials using OpenID4VP.",
+      "walletRef": {
+        "walletCatalogId": "inji-verifier"
+      },
+      "website": "https://www.mosip.io",
+      "documentation": "https://docs.mosip.io",
+      "repository": "https://github.com/mosip",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": true,
+      "license": "MPL-2.0",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc",
+        "mdoc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_verification"
+      ]
+    }
+  ]
+}

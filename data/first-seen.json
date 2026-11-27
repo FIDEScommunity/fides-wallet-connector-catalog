@@ -21,5 +21,21 @@
   "authologic-eudi-wallet-playground": "2026-11-27T06:47:32.724Z",
   "digidentity-eudi-wallet-verifier": "2026-11-27T06:47:32.724Z",
   "hopae-connect": "2026-11-27T06:47:32.724Z",
-  "scytales-wallet-connector": "2026-11-27T06:47:32.724Z"
+  "scytales-wallet-connector": "2026-11-27T06:47:32.724Z",
+  "affinidi-portal-connector": "2026-11-27T08:28:22.985Z",
+  "paradym-platform-connector": "2026-11-27T08:28:22.985Z",
+  "auth0-platform-connector": "2026-11-27T08:28:22.985Z",
+  "veres-wallet-connector": "2026-11-27T08:28:22.985Z",
+  "truvera-platform-connector": "2026-11-27T08:28:22.985Z",
+  "didroom-connector": "2026-11-27T08:28:22.985Z",
+  "dalion-org-wallet-connector": "2026-11-27T08:28:22.985Z",
+  "inji-certifier-connector": "2026-11-27T08:28:22.985Z",
+  "inji-verifier-connector": "2026-11-27T08:28:22.985Z",
+  "orbit-enterprise-connector": "2026-11-27T08:28:22.985Z",
+  "credissuer-connector": "2026-11-27T08:28:22.985Z",
+  "snapkyc-connector": "2026-11-27T08:28:22.985Z",
+  "scytales-eu-reference-wallet-connector": "2026-11-27T06:47:50.000Z",
+  "sicpa-digital-trust-suite-connector": "2026-11-27T08:28:22.985Z",
+  "swiyu-generic-issuer-connector": "2026-11-27T08:28:22.985Z",
+  "swiyu-generic-verifier-connector": "2026-11-27T08:28:22.985Z"
 }

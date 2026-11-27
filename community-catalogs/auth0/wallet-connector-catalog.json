@@ -1,0 +1,40 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:auth0",
+  "connectors": [
+    {
+      "id": "auth0-platform-connector",
+      "name": "Auth0 Platform",
+      "description": "Auth0's experimental mDL and verifiable credentials platform enabling organizations to issue and verify digital credentials integrated with Auth0's identity platform.",
+      "walletRef": {
+        "walletCatalogId": "auth0-platform"
+      },
+      "website": "https://lab.auth0.com",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "beta",
+      "vcFormat": [
+        "mdoc",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:docklabs",
+  "connectors": [
+    {
+      "id": "truvera-platform-connector",
+      "name": "Truvera Platform",
+      "description": "A blockchain-based verifiable credentials platform enabling organizations to issue and verify tamper-proof digital credentials.",
+      "walletRef": {
+        "walletCatalogId": "truvera-platform"
+      },
+      "website": "https://www.dock.io",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "vcdm_2_0",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "credentialStatusMethods": [
+        "StatusList2021"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:sicpa",
+  "connectors": [
+    {
+      "id": "sicpa-digital-trust-suite-connector",
+      "name": "SICPA Digital Trust Suite",
+      "description": "An enterprise digital trust platform from SICPA providing issuer and verifier capabilities for secure credential management, building on their expertise in security authentication.",
+      "walletRef": {
+        "walletCatalogId": "sicpa-digital-trust-suite"
+      },
+      "website": "https://www.sicpa.com",
+      "connectorFunctions": [
+        "issuer",
+        "verifier"
+      ],
+      "deploymentModel": "saas",
+      "openSource": false,
+      "license": "proprietary",
+      "status": "production",
+      "vcFormat": [
+        "sd_jwt_vc",
+        "jwt_vc"
+      ],
+      "issuanceProtocols": [
+        "OpenID4VCI"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "backendIntegrations": [
+        "rest_api"
+      ],
+      "serviceModels": [
+        "managed_issuance",
+        "managed_verification"
+      ]
+    }
+  ]
+}
