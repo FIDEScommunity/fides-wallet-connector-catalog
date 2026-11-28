@@ -1,0 +1,39 @@
+{
+  "$schema": "https://fides.community/schemas/wallet-connector-catalog/v1",
+  "orgId": "org:khaklin-technologies",
+  "connectors": [
+    {
+      "id": "polaris-oid4vp",
+      "name": "polaris-oid4vp",
+      "description": "An OpenID4VP 1.0 verifier under HAIP 1.0, from Polaris ID, that a relying party installs from PyPI and runs on its own servers, as a Python library or a command-line server. It requests an SD-JWT VC by DCQL over direct_post.jwt, checks the issuer's signature and the holder's key binding, can check an IETF Token Status List, and returns one verdict per presentation. polaris-oid4vp 1.0.0rc7 is OpenID Certified to the OpenID4VP 1.0 + HAIP 1.0 Verifier profile (sd_jwt_vc, direct_post.jwt).",
+      "website": "https://polaris-id.org/",
+      "documentation": "https://github.com/EgorKhaklin/polaris-id/blob/main/packages/polaris-oid4vp/README.md",
+      "repository": "https://github.com/EgorKhaklin/polaris-id",
+      "connectorFunctions": [
+        "verifier"
+      ],
+      "deploymentModel": "on_premises",
+      "openSource": true,
+      "license": "Apache-2.0",
+      "status": "beta",
+      "vcFormat": [
+        "sd_jwt_vc"
+      ],
+      "presentationProtocols": [
+        "OpenID4VP"
+      ],
+      "interoperabilityProfiles": [
+        "HAIP v1"
+      ],
+      "credentialStatusMethods": [
+        "IETF Token Status List"
+      ],
+      "backendIntegrations": [
+        "server_sdk"
+      ],
+      "serviceModels": [
+        "software_only"
+      ]
+    }
+  ]
+}
